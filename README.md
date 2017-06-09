@@ -11,7 +11,7 @@ The main idea of Elfin is to use repeat proteins as rigid construction modules (
 
 **Important**: Elfin requires a repeat protein database called "elfin-db", which contains PDB files of the protein modules. This can be acquired from the joy13975/elfin-db repository. Access should be asked from fabio.parmeggiani@bristol.ac.uk (Fabio). The reason for restricted access is that these files are unpublished laboratory results (from the Baker lab of the University of Washington).
 
-The old repository with the complete change history is [here][https://github.com/joy13975/elfin-old]. Files were migrated to this new repository to get rid of massive pack files that git was creating. Grid search files can be found [here](https://github.com/joy13975/elfin-gridsearch).
+The old repository with the complete change history is [here](https://github.com/joy13975/elfin-old). Files were migrated to this new repository to get rid of massive pack files that git was creating. Grid search files can be found [here](https://github.com/joy13975/elfin-gridsearch).
 
 ### Content:
 1. [Repository Setup](#repo-setup)
