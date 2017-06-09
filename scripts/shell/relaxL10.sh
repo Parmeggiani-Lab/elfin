@@ -1,0 +1,10 @@
+./relax.sh bm/l10/1696.pdb
+./relax.sh bm/l10/2vnd.pdb
+./relax.sh bm/l10/2x7c.pdb
+./relax.sh bm/l10/d0qe.pdb
+./relax.sh bm/l10/eabj.pdb
+./relax.sh bm/l10/hfw4.pdb
+./relax.sh bm/l10/iv57.pdb
+./relax.sh bm/l10/iz7z.pdb
+./relax.sh bm/l10/ju1z.pdb
+./relax.sh bm/l10/v722.pdb

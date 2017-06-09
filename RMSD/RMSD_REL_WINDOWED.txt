@@ -1,0 +1,51 @@
+./src/Python/RMSDStat.py bm/l10_nat bm/l10_relaxed
+Using window length 300 and overlap ratio 0.5 (=150 CA atoms), warn at 5.0A
+bm/l10_nat/1696.pdb  avg: 1.37087369713 min 0.979476939189 max 1.65581158797
+bm/l10_nat/2vnd.pdb  avg: 1.21480701086 min 1.02284261658 max 1.39522250296
+bm/l10_nat/2x7c.pdb  avg: 1.70356436358 min 1.45448211198 max 2.08147879938
+bm/l10_nat/d0qe.pdb  avg: 2.01204623984 min 1.64558493837 max 2.62454515453
+bm/l10_nat/eabj.pdb  avg: 1.37802672201 min 1.14529698197 max 1.7485272019
+bm/l10_nat/hfw4.pdb  avg: 1.99798357378 min 1.36535949883 max 2.90548307575
+bm/l10_nat/iv57.pdb  avg: 1.38594412788 min 0.939573126806 max 2.08475193228
+bm/l10_nat/iz7z.pdb  avg: 1.81497691035 min 1.12947337787 max 2.59380483252
+bm/l10_nat/ju1z.pdb  avg: 1.35125259638 min 1.01271242394 max 1.84563487903
+bm/l10_nat/v722.pdb  avg: 2.16379566226 min 1.77190426407 max 2.47873905465
+
+./src/Python/RMSDStat.py bm/l20_nat bm/l20_relaxed
+Using window length 300 and overlap ratio 0.5 (=150 CA atoms), warn at 5.0A
+bm/l20_nat/1z1q.pdb  avg: 2.94376203967 min 1.80569136888 max 3.85245405456
+bm/l20_nat/8gcv.pdb  avg: 2.63476142976 min 2.00410969471 max 4.28518366212
+bm/l20_nat/cref.pdb  avg: 4.23273452887 min 2.0425686612 max 6.95497402332
+Warning: max window RMSD of 5.0 exceeded!
+bm/l20_nat/kwkh.pdb  avg: 3.00410137739 min 1.69242237208 max 4.81171658311
+bm/l20_nat/mqj2.pdb  avg: 3.94419860608 min 2.82123960867 max 6.15841733009
+Warning: max window RMSD of 5.0 exceeded!
+
+./src/Python/RMSDStat.py bm/l30_nat bm/l30_relaxed
+Using window length 300 and overlap ratio 0.5 (=150 CA atoms), warn at 5.0A
+bm/l30_nat/7r78.pdb  avg: 3.97865114585 min 2.64230512005 max 6.5677399642
+Warning: max window RMSD of 5.0 exceeded!
+bm/l30_nat/ugyg.pdb  avg: 4.22310961622 min 2.23394510695 max 6.45896985453
+Warning: max window RMSD of 5.0 exceeded!
+bm/l30_nat/vi31.pdb  avg: 3.2586615926 min 1.91069522494 max 4.68380138279
+bm/l30_nat/vias.pdb  avg: 2.47775369997 min 1.75377371135 max 3.748220685
+bm/l30_nat/xsx0.pdb  avg: 3.49093919473 min 2.22834116835 max 4.8696870617
+
+./src/Python/RMSDStat.py bm/funOut_nat bm/funOut_relaxed
+Using window length 300 and overlap ratio 0.5 (=150 CA atoms), warn at 5.0A
+bm/funOut_nat/B.pdb  avg: 6.65340600679 min 4.65761749274 max 9.80593843177
+Warning: max window RMSD of 5.0 exceeded!
+bm/funOut_nat/horns.pdb avg: 6.07227975581 min 3.33976271109 max 10.3181435635
+Warning: max window RMSD of 5.0 exceeded!
+bm/funOut_nat/I.pdb  avg: 2.49442029084 min 1.80770325064 max 3.09087191703
+bm/funOut_nat/inf.pdb avg: 6.21832802838 min 4.6069508933 max 10.7723400209
+Warning: max window RMSD of 5.0 exceeded!
+bm/funOut_nat/L.pdb  avg: 1.16686383755 min 0.854837273226 max 1.71438822097
+bm/funOut_nat/O.pdb  avg: 3.09910503897 min 2.21274681658 max 4.42866725386
+bm/funOut_nat/R.pdb  avg: 6.89642712344 min 4.9005207947 max 11.6333189415
+Warning: max window RMSD of 5.0 exceeded!
+bm/funOut_nat/S.pdb  avg: 5.70427660732 min 4.51424840102 max 7.42402332595
+Warning: max window RMSD of 5.0 exceeded!
+bm/funOut_nat/spiral.pdb avg: 4.98306296225 min 2.64578383533 max 8.63928275394
+Warning: max window RMSD of 5.0 exceeded!
+bm/funOut_nat/T.pdb  avg: 2.96456334291 min 2.10337114663 max 4.95750432252

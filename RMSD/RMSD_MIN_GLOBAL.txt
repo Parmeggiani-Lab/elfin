@@ -1,0 +1,44 @@
+./src/Python/RMSDStatRosetta.py ./bm/l10_sc
+./bm/l10_sc/1696_comp.sc RMSD: 2.055
+./bm/l10_sc/2vnd_comp.sc RMSD: 1.894
+./bm/l10_sc/2x7c_comp.sc RMSD: 1.049
+./bm/l10_sc/d0qe_comp.sc RMSD: 1.018
+./bm/l10_sc/eabj_comp.sc RMSD: 1.773
+./bm/l10_sc/hfw4_comp.sc RMSD: 0.926
+./bm/l10_sc/iv57_comp.sc RMSD: 1.083
+./bm/l10_sc/iz7z_comp.sc RMSD: 1.950
+./bm/l10_sc/ju1z_comp.sc RMSD: 1.883
+./bm/l10_sc/v722_comp.sc RMSD: 2.338
+Average: 1.5969, Min: 0.926, Max: 2.338
+
+./src/Python/RMSDStatRosetta.py ./bm/l20_sc
+./bm/l20_sc/1z1q_comp.sc RMSD: 3.932
+./bm/l20_sc/8gcv_comp.sc RMSD: 3.034
+./bm/l20_sc/cref_comp.sc RMSD: 5.370
+./bm/l20_sc/kwkh_comp.sc RMSD: 4.483
+./bm/l20_sc/mqj2_comp.sc RMSD: 3.242
+Average: 4.0122, Min: 3.034, Max: 5.37
+
+WARNING: One or more molecules exceed 5A RMSD!
+./src/Python/RMSDStatRosetta.py ./bm/l30_sc
+./bm/l30_sc/7r78_comp.sc RMSD: 16.136
+./bm/l30_sc/ugyg_comp.sc RMSD: 22.839
+./bm/l30_sc/vi31_comp.sc RMSD: 7.281
+./bm/l30_sc/vias_comp.sc RMSD: 4.934
+./bm/l30_sc/xsx0_comp.sc RMSD: 33.523
+Average: 16.9426, Min: 4.934, Max: 33.523
+WARNING: One or more molecules exceed 5A RMSD!
+
+./src/Python/RMSDStatRosetta.py ./bm/funOut_sc
+./bm/funOut_sc/B_comp.sc RMSD: 14.408
+./bm/funOut_sc/horns_comp.sc RMSD: 7.137
+./bm/funOut_sc/I_comp.sc RMSD: 1.157
+./bm/funOut_sc/inf_comp.sc RMSD: 6.801
+./bm/funOut_sc/L_comp.sc RMSD: 2.580
+./bm/funOut_sc/O_comp.sc RMSD: 6.930
+./bm/funOut_sc/R_comp.sc RMSD: 4.230
+./bm/funOut_sc/S_comp.sc RMSD: 1.990
+./bm/funOut_sc/spiral_comp.sc RMSD: 10.342
+./bm/funOut_sc/T_comp.sc RMSD: 4.348
+Average: 5.9923, Min: 1.157, Max: 14.408
+WARNING: One or more molecules exceed 5A RMSD!
