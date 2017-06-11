@@ -1,5 +1,18 @@
 #!/usr/bin/env python
 
+# In this preprocessing stage, all pairs are chain-merged 
+# as they come in separate chains, which denote physically
+# separate entities.
+# 
+# Then, unwanted atoms are deleted from each single and pair.
+#
+# For compound pairs (those with junctions), loop interfaces 
+# are replaced with those found in their simple pair counterparts.
+# This is done because we can only be sure of the interface 
+# atom positions in simple pairs but not in compound pairs.
+# If we don't do this, the relaxation of database PDBs will 
+# show sever bending and dislocation in compound pairs.
+
 import argparse, sys
 from utils import *
 
@@ -35,10 +48,10 @@ def mergeChainsAndCleanse(pdb):
 def main():
 	ap = argparse.ArgumentParser(description='Template Python script');
 	ap.add_argument('input')
-	ap.add_argument('outputDir')
+	ap.add_argument('--outputDir', default='./res/preprocessed/')
 	args = ap.parse_args()
 
-	if len(sys.argv) == 1 or args.input is None or args.outputDir is None:
+	if args.input is None or args.outputDir is None:
 		ap.print_help()
 		sys.exit(1)
 
