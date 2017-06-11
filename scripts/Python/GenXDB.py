@@ -8,10 +8,10 @@ import codecs, json
 from collections import OrderedDict
 
 def main():
-    pairDir         = 'res/preprocessed/pair/'
-    singleDir       = 'res/preprocessed/single/'
-    alignedLibDir   = 'res/aligned/'
-    outFile         = 'res/xDB.json'
+    pairDir         = './res/relaxed/pair/'
+    singleDir       = './res/relaxed/single/'
+    alignedLibDir   = './res/aligned/'
+    outFile         = './res/xDB.json'
     xdbg = XDBGenrator(pairDir, singleDir, alignedLibDir, outFile)
     utils.safeExec(xdbg.run)
 

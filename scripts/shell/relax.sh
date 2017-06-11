@@ -11,7 +11,7 @@ input="$1"
 maxCycles="$2"
 
 outDir=`dirname $input`
-scOutput="${input/\.pdb/_min.sc}"
+scOutput="${input/\.pdb/_relax.sc}"
 
 maxCycles=${maxCycles:-200}
 local=${local:-"no"}
