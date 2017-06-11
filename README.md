@@ -64,7 +64,7 @@ The GPU port has only been tested on the Bristol Zoo cluster, which has the ```l
 make TARGET=gpu
 ```
 
-This should compile Elfin GA for GPU targeting.
+This should compile Elfin GA for targeting GPUs. The flag ```--device``` can be used to specify device ID to run the GA on. The rest of the usage are the same.
 
 ## 1. [Repository Setup](#repo-setup)
 
