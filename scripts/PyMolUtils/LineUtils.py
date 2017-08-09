@@ -145,6 +145,7 @@ def draw_axis(l=350, w = 1):
 
 cmd.extend("draw_axis", draw_axis)
 cmd.extend("draw_csv", draw_csv)
+cmd.extend("draw_json", draw_json)
 draw_axis()
 print 'LineUtils Loaded'
 
