@@ -1,6 +1,3 @@
-[submodule "res/elfin-db"]
-	path = res/elfin-db
-	url = https://github.com/joy13975/elfin-db.git
 [submodule "GA/jutil"]
 	path = GA/jutil
 	url = https://github.com/joy13975/jutil.git
