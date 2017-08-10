@@ -84,7 +84,25 @@ pip install -r requirements.txt                         #install required librar
 
 ## 3. [GA Setup](#ga-setup)
 
+First you need GCC/G++ 5 and above. On Macs for instance, you can get OpenMP-enabled GCC-6 by simply installing from Homebrew:
+
 ```
+brew install gcc --without-multilib
+```
+
+The installation could take a while. After this is done, you should get commands ```gcc-6``` and ```g++-6```. You can choose to make these your default compilers by overwriting the symbolic links at ```/usr/local/bin/gcc``` and ```/usr/local/bin/g++```:
+```
+ln -Fs `which gcc-6` /usr/local/bin/gcc
+ln -Fs `which g++-6` /usr/local/bin/g++
+```
+
+For troubleshooting, please refer to [this](https://stackoverflow.com/questions/35134681/installing-openmp-on-mac-os-x-10-11) Stackoverflow post.
+
+Then install the jutil submodule and get ready to compile.
+
+```
+git submodule init
+git submodule update --init --force --remote			#this should install jutil
 cd GA                                                   #you should now be at ./GA/
 make
 ```
@@ -139,9 +157,8 @@ After acquiring the 3D coordinates, copy them to a CSV file and ensure the forma
 ```
                                                         #you should be at repository root
 . ./activate                                            #make sure venv is active
-git submodule init
-git submodule update                                    #this downloads the elfin-db
 cd res
+git clone https://github.com/joy13975/elfin-db.git 
 unzip elfin-db/db.zip                                   #module PDBs are now at ./res/db/
 ```
 
