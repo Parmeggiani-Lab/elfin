@@ -14,21 +14,21 @@ The main idea of Elfin is to use repeat proteins as rigid construction modules (
 The old repository with the complete change history is [here](https://github.com/joy13975/elfin-old). Files were migrated to this new repository to get rid of massive pack files that git was creating. Grid search files can be found [here](https://github.com/joy13975/elfin-gridsearch).
 
 ### Content:
-0. [Project Status](#project-status)
+0. [Project Status](#0-project-status)
 
-1. [Repository Setup](#repo-setup)
+1. [Repository Setup](#1-repository-setup)
 
-2. [Python Setup](#python-setup)
+2. [Python Setup](#2-python-setup)
 
-3. [GA Setup](#ga-setup)
+3. [GA Setup](#3-ga-setup)
 
-4. [Usage](#usage)
+4. [Usage](#4-usage)
 
-5. [Input Creation](#input-creation)
+5. [Input Creation](#5-input-creation)
 
-6. [Database Preparation](#db-prep)
+6. [Database Preparation](#6-db-prep)
 
-7. [Design Verification](#design-verification)
+7. [Design Verification](#7-design-verification)
 
 ## Pre-requisites
 1. [Python 2.7.9](https://www.python.org/downloads/release/python-279/)
@@ -39,7 +39,7 @@ The old repository with the complete change history is [here](https://github.com
 2. [Rosetta](https://www.rosettacommons.org/software/license-and-download) for minimisation and relaxation.
 3. [Matlab](https://www.mathworks.com/products/matlab.html) to specify shape input for Elfin.
 
-## 0. [Project Status](#project-status)
+## 0. Project Status
 
 **Features**
 
@@ -66,14 +66,14 @@ make TARGET=gpu
 
 This should compile Elfin GA for targeting GPUs. The flag ```--device``` can be used to specify device ID to run the GA on. The rest of the usage are the same.
 
-## 1. [Repository Setup](#repo-setup)
+## 1. Repository Setup
 
 ```
 git clone https://github.com/joy13975/elfin.git
 cd elfin                                                #you should now be at repository root
 ```
 
-## 2. [Python Setup](#python-setup) 
+## 2. Python Setup
 
 ```
                                                         #you should be at repository root
@@ -82,7 +82,7 @@ virtualenv --python=<path/to/your/python-2.7.9> venv    #the name 'venv' is requ
 pip install -r requirements.txt                         #install required libraries locally
 ```
 
-## 3. [GA Setup](#ga-setup)
+## 3. GA Setup
 
 First you need GCC/G++ 5 and above. On Macs for instance, you can get OpenMP-enabled GCC-6 by simply installing from Homebrew:
 
@@ -113,7 +113,7 @@ Notes:
  - To speed up the compilation, use the -j flag with the number of cores on your system.
  - To build without OpenMP, you can specify ```make OMP=no```
 
-## 4. [Usage](#usage)
+## 4. Usage
 Once you have compiled the GA successfully, you can test run it with:
 ```
                                                         #you should be at ./GA/
@@ -144,14 +144,14 @@ Notes:
  - Typically, the lower memory address names of output JSONs are the better solutions (lower score).
  - Command-line arguments will override arguments specified in the configuration file.
 
-## 5. [Input Creation](#input-creation)
+## 5. Input Creation
 Specifying the design shape requires Matlab. The script for doing so is ```./scripts/Matlab/drawPoints.m```. By running the script in Matlab you will be able to plot a series of points in 2D on a Matlab plot. 
 
 After you are done plotting, hit Enter. The 3D coordinates of your shape will be printed in Matlab's command window after being correctly scaled to atomic distances. Adjust those points to achieve 3D depth effects. I admit that this is far from perfect nor is it very easy to use, but for this project it was sufficient. It is part of the future plan to develop something more convenient and expressive.
 
 After acquiring the 3D coordinates, copy them to a CSV file and ensure the formatting is exactly the same as existing CSV spec files, e.g. ```./bm/fun/B.csv```.
 
-## 6. [Database Preparation](#db-prep)
+## 6. Database Preparation
 
 **Obtain and decompress elfin-db.zip**
 ```
@@ -207,7 +207,7 @@ Lastly, invoke the ```./scripts/Python/GenXDB.py``` script. What this does is a 
 ./scripts/Python/GenXDB.py
 ```
 
-## 7. [Design Verification](#design-verification)
+## 7. Design Verification
 After running a shape design through Elfin's GA, you should find output solutions in ```./GA/output/```. Recall that smaller hexadecimal values in the file name corresponds to better solutions (due to score-sorted memory layout). Here we shall use the default input as example.
 
 ```
