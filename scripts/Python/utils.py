@@ -311,7 +311,7 @@ def makePdbFromNodes(xdb, nodes, pairsDir, singlesDir, saveFile=None, fRot=None,
 
             if i == 0:
                 # First pair: ignore leading trim
-                startResi = 1
+                startResi = 0
                 endResi = resiCountPair - intCeil(float(resiCountB)/2)
             elif i == len(nodes) - 2:
                 # Last pair: ignore trailing trim
@@ -356,6 +356,8 @@ def makePdbFromNodes(xdb, nodes, pairsDir, singlesDir, saveFile=None, fRot=None,
 
         startingPoint = np.dot(startingPoint, np.asarray(rel['rot'])) + rel['tran']
         print 'Pair #{}:   {}'.format(str(i+1).ljust(chainLenDigits), pairName.ljust(16))
+        # print 'From file: {}'.format(pairsDir + '/' + pairName + '.pdb')
+        # print 'Residues: {} - {}'.format(startResi, endResi)
 
        
     if fRot is not None:

@@ -5,7 +5,7 @@ import argparse
 from utils import *
 
 def main():
-    ap = argparse.ArgumentParser(description='Generate Grid Search configurations');
+    ap = argparse.ArgumentParser(description='Generate PDB from node information');
     ap.add_argument('specFile')
     ap.add_argument('--outFile', default='')
     ap.add_argument('--movieMode', dest='movieMode', action='store_true')
