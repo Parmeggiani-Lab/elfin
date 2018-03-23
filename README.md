@@ -9,7 +9,8 @@ The main idea of Elfin is to use repeat proteins as rigid construction modules (
 * UoB: University of Bristol
 * UoW: University of Washington
 
-**Important**: Elfin requires a repeat protein database called "elfin-db", which contains PDB files of the protein modules. This can be acquired from [this](https://github.com/joy13975/elfin-db) repository. Access should be asked from fabio.parmeggiani@bristol.ac.uk (Fabio). The reason for restricted access is that these files are unpublished laboratory results (from the Baker lab of the University of Washington). Without these module PDBs, Elfin can still run but will not produce PDB outputs - only module centre-of-mass information.
+### Access to elfin-db: 
+Elfin requires a repeat protein database called "elfin-db", which contains PDB files of the protein modules. This can be acquired from [this](https://github.com/joy13975/elfin-db) repository. Access should be asked from fabio.parmeggiani@bristol.ac.uk (Fabio). The reason for restricted access is that these files are unpublished laboratory results (from the Baker lab of the University of Washington). Without these module PDBs, Elfin can still run but will not produce PDB outputs - only module centre-of-mass information.
 
 The old repository with the complete change history is [here](https://github.com/joy13975/elfin-old). Files were migrated to this new repository to get rid of massive pack files that git was creating. Grid search files can be found [here](https://github.com/joy13975/elfin-gridsearch).
 
@@ -26,7 +27,7 @@ The old repository with the complete change history is [here](https://github.com
 
 5. [Input Creation](#5-input-creation)
 
-6. [Database Preparation](#6-db-prep)
+6. [Database Preparation](#6-database-preparation)
 
 7. [Design Verification](#7-design-verification)
 
@@ -109,7 +110,7 @@ make
 
 Notes:
  - Specify the compiler of your choice by e.g. for clang++: ```make CXX=clang++```.
- - For clang, you will need to specify the C++ standard library include path, which depends on where you installed GCC. See ./GA/Makefile for details (the INCS variable). You will also need to include libiomp and library load paths specified (again see Makefile).
+ - For clang, you will need to specify the C++ standard library include path, which depends on where you installed GCC. See ./GA/Makefile for details (the INCS variable). You will also need to include libiomp and library load paths (again see Makefile).
  - To speed up the compilation, use the -j flag with the number of cores on your system.
  - To build without OpenMP, you can specify ```make OMP=no```
 
@@ -162,6 +163,7 @@ git clone https://github.com/joy13975/elfin-db.git
 unzip elfin-db/db.zip                                   #module PDBs are now at ./res/db/
 ```
 
+Read [here](#access-to-elfin-db) about elfin-db access permission.
 If you're not interested in knowing how to generate the abstract module database, simply decompress the aligned module folder:
 ```
 unzip elfin-db/aligned.zip
@@ -178,19 +180,19 @@ cd ..                                                   #go back to repo root
 
 ```
 
-Now, if you're on a Linux cluster with Rosetta built with MPI and you have the ```sbatch``` command for your job queuing system, you can simply invoke:
+Now, if you're on a Linux cluster **that has MPI-enabled Rosetta installed** and you have the ```sbatch``` command for your job queuing system, you can simply invoke:
 
 ```
 sh dbRelaxList.sh
 ```
 
-If you are on your own computer or some other system, you need to modify the environment variables that specify what type of Rosetta and queuing system you use. For instance, on my Macbook Pro (without MPI Rosetta and no queuing system) I use:
+If you are on your own computer or some other different environment, you need to modify the environment variables that specify what flavour of Rosetta and queuing system you use. For instance, on my Macbook Pro (without MPI Rosetta and no queuing system) I use:
 ```
 local=yes variant= release=macosclangrelease sh dbRelaxList.sh
 ```
 
  - The ```local``` variable tells the ```./scripts/Shell/relax.sh``` script whether or not to use ```sbatch```.
- - The ```variant``` variable tells which build variant (e.g. mpi) of Rosetta to use. 
+ - The ```variant``` variable tells which build variant (e.g. mpi or none if default) of Rosetta to use. 
  - The ```release``` variable tells which release version to use. This depends on your OS, and which build version you want to use (e.g. could be the debug version).
 
 This relaxation can take quite a while simply because the process is computationally intensive. It is therefore strongly recommended that you do this on a compute cluster that lets you spread workload across many machines. 
