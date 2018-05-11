@@ -15,41 +15,62 @@ Elfin requires a repeat protein database called "elfin-db", which contains PDB f
 The old repository with the complete change history is [here](https://github.com/joy13975/elfin-old). Files were migrated to this new repository to get rid of massive pack files that git was creating. Grid search files can be found [here](https://github.com/joy13975/elfin-gridsearch).
 
 ### Content:
-0. [Project Status](#0-project-status)
+1. [Prerequisites](#1-prerequisites)
 
-1. [Repository Setup](#1-repository-setup)
+2. [Optional Tools](#2-optional-tools)
 
-2. [Python Setup](#2-python-setup)
+3. [Project Status](#3-project-status)
 
-3. [GA Setup](#3-ga-setup)
+4. [Repository Setup](#4-repository-setup)
 
-4. [Usage](#4-usage)
+5. [Python Setup](#5-python-setup)
 
-5. [Input Creation](#5-input-creation)
+6. [GA Setup](#6-ga-setup)
 
-6. [Database Preparation](#6-database-preparation)
+7. [Usage](#7-usage)
 
-7. [Design Verification](#7-design-verification)
+8. [Input Creation](#8-input-creation)
 
-## Pre-requisites
+9. [Database Preparation](#9-database-preparation)
+
+10. [Design Verification](#10-design-verification)
+
+## 1. Prerequisites
 1. [Python 2.7.9](https://www.python.org/downloads/release/python-279/)
 2. [VirtualEnv](https://virtualenv.pypa.io/en/stable/) for separation of python environment
 
-## Optional Tools
+## 2. Optional Tools
 1. [PyMOL](https://www.pymol.org) for 3D visualisation of PDB and CSV
 2. [Rosetta](https://www.rosettacommons.org/software/license-and-download) for minimisation and relaxation.
 3. [Matlab](https://www.mathworks.com/products/matlab.html) to specify shape input for Elfin.
 
-## 0. Project Status
+## 3. Project Status
 
 **Features**
 
+Version 0.0.1
 - [x] Allows user to draw simple shapes in Matlab to describe the protein they want to make
-- [x] Parses input as an array of 3D points specified by either a JSON or CSV file
+- [x] Accepts input as an array of 3D points specified by either a JSON or CSV file
 - [x] Scripts for generating database (in case of new modules)
 - [x] Produces quality protein designs
 - [x] Several tunable parameters in the GA
 - [x] Scripts for design verification (against relaxed versions) with the help of Rosetta 
+
+Version 0.0.2
+- [ ] Migrate from PDB to CIF (mainly due to atom number limit but also that PDB has been phased out in 2016)
+- [ ] Implement N and C terminal capping in Synthesiser
+- [ ] Accept input as a network of points with connections between 
+   - [ ] Check sanity of input
+- [ ] Produce quality protein designs for simple, tree-like shapes
+   - [ ] Produce quality protein designs for complex, cyclical shapes
+- [ ] Allow multi-chain option in Synthesiser
+- [ ] Improve GPU performance (?)
+
+![alt tag](res/diagrams/ElfinFlow.png)
+- Blue: implemented
+- Yellow: implemented but possibly needs modification for upcoming new features
+- Orange: implemented but definitely needs modification for upcoming new features
+- Red: not yet implemented but planned
 
 **Optimisations**
 
@@ -67,14 +88,14 @@ make TARGET=gpu
 
 This should compile Elfin GA for targeting GPUs. The flag ```--device``` can be used to specify device ID to run the GA on. The rest of the usage are the same.
 
-## 1. Repository Setup
+## 4. Repository Setup
 
 ```
 git clone https://github.com/joy13975/elfin.git
 cd elfin                                                #you should now be at repository root
 ```
 
-## 2. Python Setup
+## 5. Python Setup
 
 ```
                                                         #you should be at repository root
@@ -83,7 +104,7 @@ virtualenv --python=<path/to/your/python-2.7.9> venv    #the name 'venv' is requ
 pip install -r requirements.txt                         #install required libraries locally
 ```
 
-## 3. GA Setup
+## 6. GA Setup
 
 First you need GCC/G++ 5 and above. On Macs for instance, you can get OpenMP-enabled GCC-6 by simply installing from Homebrew:
 
@@ -116,7 +137,7 @@ Notes:
  - To speed up the compilation, use the -j flag with the number of cores on your system.
  - To build without OpenMP, you can specify ```make OMP=no```
 
-## 4. Usage
+## 7. Usage
 Once you have compiled the GA successfully, you can test run it with:
 ```
                                                         #you should be at ./GA/
@@ -147,14 +168,14 @@ Notes:
  - Typically, the lower memory address names of output JSONs are the better solutions (lower score).
  - Command-line arguments will override arguments specified in the configuration file.
 
-## 5. Input Creation
+## 8. Input Creation
 Specifying the design shape requires Matlab. The script for doing so is ```./scripts/Matlab/drawPoints.m```. By running the script in Matlab you will be able to plot a series of points in 2D on a Matlab plot. 
 
 After you are done plotting, hit Enter. The 3D coordinates of your shape will be printed in Matlab's command window after being correctly scaled to atomic distances. Adjust those points to achieve 3D depth effects. I admit that this is far from perfect nor is it very easy to use, but for this project it was sufficient. It is part of the future plan to develop something more convenient and expressive.
 
 After acquiring the 3D coordinates, copy them to a CSV file and ensure the formatting is exactly the same as existing CSV spec files, e.g. ```./bm/fun/B.csv```.
 
-## 6. Database Preparation
+## 9. Database Preparation
 
 **Obtain and decompress elfin-db.zip**
 ```
@@ -211,7 +232,7 @@ Lastly, invoke the ```./scripts/Python/GenXDB.py``` script. This script aligns e
 ./scripts/Python/GenXDB.py
 ```
 
-## 7. Design Verification
+## 10. Design Verification
 After running a shape design through Elfin's GA, you should find output solutions in ```./GA/output/```. Recall that smaller hexadecimal values in the file name corresponds to better solutions (they're just memory address of a sorted array). Here we shall use the default input as example.
 
 ```
