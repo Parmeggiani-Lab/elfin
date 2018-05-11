@@ -6,12 +6,15 @@
 # 
 # Then, unwanted atoms are deleted from each single and pair.
 #
-# For compound pairs (those with junctions), loop interfaces 
-# are replaced with those found in their simple pair counterparts.
-# This is done because we can only be sure of the interface 
-# atom positions in simple pairs but not in compound pairs.
-# If we don't do this, the relaxation of database PDBs will 
-# show sever bending and dislocation in compound pairs.
+# For "compound" pairs (those with junctions), loop interfaces 
+# are replaced with those found in their "simple" pair counter-
+# parts (those withou junctions).
+#
+# This needs to be done because we are only sure about inter-
+# face atom positions in simple pairs but not in compound 
+# pairs. If this is not done, the relaxation of database PDBs 
+# will result in sever bending and dislocation in compound pairs.
+#
 
 import argparse, sys
 from utils import *
@@ -85,7 +88,7 @@ def main():
 	pairChains = pair.child_list[0].child_list
 	assert(len(pairChains) == 2)
 
-	spair = readPdb('spair', spairFile)
+	spair = readPdb('spair', spairFile) #spair is the simple pair
 	spairChains = spair.child_list[0].child_list
 	assert(len(spairChains) == 2)
 
@@ -112,7 +115,7 @@ def main():
 		pairChains[1].child_list[:spairEndOffset]
 	pairAtoms = [a for r in pairMidRes for a in r.child_list if a.name == 'CA']
 
-	# Move pair to spair
+	# Superimpose pair onto spair
 	si = Bio.PDB.Superimposer()
 	si.set_atoms(spairAtoms, pairAtoms)
 	rot, tran = si.rotran	

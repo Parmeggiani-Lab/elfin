@@ -29,7 +29,7 @@ def main():
 	for pf in pairFiles:
 		subprocess.check_call(
 			[
-				'./scripts/Python/PreprocessPDB.py', 
+				'./scripts/Python/PreprocessPairPDB.py', 
 				'--outputDir', 
 				pairOutputDir, 
 				pf
