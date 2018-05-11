@@ -1,4 +1,5 @@
 GA/output
+res/db/
 res/elfin-db
 res/*.zip
 res/**/**/*.pdb
@@ -20,6 +21,7 @@ venv
 movieOutput
 GA/bin
 GA/.obj
+dbRelaxList.sh
 #gridSearchConfigs
 #gs_out
 

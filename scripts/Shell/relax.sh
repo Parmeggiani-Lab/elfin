@@ -3,7 +3,7 @@
 trap "exit" INT
 
 if [ $# -lt 1 ]; then
-	echo "Usage: min.sh <input_pdb> <max_cycles=200>"
+	echo "Usage: relax.sh <input_pdb> <max_cycles=200>"
 	exit
 fi
 

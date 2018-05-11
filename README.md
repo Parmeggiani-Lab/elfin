@@ -1,7 +1,7 @@
 # Elfin
 Elfin is a computational protein design tool based on repeat protein module construction. A journal paper in Structural Biology describing this work has been submitted for review. A more detailed explanation of how Elfin works can be found [here](https://github.com/joy13975/elfin-thesis). 
 
-![alt tag](res/png/ProteinBristol.png)
+![alt tag](res/diagrams/ProteinBristol.png)
 Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin's GA. The visualisation was created using PyMol.
 
 The main idea of Elfin is to use repeat proteins as rigid construction modules (much like how Lego works) and build 3D shapes that are as close to the user's input description as possible. Major contributors to this work are: Joy Yeh (UoB), Fabio Parmeggiani (UoB), TJ Brunette (UoW), David Baker (UoW), and Simon McIntosh-Smith (UoB).
@@ -97,7 +97,9 @@ ln -Fs `which gcc-6` /usr/local/bin/gcc
 ln -Fs `which g++-6` /usr/local/bin/g++
 ```
 
-For troubleshooting, please refer to [this](https://stackoverflow.com/questions/35134681/installing-openmp-on-mac-os-x-10-11) Stackoverflow post.
+For troubleshooting on MacOS, please refer to [this](https://stackoverflow.com/questions/35134681/installing-openmp-on-mac-os-x-10-11) Stackoverflow post. 
+
+If your compiler complains about ```omp_get_initial_device``` not declared, that's because your OpenMP version is too old. Check with ``` echo |cpp -fopenmp -dM |grep -i open```; only versions above 201511 seem to define this function. This is not vital to the application so if you really do not want to install a newer compiler then you may comment out that erring line.
 
 Then install the jutil submodule and get ready to compile.
 
@@ -192,7 +194,7 @@ local=yes variant= release=macosclangrelease sh dbRelaxList.sh
 ```
 
  - The ```local``` variable tells the ```./scripts/Shell/relax.sh``` script whether or not to use ```sbatch```.
- - The ```variant``` variable tells which build variant (e.g. mpi or none if default) of Rosetta to use. 
+ - The ```variant``` variable tells which build variant (e.g. ```mpi``` or ```none``` if default) of Rosetta to use. 
  - The ```release``` variable tells which release version to use. This depends on your OS, and which build version you want to use (e.g. could be the debug version).
 
 This relaxation can take quite a while simply because the process is computationally intensive. It is therefore strongly recommended that you do this on a compute cluster that lets you spread workload across many machines. 
@@ -204,13 +206,13 @@ After relaxation, you should see a new PDB suffixed with ```_0001.pdb``` for eac
 ./scripts/Shell/copyRelaxedPDBs.sh
 ```
 
-Lastly, invoke the ```./scripts/Python/GenXDB.py``` script. What this does is a bit involved, but all explained in my thesis. All pair reference frames are aligned to their first single module. As a result there will be a ```./res/xDB.json``` relationship database and a ```./res/aligned/``` folder. The latter contains properly aligned singles and pairs that will later be used to reconstruct Elfin's output structures.
+Lastly, invoke the ```./scripts/Python/GenXDB.py``` script. This script aligns each pair's reference frames to the reference frame of their first single module (e.g. ```D4-D4_j1_D64``` would be superimposed onto ```D4```), producing the ```./res/aligned/``` folder. This folder contains aligned singles and pairs that will be used to reconstruct Elfin's output structures in the final stage of design. Geometric relationships will also be calculated to produce a ```./res/xDB.json``` "pair relationship database".
 ```
 ./scripts/Python/GenXDB.py
 ```
 
 ## 7. Design Verification
-After running a shape design through Elfin's GA, you should find output solutions in ```./GA/output/```. Recall that smaller hexadecimal values in the file name corresponds to better solutions (due to score-sorted memory layout). Here we shall use the default input as example.
+After running a shape design through Elfin's GA, you should find output solutions in ```./GA/output/```. Recall that smaller hexadecimal values in the file name corresponds to better solutions (they're just memory address of a sorted array). Here we shall use the default input as example.
 
 ```
 for f in `ls output`; do echo $f; break; done           #print best solution file name
