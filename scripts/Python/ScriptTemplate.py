@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse, sys
-# from utils import *
+# from ElfinUtils import *
 
 def main():
 	ap = argparse.ArgumentParser(description='Template Python script');

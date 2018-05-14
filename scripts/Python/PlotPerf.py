@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import utils
+import ElfinUtils
 import numpy as np
 
 import matplotlib
@@ -180,4 +180,4 @@ def main():
 	input()
 
 if __name__ == '__main__':
-	utils.safeExec(main)
+	ElfinUtils.safeExec(main)

@@ -3,7 +3,7 @@
 import argparse, sys
 import numpy as np
 import Kabsch
-from utils import *
+from ElfinUtils import *
 
 def getSpecSolRot(specFile, solCSV):
     if specFile.rfind('.csv') != -1:

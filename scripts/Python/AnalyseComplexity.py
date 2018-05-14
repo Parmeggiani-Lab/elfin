@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import utils
+import ElfinUtils
 import json
 import argparse
 import numpy as np
@@ -52,7 +52,7 @@ def main():
 	ax1.set_xlabel('Design Length/AA')
 	# ax2 = ax1.twinx()
 
-	utils.pauseCode()
+	ElfinUtils.pauseCode()
 	ax1.plot(Xs[:len(aaYs)], aaYs, label='AA')
 	ax1.set_ylabel('No. Combs (log scale)')
 	ax1.set_yscale('log')

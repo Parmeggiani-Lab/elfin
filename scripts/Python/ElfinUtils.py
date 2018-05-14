@@ -371,7 +371,7 @@ def makePdbFromNodes(xdb, nodes, pairsDir, singlesDir, saveFile=None, fRot=None,
 
     if not movieMode:
         if saveFile is not None:
-            savePdb(motherPdb, saveFile)
+            saveCif(motherPdb, saveFile)
         return motherPdb, comShape
     else:
         if saveFile is not None:
@@ -405,10 +405,16 @@ def readPdb(customName, inFile, permissive=0):
     structure = parser.get_structure(customName, inFile)
     return structure
 
+def saveCif(struct, saveFile):
+    io = Bio.PDB.mmcifio.MMCIFIO()
+    io.set_structure(struct)
+    io.save(saveFile + ('' if saveFile.endswith('.cif') else '.cif'))
+
 def savePdb(struct, saveFile):
     io = Bio.PDB.PDBIO()
     io.set_structure(struct)
     io.save(saveFile)
+    io.save(saveFile + ('' if saveFile.endswith('.pdb') else '.pdb'))
 
 def interact(globalVars=None, localsVars=None):
     print "Entering interactive mode"

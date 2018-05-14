@@ -20,7 +20,7 @@ except ImportError:
 elfinDir = '{}/src/elfin/'.format(os.getenv("HOME"))
 elfinPyLibDir = elfinDir + '/src/Python/'
 import imp
-utils = imp.load_source('utils', elfinPyLibDir + '/utils.py')
+ElfinUtils = imp.load_source('ElfinUtils', elfinPyLibDir + '/ElfinUtils.py')
 
 def main():
     ap = argparse.ArgumentParser(description='Generate Grid Search configurations');
@@ -41,7 +41,7 @@ def main():
                             args.outdir, 
                             args.radiusType)
 
-    utils.safeExec(bg.run, args.num, args.length, args.maxRetries)
+    ElfinUtils.safeExec(bg.run, args.num, args.length, args.maxRetries)
 
 class BenchmarkGenerator:
     
@@ -71,11 +71,11 @@ class BenchmarkGenerator:
             self.bmarks = []
 
             # Collision measure is the radius type used to check collision
-            assert collisionMeasure in utils.RadiiTypes
+            assert collisionMeasure in ElfinUtils.RadiiTypes
 
             self.collisionMeasure = collisionMeasure
 
-        utils.safeExec(makeSelf)
+        ElfinUtils.safeExec(makeSelf)
 
     def chooseNextNode(self, nodes, shape):
         lastNode = nodes[-1]
@@ -85,7 +85,7 @@ class BenchmarkGenerator:
         while(collide):
             newNodeId = random.randint(0, len(links) - 1)
             newNode = links[newNodeId]
-            collide = utils.checkCollision(self.xDB, self.collisionMeasure, nodes, newNode, shape)
+            collide = ElfinUtils.checkCollision(self.xDB, self.collisionMeasure, nodes, newNode, shape)
             if collide:
                 links.remove(newNode)
 
@@ -123,7 +123,7 @@ class BenchmarkGenerator:
         # Move display/print/postprocess to after construction succeeded
         # Makes generation faster
 
-        motherPdb, _ = utils.makePdbFromNodes(
+        motherPdb, _ = ElfinUtils.makePdbFromNodes(
             self.xDB, 
             nodes, 
             elfinDir + self.pairsDir,
@@ -132,7 +132,7 @@ class BenchmarkGenerator:
 
         if haveCmd:
             tmpFile = './elfin.tmp'
-            utils.savePdb(motherPdb, tmpFile)
+            ElfinUtils.savePdb(motherPdb, tmpFile)
 
             cmd.load(tmpFile, str(i) + '-' + pairName)
             cmd.hide('everything', 'all')
@@ -167,7 +167,7 @@ class BenchmarkGenerator:
             except UserWarning as uw:
                 print 'Warning: {}'.format(uw)
                 if maxRetries is not -1 and retries >= maxRetries:
-                    utils.pauseCode()
+                    ElfinUtils.pauseCode()
                     print 'Warning: Maximum retries reached - stopping'
                     break
                 else:
@@ -186,6 +186,6 @@ class BenchmarkGenerator:
                 ensure_ascii=False,
                 indent=4)
 
-            utils.savePdb(bm['pdb'], outFile + '.pdb')
+            ElfinUtils.savePdb(bm['pdb'], outFile + '.pdb')
 
 main()

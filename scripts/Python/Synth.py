@@ -1,8 +1,19 @@
 #!/usr/bin/env python
 
+#
+# This script creates the atom model of an Elfin design solution
+#   Input: a JSON file that describes the connectivity of a sol-
+#       lution. 
+#   Output: a CIF file define the positions of each atom of the 
+#       input solution
+#
+# Version: v2
+#
+#
+
 import glob
 import argparse
-from utils import *
+from ElfinUtils import *
 
 def main():
     ap = argparse.ArgumentParser(description='Generate PDB from node information');

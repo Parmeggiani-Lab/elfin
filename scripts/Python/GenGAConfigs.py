@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import utils
+import ElfinUtils
 import json
 import argparse
 from collections import OrderedDict
@@ -17,10 +17,10 @@ def main():
 	gsConfDir = './gsConfigsV{}/'.format(gsVersion)
 	gsOutDir = './gsOutV{}/'.format(gsVersion)
 
-	gsParams = utils.Bunch(GridSearchParams.getGSParams(gsVersion))
+	gsParams = ElfinUtils.Bunch(GridSearchParams.getGSParams(gsVersion))
 	print 'Total runs needed: {}'.format(gsParams.nRuns)
 
-	utils.mkdir(gsConfDir)
+	ElfinUtils.mkdir(gsConfDir)
 
 	# Write all combinations of GA parameters to output
 	configId = 0
@@ -33,7 +33,7 @@ def main():
 							for bmName in gsParams.bmNames:
 								outputName = 'gs_{}_{}'.format(configId, bmName)
 								bmOutputDir = './{}/{}/'.format(gsOutDir, outputName)
-								utils.mkdir(bmOutputDir)
+								ElfinUtils.mkdir(bmOutputDir)
 
 								configJson = OrderedDict([
 									('inputFile', './{}/{}.json'.format(bmDir, bmName)),

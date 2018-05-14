@@ -17,7 +17,7 @@
 #
 
 import argparse, sys
-from utils import *
+from ElfinUtils import *
 
 def mergeChainsAndCleanse(pdb):
 	for model in pdb:

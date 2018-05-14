@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import Bio.PDB
-import utils
+import ElfinUtils
 import glob
 import numpy as np
 import codecs, json
@@ -13,7 +13,7 @@ def main():
     alignedLibDir   = './res/aligned/'
     outFile         = './res/xDB.json'
     xdbg = XDBGenrator(pairDir, singleDir, alignedLibDir, outFile)
-    utils.safeExec(xdbg.run)
+    ElfinUtils.safeExec(xdbg.run)
 
 class XDBGenrator:
 
@@ -25,9 +25,9 @@ class XDBGenrator:
                 permissive=0):
         self.pairDir        = pairDir
         self.singleDir      = singleDir
-        utils.mkdir(alignedLibDir)
-        utils.mkdir(alignedLibDir     + '/pair/')
-        utils.mkdir(alignedLibDir     + '/single/')
+        ElfinUtils.mkdir(alignedLibDir)
+        ElfinUtils.mkdir(alignedLibDir     + '/pair/')
+        ElfinUtils.mkdir(alignedLibDir     + '/single/')
         self.alignedLibDir  = alignedLibDir
         self.outFile        = outFile
         self.si             = Bio.PDB.Superimposer()
@@ -172,20 +172,20 @@ class XDBGenrator:
         # Step 0: Load pair and single structures
         pairName = filename.split('/')[-1].split('.')[0] \
             .replace('_0001', '')
-        pair = utils.readPdb(pairName, filename)
+        pair = ElfinUtils.readPdb(pairName, filename)
 
         singleNameA, singleNameB = pairName.split('-')
-        singleA = utils.readPdb(
+        singleA = ElfinUtils.readPdb(
             singleNameA, 
             self.singleDir + singleNameA + '.pdb'
         )
-        singleB = utils.readPdb(
+        singleB = ElfinUtils.readPdb(
             singleNameB, 
             self.singleDir + singleNameB + '.pdb'
         )
 
-        atomCountA = utils.getAtomCount(singleA)
-        atomCountB = utils.getAtomCount(singleB)
+        atomCountA = ElfinUtils.getAtomCount(singleA)
+        atomCountB = ElfinUtils.getAtomCount(singleB)
 
         # Step 1: Center the corresponding singles
         self.moveToOrigin(singleA)
@@ -199,7 +199,7 @@ class XDBGenrator:
         #       take part in interfacing with singleB, 
         #       and could be distorted differently in 
         #       different pairs
-        self.align(pair, singleA, matchRange=utils.intFloor(atomCountA/2))
+        self.align(pair, singleA, matchRange=ElfinUtils.intFloor(atomCountA/2))
 
         # Step 3: Get COM of the singleB as seen in the pair
         # Note: only align the second half of singleB's atoms
@@ -207,8 +207,8 @@ class XDBGenrator:
         comB = self.getCOM(
             singleB, 
             pair, 
-            childAtomOffset=utils.intFloor(atomCountB/2),
-            motherAtomOffset=atomCountA + utils.intFloor(atomCountB/2)
+            childAtomOffset=ElfinUtils.intFloor(atomCountB/2),
+            motherAtomOffset=atomCountA + ElfinUtils.intFloor(atomCountB/2)
         )
 
         # Step 4: Get radius for collision checks later:
@@ -228,23 +228,23 @@ class XDBGenrator:
         rot, tran = self.getRotTrans(
             pair, 
             singleB, 
-            movingAtomOffset=atomCountA + utils.intFloor(atomCountB/2),
-            fixedAtomOffset=utils.intFloor(atomCountB/2),
+            movingAtomOffset=atomCountA + ElfinUtils.intFloor(atomCountB/2),
+            fixedAtomOffset=ElfinUtils.intFloor(atomCountB/2),
         )
 
         # Step 6: Save the centred and aligned molecules
         # Note: here the PDB format adds some slight 
         #       floating point error. It is really old
         #       and we should consider using mmCIF
-        utils.savePdb(
+        ElfinUtils.savePdb(
             singleA, 
             self.alignedLibDir + '/single/' + singleNameA + '.pdb'
         )
-        utils.savePdb(
+        ElfinUtils.savePdb(
             singleB, 
             self.alignedLibDir + '/single/' + singleNameB + '.pdb'
         )
-        utils.savePdb(
+        ElfinUtils.savePdb(
             pair, 
             self.alignedLibDir + '/pair/' + pairName + '.pdb'
         )
