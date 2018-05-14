@@ -24,7 +24,7 @@ elfinDir = '/Users/joy/src/elfin/'
 elfinPyLibDir = elfinDir + '/src/python/'
 elfinMovieDir = elfinDir + '/movieOutput/'
 import imp
-utils = imp.load_source('utils', elfinPyLibDir + '/utils.py')
+ElfinUtils = imp.load_source('ElfinUtils', elfinPyLibDir + '/ElfinUtils.py')
 Kabsch = imp.load_source('Kabsch', elfinPyLibDir + '/Kabsch.py')
 
 def main(pymolArgs=None):
@@ -40,11 +40,11 @@ def main(pymolArgs=None):
     inputName = specFile[(specFile.rfind('/')+1):specFile.rfind('.')]
 
     if haveCmd:
-        utils.mkdir(elfinMovieDir + '/' + inputName + '/')
+        ElfinUtils.mkdir(elfinMovieDir + '/' + inputName + '/')
 
-    xDB = utils.readJSON(elfinDir + 'res/xDB.json')
+    xDB = ElfinUtils.readJSON(elfinDir + 'res/xDB.json')
     if fileExt == '.json':
-        spec = utils.readJSON(specFile)
+        spec = ElfinUtils.readJSON(specFile)
         targetLen = len(spec['nodes'])
     elif fileExt == '.csv':
         with open(specFile, 'r') as file:
@@ -53,7 +53,7 @@ def main(pymolArgs=None):
         spec = {'coms': pts}
         npts = np.asarray(pts)
 
-        (avgD, minD, maxD) = utils.getXDBStat(xDB)
+        (avgD, minD, maxD) = ElfinUtils.getXDBStat(xDB)
         # Use total length/avgD as heuristic. avgD is average xDB pair distance
         targetLen = int(np.ceil(sum(np.linalg.norm((npts-np.roll(npts, 1, axis=0))[1:], axis=1)) / avgD))
     else:
@@ -73,11 +73,11 @@ def main(pymolArgs=None):
             print 'Unrecognised flag: \"{}\"'.format(arg)
             exit()
 
-    utils.die(scale < 0, 'Scale must be > 0.0')
+    ElfinUtils.die(scale < 0, 'Scale must be > 0.0')
 
     # User specified length should overwrite 
     if userLen != -1:
-        utils.die(userLen < 3, 'Length must be > 3')
+        ElfinUtils.die(userLen < 3, 'Length must be > 3')
         targetLen = userLen
     else:
         targetLen = int(round(targetLen * scale))
@@ -95,8 +95,8 @@ def main(pymolArgs=None):
     print '{:.2f}s, score: {}'.format(time.clock() - startTime, score)
 
     if not haveCmd:
-        utils.makePdbFromNodes(xDB, nodes, pairsDir,
-            specFile.replace(fileExt, utils.suffixPdb(
+        ElfinUtils.makePdbFromNodes(xDB, nodes, pairsDir,
+            specFile.replace(fileExt, ElfinUtils.suffixPdb(
                 designer.__class__.__name__, 
                 'Main',
                 scale, 
@@ -109,7 +109,7 @@ class GreedyDesigner():
     def __init__(self, xDB, collisionMeasure):
     	self.xDB                = xDB
         self.collisionMeasure   = collisionMeasure
-        assert collisionMeasure in utils.RadiiTypes
+        assert collisionMeasure in ElfinUtils.RadiiTypes
 
     def grow(self, lastNode, shape, newNode):
         rel = self.xDB['pairsData'][lastNode][newNode]
@@ -171,12 +171,12 @@ class GreedyDesigner():
     def evalShape(self, candidate, target, allowPerp=True):
         sumScore = 0
         for point in candidate:
-            sumScore += utils.minDistFromLine(point, target, allowPerp=allowPerp)
+            sumScore += ElfinUtils.minDistFromLine(point, target, allowPerp=allowPerp)
         return sumScore
 
     def loadSinglePdbsIntoPymol(self, singlesDir):
         # Load all singles
-        utils.die(singlesDir is None, 
+        ElfinUtils.die(singlesDir is None, 
             'Must provide singles directory when attempting to display in PyMol!')
         for singlePdb in glob.glob(singlesDir + '/*.pdb'):
             cmd.load(singlePdb)
@@ -306,7 +306,7 @@ class GreedyDesigner():
             atLeastOneNonColliding = False
             bestKR = None
             for s2 in pd[s1].keys(): 
-                if utils.checkCollision(self.xDB, 
+                if ElfinUtils.checkCollision(self.xDB, 
                     self.collisionMeasure, 
                     nodes, 
                     s2, 
@@ -354,11 +354,11 @@ class GreedyDesigner():
 
             totalScore += bestNextScore
 
-        # utils.pauseCode()
+        # ElfinUtils.pauseCode()
         matchLen = min(len(candidate), len(target))
         kR = Kabsch.kabsch(candidate[:matchLen]-candidate[0], target[:matchLen])
         candidate = np.dot(candidate, kR)
         return nodes, candidate, totalScore, kR
 
 if __name__ =='__main__': 
-    utils.safeExec(main)
+    ElfinUtils.safeExec(main)

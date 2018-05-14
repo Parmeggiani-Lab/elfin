@@ -3,7 +3,7 @@
 import argparse, sys
 import subprocess, glob
 from shutil import copyfile
-from utils import *
+from ElfinUtils import *
 
 def main():
 	ap = argparse.ArgumentParser(description='Template Python script');

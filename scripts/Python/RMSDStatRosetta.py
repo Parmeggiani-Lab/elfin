@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import glob, sys
-from utils import *
+from ElfinUtils import *
 
 ### Rosetta overall score based... deprecated in favour of windowed RMSD (RMSDStat.py)
 if(len(sys.argv) < 2):

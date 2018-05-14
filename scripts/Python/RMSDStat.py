@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import glob, sys
-from utils import *
+from ElfinUtils import *
 import Bio.PDB
 
 ### Sliding window based

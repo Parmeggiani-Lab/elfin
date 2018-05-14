@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from utils import *
+from ElfinUtils import *
 
 def main():
 	(avgD, minD, maxD) = getXDBStat(readJSON('res/xDB.json'))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import utils
+import ElfinUtils
 import json
 import argparse
 import glob
@@ -23,7 +23,7 @@ def main():
 	gsConfDir = './gsConfigsV{}/'.format(gsVersion)
 	gsOutDir = './gsOutV{}/'.format(gsVersion)
 	
-	gsParams = utils.Bunch(GridSearchParams.getGSParams(gsVersion))
+	gsParams = ElfinUtils.Bunch(GridSearchParams.getGSParams(gsVersion))
 	
 	scoreLineToken = '#0 score '
 	aggregate = []
@@ -31,10 +31,10 @@ def main():
 	for configId in confIdRange:
 		for bmName in gsParams.bmNames:
 			gsConfName = 'gs_{}_{}'.format(configId, bmName)
-			gsConfFile = utils.normPath('{}/{}.json'.format(gsConfDir, gsConfName))
-			gsOutLogFile = utils.normPath('{}/{}/log'.format(gsOutDir, gsConfName))
+			gsConfFile = ElfinUtils.normPath('{}/{}.json'.format(gsConfDir, gsConfName))
+			gsOutLogFile = ElfinUtils.normPath('{}/{}/log'.format(gsOutDir, gsConfName))
 
-			conf = utils.readJSON(gsConfFile)
+			conf = ElfinUtils.readJSON(gsConfFile)
 
 			with open(gsOutLogFile, 'r') as file:
 				scoreLine = [l for l in file.read().split('\n') if scoreLineToken in l]
@@ -89,7 +89,7 @@ def main():
 							gsParams.gaCrossRates,
 							gsParams.pmRatios)
 
-	utils.pauseCode()
+	ElfinUtils.pauseCode()
 
 def estimateBestMedoid(confIdRange,
 					   scores,
@@ -198,4 +198,4 @@ def indepAvg(confIdRange, ticks, confVals, scores):
 	return ticks[res.index(min(res))]
 
 if __name__ == '__main__':
-	utils.safeExec(main)
+	ElfinUtils.safeExec(main)

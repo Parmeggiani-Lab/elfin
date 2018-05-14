@@ -2,7 +2,7 @@
 
 import argparse, sys
 import numpy as np
-from utils import *
+from ElfinUtils import *
 
 def main():
 	ap = argparse.ArgumentParser(description='Generate Grid Search configurations');
