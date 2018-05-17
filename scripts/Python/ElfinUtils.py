@@ -10,6 +10,28 @@ import argparse
 RadiiTypes = ['avgAll', 'maxCA', 'maxHeavy']
 INF = float('inf')
 
+
+class ElfinGraph():
+    """A graph represents a chain that is possibly tree-like or even cyclic"""
+    def __init__(self, name='', nodes=[], edges=[], directed=True):
+        self.nodes = nodes
+        self.edges = edges
+        self.directed = directed
+
+class ElfinNode():
+    """A node represents a single module instance as part of a chain"""
+    def __init__(self, id, name, rot=[[1,0,0],[0,1,0],[0,0,1]], tran=[0,0,0]):
+        self.id = id
+        self.name = name
+        self.rot = rot
+        self.tran = tran
+
+def genPymolTxm(rot, tran):
+    rotTp = np.transpose(rot)
+    rotTpTran = np.append(rotTp, np.transpose([tran]), axis=1)
+    pymolRotMat = np.append(rotTpTran, [[0,0,0,1]], axis=0)
+    return '[' + ', '.join(map(str, pymolRotMat.ravel())) + ']'
+
 def getResidueCount(pdb):
     return sum([len(c.child_list) for c in pdb.child_list[0].child_list])
 
@@ -46,7 +68,7 @@ def upsample(spec, pts):
         print 'Something fishy... fpTotalLength is inf!'
 
     # Upsample fewerPoints
-    upsampled = np.empty([0, 3])
+    upsampled = np.zeros([0, 3])
 
     # First and last points are the same
     upsampled = np.append(upsampled, [fewerPoints[0]], axis=0)
@@ -111,7 +133,7 @@ def upsample(spec, pts):
 #         print 'Something fishy... fpTotalLength is inf!'
 
 #     # Upsample fewerPoints
-#     upsampled = np.empty([0, 3])
+#     upsampled = np.zeros([0, 3])
 
 #     # First and last points are the same
 #     upsampled = np.append(upsampled, [fewerPoints[0]], axis=0)
@@ -152,7 +174,7 @@ def upsample(spec, pts):
 
 #     return pts1, pts2
 
-def readCSVPoints(csvFile):
+def readCsvPoints(csvFile):
     pts = []
     
     with open(csvFile, 'r') as file:
@@ -160,7 +182,7 @@ def readCSVPoints(csvFile):
     
     return pts
 
-def saveCSV(npArray, saveFile, delimiter=' '):
+def saveCsv(npArray, saveFile, delimiter=' '):
     with open(saveFile, 'wb') as csvFile:
         wt = csv.writer(csvFile, delimiter=delimiter)
         for row in npArray:
@@ -242,148 +264,6 @@ def checkCollision(xdb, collisionMeasure, nodes, newNode, shape):
             return True
 
     return False
-
-def makePdbFromNodes(xdb, nodes, pairsDir, singlesDir, saveFile=None, fRot=None, movieMode=False):
-    # Consturct a protein using single modules and xDB relationships
-
-    # Use the first pdb model as an empty host for all single pdb chains
-    motherName = nodes[0]
-    pdbFile = singlesDir + '/' + motherName + '.pdb'
-    motherPdb = readPdb(motherName, pdbFile)
-    motherModel = motherPdb.child_list[0]
-    motherModel.detach_child('A')
-    assert(len(motherModel.child_list) == 0)
-
-    motherChain = Bio.PDB.Chain.Chain('A')
-    motherModel.add(motherChain)
-
-    moviePdbs = []
-    residueUid = 1
-
-    comShape = np.empty([1, 3])
-    startingPoint = np.zeros(3)
-
-    si = Bio.PDB.Superimposer()
-
-    chainLenDigits = len(str(len(nodes)))
-    for i in xrange(0, len(nodes) - 1):
-        currNode = nodes[i]
-        nextNode = nodes[i+1]
-        pairName = currNode + '-' + nextNode
-        rel = xdb['pairsData'][currNode][nextNode]
-        
-        # Append new point at origin
-        comShape = np.append(comShape, [[0,0,0]], axis=0)
-        
-        if movieMode:
-            singlePdb = readPdb(
-                currNode, 
-                singlesDir + '/' + currNode + '.pdb'
-            )
-            moviePdbs.append(singlePdb)
-            for pdb in moviePdbs:
-            	pdb.transform(np.asarray(rel['rot']), rel['tran'])
-
-            # Don't forget to add the last node
-            if i == len(nodes) - 2:
-                singlePdb = readPdb(
-                    nextNode, 
-                    singlesDir + '/' + nextNode + '.pdb'
-                )
-                moviePdbs.append(singlePdb)
-        else:
-            singleA = readPdb(
-                currNode,
-                singlesDir + '/' + currNode + '.pdb'
-            )
-            singleB = readPdb(
-                nextNode,
-                singlesDir + '/' + nextNode + '.pdb'
-            )
-            pair = readPdb(
-                pairName,
-                pairsDir + '/' + pairName + '.pdb'
-            )
-
-            resiCountA = getResidueCount(singleA)
-            resiCountB = getResidueCount(singleB)
-            resiCountPair = getResidueCount(pair)
-
-            if i == 0:
-                # First pair: ignore leading trim
-                startResi = 0
-                endResi = resiCountPair - intCeil(float(resiCountB)/2)
-            elif i == len(nodes) - 2:
-                # Last pair: ignore trailing trim
-                startResi = intFloor(float(resiCountA)/2)
-                endResi = resiCountPair
-            else:
-                # Trim half of singleA's residues and extend
-                # to half of singleB's residues
-                startResi = intFloor(float(resiCountA)/2)
-                endResi = resiCountPair - intCeil(float(resiCountB)/2)
-
-            pairChain = pair.child_list[0].child_dict['A']
-            pairMidKeys = [r.id for r in pairChain.child_list[startResi:endResi]]
-            pairMidRes = [r for r in pairChain.child_list[startResi:endResi]]
-
-            if i > 0:
-                # Extract atoms from last pair end
-                prevCAs = [a for r in motherChain.child_list[-startResi:] for a in r if a.name == 'CA']
-                currCAs = [a for r in pairChain.child_list[:startResi] for a in r if a.name == 'CA']
-
-                # print '{}\n{}'.format([r.get_resname() for r in motherChain.child_list[-startResi:]], \
-                #     [r.get_resname() for r in pairChain.child_list[:startResi]])
-                # pauseCode()
-
-                # Move mother slightly to align with current pair CAs
-                si.set_atoms(currCAs, prevCAs)
-                rot, tran = si.rotran
-                motherPdb.transform(rot, tran)
-
-            [pairChain.detach_child(k) for k in pairMidKeys]
-
-            for r in pairMidRes:
-                r.id = (r.id[0], residueUid, r.id[2]) 
-                motherChain.add(r)
-                residueUid += 1
-            
-            motherPdb.transform(np.asarray(rel['rot']), rel['tran'])
-
-        # It seems sometimes np.empty() gives weirdly large values..
-        # print comShape
-        comShape = np.dot(comShape, np.asarray(rel['rot'])) + rel['tran']
-
-        startingPoint = np.dot(startingPoint, np.asarray(rel['rot'])) + rel['tran']
-        print 'Pair #{}:   {}'.format(str(i+1).ljust(chainLenDigits), pairName.ljust(16))
-        # print 'From file: {}'.format(pairsDir + '/' + pairName + '.pdb')
-        # print 'Residues: {} - {}'.format(startResi, endResi)
-
-       
-    if fRot is not None:
-        if movieMode:
-            motherPdb.transform(np.eye(3), -startingPoint)
-            motherPdb.transform(np.asarray(fRot), np.zeros(3))
-        else:
-            for pdb in moviePdbs:
-                pdb.transform(np.eye(3), -startingPoint)
-                pdb.transform(np.asarray(fRot), np.zeros(3))
-
-    if not movieMode:
-        if saveFile is not None:
-            saveCif(motherPdb, saveFile)
-        return motherPdb, comShape
-    else:
-        if saveFile is not None:
-            pdbId = 0
-            saveFileDotIndex = saveFile.rfind('.')
-            for pdb in moviePdbs:
-                savePartFile = saveFile[0:saveFileDotIndex] + \
-                    'part' + str(pdbId) + \
-                    saveFile[saveFileDotIndex:]
-                savePdb(pdb, savePartFile)
-                pdbId = pdbId + 1
-        return moviePdbs, comShape
 
 def getXDBStat(xDB):
     # xdb = readJSON('res/xDB.json')

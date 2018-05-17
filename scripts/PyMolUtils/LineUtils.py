@@ -143,10 +143,15 @@ def draw_axis(l=350, w = 1):
     cmd.reset()
     cmd.set("depth_cue", 0)
 
+def noclip():
+    cmd.clip('near', 99999999)
+    cmd.clip('far', -99999999)
+
 cmd.extend("draw_axis", draw_axis)
 cmd.extend("draw_csv", draw_csv)
 cmd.extend("draw_json", draw_json)
 draw_axis()
+noclip()
 print 'LineUtils Loaded'
 
 # a simple example
