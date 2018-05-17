@@ -5,16 +5,16 @@ import numpy as np
 import Kabsch
 from ElfinUtils import *
 
-def getSpecSolRot(specFile, solCSV):
+def getSpecSolRot(specFile, solCsv):
     if specFile.rfind('.csv') != -1:
-        specPts = readCSVPoints(specFile)
+        specPts = readCsvPoints(specFile)
     elif specFile.rfind('.json') != -1:
         with open(specFile, 'r') as file:
             specPts = np.asarray(json.load(file)['coms'])
     else:
         print 'Unknown spec file format'
 
-    solPts = readCSVPoints(solCSV)
+    solPts = readCsvPoints(solCsv)
 
     # Centre both pts to their ends
     centredSpec = specPts - specPts[-1]
