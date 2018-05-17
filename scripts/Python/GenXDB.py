@@ -33,14 +33,15 @@ class XDBGenrator:
         self.si             = Bio.PDB.Superimposer()
         self.pairsData      = {}
         self.singlesData    = {}
+        self.singlePDBs     = {}
 
     def getCOM(
             self, 
             child, 
             mother=None, 
-            childAtomOffset=0, 
-            motherAtomOffset=0,
-            matchRange=-1
+            childResiOffset=0, 
+            motherResiOffset=0,
+            matchCount=-1
         ):
         CAs = []
         for a in child.get_atoms():
@@ -53,9 +54,9 @@ class XDBGenrator:
             _, tran = self.getRotTrans(
                 child, 
                 mother, 
-                movingAtomOffset=childAtomOffset, 
-                fixedAtomOffset=motherAtomOffset,
-                matchRange=matchRange
+                movingResiOffset=childResiOffset, 
+                fixedResiOffset=motherResiOffset,
+                matchCount=matchCount
             )
 
             com += tran
@@ -72,16 +73,16 @@ class XDBGenrator:
             self, 
             moving, 
             fixed, 
-            movingAtomOffset=0, 
-            fixedAtomOffset=0,
-            matchRange=-1
+            movingResiOffset=0, 
+            fixedResiOffset=0,
+            matchCount=-1
         ):
         rot, tran = self.getRotTrans(
             moving, 
             fixed,
-            movingAtomOffset=movingAtomOffset,
-            fixedAtomOffset=fixedAtomOffset,
-            matchRange=matchRange
+            movingResiOffset=movingResiOffset,
+            fixedResiOffset=fixedResiOffset,
+            matchCount=matchCount
         )
         moving.transform(rot, tran)
 
@@ -89,51 +90,53 @@ class XDBGenrator:
             self, 
             moving, 
             fixed, 
-            movingAtomOffset=0, 
-            fixedAtomOffset=0,
-            matchRange=-1
+            movingResiOffset=0, 
+            fixedResiOffset=0,
+            matchCount=-1
         ):
         # First push the generators to desired locations
-        maGen = moving.get_atoms()
-        for i in xrange(0, movingAtomOffset):
+        mrGen = moving.get_residues()
+        for i in xrange(0, movingResiOffset):
             try:
-                maGen.next()
+                mrGen.next()
             except StopIteration:
-                die(True, 'Moving PDB Atom Offset too large')    
+                die(True, 'Moving residue offset too large')    
 
-        faGen = fixed.get_atoms()
-        for i in xrange(0, fixedAtomOffset):
+        frGen = fixed.get_residues()
+        for i in xrange(0, fixedResiOffset):
             try:
-                faGen.next()
+                frGen.next()
             except StopIteration:
-                die(True, 'Fixed PDB Atom Offset too large')    
+                die(True, 'Fixed residue offset too large')    
 
         # Then fill in the arrays until either 
         # of the generators run out
         ma = []
         fa = []
         while True:
-            try:
-                maNext = maGen.next()
-                faNext = faGen.next()
-            except StopIteration:
+            if matchCount != -1 and len(ma) >= matchCount:
                 break
 
-            if matchRange == -1 or len(ma) < matchRange:
-                ma.append(maNext)
-                fa.append(faNext)
+            try:
+                for mcas in [a for a in mrGen.next().get_atoms() if a.name == 'CA']:
+                    ma.append(mcas)
+
+                for fcas in [a for a in frGen.next().get_atoms() if a.name == 'CA']:
+                    fa.append(fcas)
+            except StopIteration:
+                break
 
         self.si.set_atoms(fa, ma)
 
         # Import note:
-        # The rotation from BioPython seems be the
+        # The rotation from BioPython is the
         # second dot operand instead of the 
-        # conventional first dot operand!
+        # conventional first dot operand.
         #
         # This means instead of R*v + T, the actual
         # transform is done with v'*R + T
         #
-        # This has important to understand why I did
+        # This is important to understand why I did
         # the rotation maths this way in the C++ GA
         return self.si.rotran
 
@@ -168,47 +171,73 @@ class XDBGenrator:
             ('maxHeavy', maxHeavy)
         ]);
 
-    def processPDB(self, filename):
-        # Step 0: Load pair and single structures
+    def processSingle(self, filename):
+        singleName = filename.split('/')[-1].replace('_0001.pdb', '')
+        single = ElfinUtils.readPdb(singleName, filename)
+        self.moveToOrigin(single)
+        ElfinUtils.savePdb(
+            single, 
+            self.alignedLibDir + '/single/' + singleName + '.pdb'
+        )
+        self.singlePDBs[singleName] = single
+
+    def processPair(self, filename):
+        # Step 1: Load pair and single structures
         pairName = filename.split('/')[-1].split('.')[0] \
             .replace('_0001', '')
         pair = ElfinUtils.readPdb(pairName, filename)
 
         singleNameA, singleNameB = pairName.split('-')
-        singleA = ElfinUtils.readPdb(
-            singleNameA, 
-            self.singleDir + singleNameA + '.pdb'
-        )
-        singleB = ElfinUtils.readPdb(
-            singleNameB, 
-            self.singleDir + singleNameB + '.pdb'
-        )
+        singleA = self.singlePDBs[singleNameA]
+        singleB = self.singlePDBs[singleNameB]
 
-        atomCountA = ElfinUtils.getAtomCount(singleA)
-        atomCountB = ElfinUtils.getAtomCount(singleB)
+        rcA = ElfinUtils.getResidueCount(singleA)
+        rcB = ElfinUtils.getResidueCount(singleB)
+        rcPair = ElfinUtils.getResidueCount(pair)
 
-        # Step 1: Center the corresponding singles
-        self.moveToOrigin(singleA)
-        self.moveToOrigin(singleB)
+        startResi = ElfinUtils.intFloor(float(rcA)/2)
+        rcBEnd = ElfinUtils.intCeil(float(rcB)/2)
+        endResi = rcPair - rcBEnd
+
+        # Note: fusionCount is not a magic number. 
+        #   We used to align pairs to singleB by using the first 
+        # half of singleB's residues. However, during Synth 
+        # singleB's first half may also participate in an 
+        # interface. 
+        #   When singleB takes part in two interfaces (both c-
+        # term and n-term) then we must use the most central res-
+        # idues for alignment. The more resi-dues we use, the 
+        # less tightly-fit the alignment becomes (since Kabsch 
+        # tries to minimise global RMSD). Since 3 is the mininum 
+        # number for 3D superposition, while still ensuring
+        # that chains don't break, 3 is chosen here.
+        #   Numbers like ElfinUtils.intFloor(float(rcB)/8) also 
+        # seems to work, but there is not reason to believe under 
+        # some designs that large a number would not introduce 
+        # chain breakage
+        fusionCount = 3
 
         # Step 2: Move pair to align with first single
         # Note: this aligns pair by superimposing pair[0] 
         #       with singleA
-        # Note: we only want to align the first half of 
-        #       singleA's atoms, because the second half
-        #       take part in interfacing with singleB, 
-        #       and could be distorted differently in 
-        #       different pairs
-        self.align(pair, singleA, matchRange=ElfinUtils.intFloor(atomCountA/2))
+        # Note: we only want to align to the second quardrant 
+        #       of singleA's atoms. This is to be consistent
+        #       with step 5
+        self.align(
+            pair, 
+            singleA, 
+            matchCount=startResi
+        )
 
         # Step 3: Get COM of the singleB as seen in the pair
-        # Note: only align the second half of singleB's atoms
-        #       for the same reason as Step 2
+        # Note: only align the second quardrant of singleB
+        #       in order to be consistent with step 5
         comB = self.getCOM(
             singleB, 
-            pair, 
-            childAtomOffset=ElfinUtils.intFloor(atomCountB/2),
-            motherAtomOffset=atomCountA + ElfinUtils.intFloor(atomCountB/2)
+            mother=pair, 
+            childResiOffset=rcBEnd - fusionCount,
+            motherResiOffset=rcA + rcBEnd - fusionCount,
+            matchCount=fusionCount
         )
 
         # Step 4: Get radius for collision checks later:
@@ -222,28 +251,31 @@ class XDBGenrator:
         #       there is no need for the first transformation
         #       You can check this is true by varifying that
         #           self.getRotTrans(pair, singleA)
-        #       has identity rotation and zero translation. Also,
-        #       comB should be at the origin.
-        # Note: again, only match second half of singleB's atoms
+        #       has identity rotation and zero translation.
+        # Note: only align the second quardrant of singleB
+        #       in order to be consistent with the Synth 
+        #       script, where pairs are fused together by 
+        #       chopping the first and last quardrant of a 
+        #       pair. This means the second half of singleB 
+        #       is chopped off during fusion, while the 
+        #       first quardrant of singleB participates in 
+        #       interfacing. Therefore we align by
+        #       superimposing just the second quardrant
         rot, tran = self.getRotTrans(
             pair, 
             singleB, 
-            movingAtomOffset=atomCountA + ElfinUtils.intFloor(atomCountB/2),
-            fixedAtomOffset=ElfinUtils.intFloor(atomCountB/2),
+            movingResiOffset=(rcA + rcBEnd - fusionCount),
+            fixedResiOffset=rcBEnd - fusionCount,
+            matchCount=fusionCount
         )
 
-        # Step 6: Save the centred and aligned molecules
+        # Step 6: Save the aligned molecules
         # Note: here the PDB format adds some slight 
         #       floating point error. It is really old
         #       and we should consider using mmCIF
-        ElfinUtils.savePdb(
-            singleA, 
-            self.alignedLibDir + '/single/' + singleNameA + '.pdb'
-        )
-        ElfinUtils.savePdb(
-            singleB, 
-            self.alignedLibDir + '/single/' + singleNameB + '.pdb'
-        )
+        # Note: mmCIF still uses 3 decimals places; 
+        #       perhaps we should to find a way to 
+        #       increase that precision
         ElfinUtils.savePdb(
             pair, 
             self.alignedLibDir + '/pair/' + pairName + '.pdb'
@@ -296,13 +328,21 @@ class XDBGenrator:
             indent=4)
 
     def run(self):
+        # Center all single modules
+        files = glob.glob(self.singleDir + '/*.pdb')
+        nFiles = len(files)
+        for i in range(0, nFiles):
+            print '[XDBG] Centering single #{}/{}: {}' \
+                .format(i+1, nFiles, files[i])
+            self.processSingle(files[i])
+
         # _0001 stands for relaxed PDBs
         files = glob.glob(self.pairDir + '/*.pdb')
         nFiles = len(files)
         for i in range(0, nFiles):
-            print '[XDBG] Processing file #{}/{}: {}' \
+            print '[XDBG] Aligning pair #{}/{}: {}' \
                 .format(i+1, nFiles, files[i])
-            self.processPDB(files[i])
+            self.processPair(files[i])
 
         self.complexity = 1
         for s in self.singlesData:
