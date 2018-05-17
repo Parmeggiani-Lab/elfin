@@ -11,16 +11,16 @@ import imp
 utils = imp.load_source('utils', elfinPyLibDir + '/utils.py')
 Kabsch = imp.load_source('Kabsch', elfinPyLibDir + '/Kabsch.py')
 
-def compare_sol(specFile, solCSV):
+def compare_sol(specFile, solCsv):
     if specFile.rfind('.csv') != -1:
-        specPts = utils.readCSVPoints(specFile)
+        specPts = utils.readCsvPoints(specFile)
     elif specFile.rfind('.json') != -1:
         with open(specFile, 'r') as file:
             specPts = np.asarray(json.load(file)['coms'])
     else:
         print 'Unknown spec file format'
 
-    solPts = utils.readCSVPoints(solCSV)
+    solPts = utils.readCsvPoints(solCsv)
 
     # Centre both pts
     centredSpec = specPts - np.mean(specPts, axis=0)
