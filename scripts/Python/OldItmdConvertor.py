@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse, sys
+import copy
 from ElfinUtils import *
 
 def computeOldGraphTxm(xdb, graph):
@@ -13,17 +14,12 @@ def computeOldGraphTxm(xdb, graph):
         for j in xrange(0, i+1):
             nodes[j].transform(rel['rot'], rel['tran'])
 
-    # Convert np array back to normal list for JSON stringifying
-    for i in xrange(0, len(nodes)-1):
-        n = nodes[i]
-        n.rot = n.rot.tolist()
-        n.tran = n.tran.tolist()
-
 def main():
     ap = argparse.ArgumentParser(description='Converts old Elfin core intermediate output into new format');
     ap.add_argument('input') # No dash means mandatory
     ap.add_argument('--output')
     ap.add_argument('--xdbPath', default='res/xDB.json')
+    ap.add_argument('--multichainTest', action='store_true')
     args = ap.parse_args()
     
     if len(sys.argv) == 1:
@@ -57,11 +53,15 @@ def main():
     xdb = readJSON(args.xdbPath)
     map(lambda(i, el): computeOldGraphTxm(xdb, el), enumerate(graphs))
 
-    for i in xrange(0, len(graphs[0].nodes)):
-        n = nodes[i]
-        print 'Node #' + str(i) + ' ' + genPymolTxm(n.rot, n.tran)
+    if args.multichainTest:
+        graphs.append(copy.deepcopy(graph))
 
-    # pauseCode()
+        # Note: flipping z direction can cause problems in PyMol 
+        #   visualisation (can't view as cartoon)
+        graphs[0].transform([[-1,0,0],[0,-1,0],[0,0,1]],[100,100,0])
+        graphs[1].transform([[1,0,0],[0,1,0],[0,0,1]],[-100,-100,0])
+        graphs[1].name = 'c2'
+
     outputFile = args.output
     if outputFile == None:
         outputFile = args.input.replace('.json', '.new.json')
