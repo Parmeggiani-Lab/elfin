@@ -6,14 +6,16 @@ from ElfinUtils import *
 def computeOldGraphTxm(xdb, graph):
     nodes = graph.nodes
     pairsData = xdb['pairsData']
-    for i in xrange(0, len(nodes) - 1):
+    for i in xrange(0, len(nodes)-1):
         nodeA = nodes[i] 
         nodeB = nodes[i+1]
         rel = pairsData[nodeA.name][nodeB.name]
-        graph.transform(rel['rot'], rel['tran'])
+        for j in xrange(0, i+1):
+            nodes[j].transform(rel['rot'], rel['tran'])
 
     # Convert np array back to normal list for JSON stringifying
-    for n in nodes:
+    for i in xrange(0, len(nodes)-1):
+        n = nodes[i]
         n.rot = n.rot.tolist()
         n.tran = n.tran.tolist()
 

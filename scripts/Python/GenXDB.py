@@ -199,23 +199,31 @@ class XDBGenrator:
         rcBEnd = ElfinUtils.intCeil(float(rcB)/2)
         endResi = rcPair - rcBEnd
 
-        # Note: fusionCount is not a magic number. 
-        #   We used to align pairs to singleB by using the first 
-        # half of singleB's residues. However, during Synth 
-        # singleB's first half may also participate in an 
-        # interface. 
-        #   When singleB takes part in two interfaces (both c-
-        # term and n-term) then we must use the most central res-
-        # idues for alignment. The more resi-dues we use, the 
-        # less tightly-fit the alignment becomes (since Kabsch 
-        # tries to minimise global RMSD). Since 3 is the mininum 
-        # number for 3D superposition, while still ensuring
-        # that chains don't break, 3 is chosen here.
-        #   Numbers like ElfinUtils.intFloor(float(rcB)/8) also 
-        # seems to work, but there is not reason to believe under 
-        # some designs that large a number would not introduce 
-        # chain breakage
-        fusionCount = 3
+        #   The fusionCount is the number of residues we use
+        # to align pair to singleA. The high this number is, 
+        # the more global our alignment is, which causes bad
+        # disconnections in the chain. This is because in 
+        # Synth we're inevitably fusing atom positions from 
+        # different pairs into the same chain. Different pairs
+        # have their single components stuck together using
+        # and interface, the participation of which causes 
+        # atom positions in the single components to differ 
+        # from that of the original single module. 
+        #   When we fuse different pairs together, each pair
+        # is cut at 25% and 75% of their sequence in order to
+        # be as far way to interfaces (0%, 50%, 100%) as 
+        # possible. 
+        #   The fusion alignment here is about aligning sub-
+        # sequent pairs using a few residues before the 25% 
+        # mark. The lower the fusionCount is, the fewer resi-
+        # dues we use to align and the more local the align-
+        # ment. However, if this number is too low the align-
+        # ment could cause subsequent modules to overlap. 
+        #   Through some experients I found that using 1/8 of
+        # the length of singleB is a good balance between not
+        # causing discontinuities and also not creating atom
+        # overlaps.
+        fusionCount = ElfinUtils.intCeil(float(rcB)/8)
 
         # Step 2: Move pair to align with first single
         # Note: this aligns pair by superimposing pair[0] 
