@@ -19,6 +19,10 @@ class ElfinGraph():
         self.startingNode = startingNode
         self.directed = directed
 
+    def transform(self, rot, tran):
+        for n in self.nodes:
+            n.transform(rot, tran)
+
 class ElfinNode():
     """Representation of a single module instance and stores info about connectivity"""
     def __init__(
@@ -35,6 +39,10 @@ class ElfinNode():
         self.ctermNodes = ctermNodes
         self.rot = rot
         self.tran = tran
+
+    def transform(self, rot, tran):
+        self.rot = np.dot(self.rot, rot)
+        self.tran = np.dot(self.tran, rot) + tran
 
 def genPymolTxm(rot, tran):
     rotTp = np.transpose(rot)
