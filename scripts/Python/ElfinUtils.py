@@ -12,17 +12,27 @@ INF = float('inf')
 
 
 class ElfinGraph():
-    """A graph represents a chain that is possibly tree-like or even cyclic"""
-    def __init__(self, name='', nodes=[], edges=[], directed=True):
+    """Representation of a chain. It might be tree-like or even cyclic"""
+    def __init__(self, name='', nodes=[], startingNode=None, directed=True):
+        self.name = name
         self.nodes = nodes
-        self.edges = edges
+        self.startingNode = startingNode
         self.directed = directed
 
 class ElfinNode():
-    """A node represents a single module instance as part of a chain"""
-    def __init__(self, id, name, rot=[[1,0,0],[0,1,0],[0,0,1]], tran=[0,0,0]):
+    """Representation of a single module instance and stores info about connectivity"""
+    def __init__(
+        self, 
+        id, 
+        name, 
+        isStart=False,
+        ctermNodes=[], 
+        rot=[[1,0,0],[0,1,0],[0,0,1]], 
+        tran=[0,0,0]):
         self.id = id
         self.name = name
+        self.isStart = isStart
+        self.ctermNodes = ctermNodes
         self.rot = rot
         self.tran = tran
 
