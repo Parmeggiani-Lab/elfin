@@ -93,7 +93,7 @@ class Synthesiser:
         pairResidues = self.stripResidues(self.getChain(pair))
 
         if self.showFusion:
-            currChain = Bio.PDB.Chain.Chain(graph['name'] + str(currNodeId))
+            currChain = Bio.PDB.Chain.Chain(graph['name'] + '_' + str(currNodeId))
             chains.append(currChain)
         else:
             currChain = chains[0]
@@ -110,7 +110,7 @@ class Synthesiser:
         chains = []
 
         if not self.showFusion:
-            chains.append(Bio.PDB.Chain.Chain(graph['name'] + '0'))
+            chains.append(Bio.PDB.Chain.Chain(graph['name']))
 
         nodes = graph['nodes']
 
@@ -164,8 +164,7 @@ def main():
         exit()
 
     if len(spec) > 1:
-        print 'Not yet implemented: fill atoms for multiple chains'
-        exit()
+        print 'Warning: multi-chain feature is not well tested yet'
 
     model = Synthesiser(
         spec, 
@@ -178,10 +177,13 @@ def main():
         args.outFile = args.specFile
     args.outfile = '.'.join(args.outFile.split('.')[:-1])
 
-    saveCif(model, args.outFile + '_synth.cif')
+    saveCif(model, args.outFile + '.cif')
 
+    # Todo: output coms for multiple chains
+    #   -Need to change csv format such that points
+    #   aren't connected between chains
     coms = [map(lambda(el): el['tran'], spec[0]['nodes'])]
-    saveCsv(coms, args.outFile + '_synth.csv')
+    saveCsv(coms, args.outFile + '.csv')
 
 if __name__ == '__main__':
     main()
