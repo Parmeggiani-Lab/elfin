@@ -40,11 +40,18 @@ def main():
         print('Input file does not look like the old Elfin core output file')
         return 1
 
-    nodes = map(lambda(i,el): ElfinNode(i, el), enumerate(ecOut['nodes']))
-    nNodes = len(nodes)
-    edges = map(lambda(i,el): [el.id, nodes[(i+1) % nNodes].id], enumerate(nodes))[0:-1]
+    nNodes = len(ecOut['nodes'])
+    nodes = map(
+        lambda(i,el): ElfinNode(
+            i, 
+            el, 
+            isStart=(True if i == 0 else False),
+            ctermNodes=([i+1] if i < nNodes - 1 else [])
+            ), 
+        enumerate(ecOut['nodes'])
+    )
 
-    graph = ElfinGraph('c1', nodes, edges) # c1 for chain number 1
+    graph = ElfinGraph('c1', nodes, nodes[0].id) # c1 for chain number 1
     graphs = [graph]
 
     assert(len(graphs) == 1)
