@@ -10,14 +10,10 @@ def computeOldGraphTxm(xdb, graph):
         nodeA = nodes[i] 
         nodeB = nodes[i+1]
         rel = pairsData[nodeA.name][nodeB.name]
-
-        for j in xrange(0, i + 1):
-            nodes[j].rot = np.dot(nodes[j].rot, rel['rot'])
-            nodes[j].tran = np.dot(nodes[j].tran, rel['rot']) + rel['tran']
+        graph.transform(rel['rot'], rel['tran'])
 
     # Convert np array back to normal list for JSON stringifying
-    for i in xrange(0, len(nodes) - 1):
-        n = nodes[i]
+    for n in nodes:
         n.rot = n.rot.tolist()
         n.tran = n.tran.tolist()
 
