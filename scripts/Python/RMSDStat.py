@@ -37,8 +37,8 @@ for i in range(0, len(mFiles)):
 	mFile = mFiles[i]
 	sFile = sPdbDir + mFile[mFile.rfind('/'):].replace('_0001.pdb', '.pdb')
 		
-	mPdb = readPdb('minimised', mFile)
-	sPdb = readPdb('solution', sFile)
+	mPdb = readPdb(mFile)
+	sPdb = readPdb(sFile)
 
 	mAtoms = []
 	sAtoms = []

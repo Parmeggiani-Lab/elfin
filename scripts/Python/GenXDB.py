@@ -94,49 +94,26 @@ class XDBGenrator:
             fixedResiOffset=0,
             matchCount=-1
         ):
-        # First push the generators to desired locations
-        mrGen = moving.get_residues()
-        for i in xrange(0, movingResiOffset):
-            try:
-                mrGen.next()
-            except StopIteration:
-                die(True, 'Moving residue offset too large')    
+        movingChain = ElfinUtils.getChain(moving)
+        ma = [
+                al[0] for al in [[a for a in r.child_list if a.name == 'CA'] 
+                for r in movingChain.child_list[movingResiOffset:(movingResiOffset+matchCount)]]
+            ]
 
-        frGen = fixed.get_residues()
-        for i in xrange(0, fixedResiOffset):
-            try:
-                frGen.next()
-            except StopIteration:
-                die(True, 'Fixed residue offset too large')    
-
-        # Then fill in the arrays until either 
-        # of the generators run out
-        ma = []
-        fa = []
-        while True:
-            if matchCount != -1 and len(ma) >= matchCount:
-                break
-
-            try:
-                for mcas in [a for a in mrGen.next().get_atoms() if a.name == 'CA']:
-                    ma.append(mcas)
-
-                for fcas in [a for a in frGen.next().get_atoms() if a.name == 'CA']:
-                    fa.append(fcas)
-            except StopIteration:
-                break
+        fixedChain = ElfinUtils.getChain(fixed)
+        fa = [
+                al[0] for al in [[a for a in r.child_list if a.name == 'CA'] 
+                for r in fixedChain.child_list[fixedResiOffset:(fixedResiOffset+matchCount)]]
+            ]
 
         self.si.set_atoms(fa, ma)
 
-        # Import note:
-        # The rotation from BioPython is the
+        #   The rotation from BioPython is the
         # second dot operand instead of the 
         # conventional first dot operand.
-        #
-        # This means instead of R*v + T, the actual
+        #   This means instead of R*v + T, the actual
         # transform is done with v'*R + T
-        #
-        # This is important to understand why I did
+        #   This is important to understand why I did
         # the rotation maths this way in the C++ GA
         return self.si.rotran
 
@@ -173,7 +150,7 @@ class XDBGenrator:
 
     def processSingle(self, filename):
         singleName = filename.split('/')[-1].replace('_0001.pdb', '')
-        single = ElfinUtils.readPdb(singleName, filename)
+        single = ElfinUtils.readPdb(filename)
         self.moveToOrigin(single)
         ElfinUtils.savePdb(
             single, 
@@ -185,7 +162,7 @@ class XDBGenrator:
         # Step 1: Load pair and single structures
         pairName = filename.split('/')[-1].split('.')[0] \
             .replace('_0001', '')
-        pair = ElfinUtils.readPdb(pairName, filename)
+        pair = ElfinUtils.readPdb(filename)
 
         singleNameA, singleNameB = pairName.split('-')
         singleA = self.singlePDBs[singleNameA]
@@ -226,11 +203,11 @@ class XDBGenrator:
         fusionCount = ElfinUtils.intCeil(float(rcB)/8)
 
         # Step 2: Move pair to align with first single
-        # Note: this aligns pair by superimposing pair[0] 
-        #       with singleA
-        # Note: we only want to align to the second quardrant 
-        #       of singleA's atoms. This is to be consistent
-        #       with step 5
+        #   This aligns pair by superimposing pair[0] 
+        # with singleA
+        #   We only want to align to the second quardrant 
+        # of singleA's atoms. This is to be consistent
+        # with step 5
         self.align(
             pair, 
             singleA, 
@@ -238,8 +215,8 @@ class XDBGenrator:
         )
 
         # Step 3: Get COM of the singleB as seen in the pair
-        # Note: only align the second quardrant of singleB
-        #       in order to be consistent with step 5
+        #    Only align the second quardrant of singleB
+        # in order to be consistent with step 5
         comB = self.getCOM(
             singleB, 
             mother=pair, 
@@ -255,20 +232,20 @@ class XDBGenrator:
         radA = self.getRadii(singleA)
 
         # Step 5: Get transformation of pair to the second single
-        # Note: pair is already aligned to first single so
-        #       there is no need for the first transformation
-        #       You can check this is true by varifying that
-        #           self.getRotTrans(pair, singleA)
-        #       has identity rotation and zero translation.
-        # Note: only align the second quardrant of singleB
-        #       in order to be consistent with the Synth 
-        #       script, where pairs are fused together by 
-        #       chopping the first and last quardrant of a 
-        #       pair. This means the second half of singleB 
-        #       is chopped off during fusion, while the 
-        #       first quardrant of singleB participates in 
-        #       interfacing. Therefore we align by
-        #       superimposing just the second quardrant
+        #   Pair is already aligned to first single so
+        # there is no need for the first transformation
+        #   You can check this is true by varifying that
+        # self.getRotTrans(pair, singleA) has identity 
+        # rotation and zero translation.
+        #   Only align the second quardrant of singleB
+        # in order to be consistent with the Synth 
+        # script, where pairs are fused together by 
+        # chopping the first and last quardrant of a 
+        # pair. This means the second half of singleB 
+        # is chopped off during fusion, while the 
+        # first quardrant of singleB participates in 
+        # interfacing. Therefore we align by uperimposing 
+        # just the second quardrant
         rot, tran = self.getRotTrans(
             pair, 
             singleB, 
@@ -278,12 +255,9 @@ class XDBGenrator:
         )
 
         # Step 6: Save the aligned molecules
-        # Note: here the PDB format adds some slight 
-        #       floating point error. It is really old
-        #       and we should consider using mmCIF
-        # Note: mmCIF still uses 3 decimals places; 
-        #       perhaps we should to find a way to 
-        #       increase that precision
+        #   Here the PDB format adds some slight 
+        # floating point error. It is really old
+        # and we should consider using mmCIF
         ElfinUtils.savePdb(
             pair, 
             self.alignedLibDir + '/pair/' + pairName + '.pdb'
@@ -319,8 +293,6 @@ class XDBGenrator:
                     ('radii', radA)
                     ]));
             self.singlesData[singleNameB] = singleDataB;
-
-        # interact(globals(), locals())
 
     def dumpJSON(self):
         toDump = OrderedDict([
