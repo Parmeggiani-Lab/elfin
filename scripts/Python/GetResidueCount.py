@@ -8,7 +8,7 @@ def main():
 	ap.add_argument('input') # No dash means mandatory
 	args = ap.parse_args()
 	
-	pdb = readPdb('whatever', args.input)
+	pdb = readPdb(args.input)
 	print '{} has {} residues'.format(args.input, getResidueCount(pdb))
 
 if __name__ == '__main__':

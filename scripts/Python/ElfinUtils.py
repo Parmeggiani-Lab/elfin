@@ -13,11 +13,9 @@ INF = float('inf')
 
 class ElfinGraph():
     """Representation of a chain. It might be tree-like or even cyclic"""
-    def __init__(self, name='', nodes=[], startingNode=None, directed=True):
+    def __init__(self, name='', nodes=[]):
         self.name = name
         self.nodes = nodes
-        self.startingNode = startingNode
-        self.directed = directed
 
     def transform(self, rot, tran):
         for n in self.nodes:
@@ -29,16 +27,41 @@ class ElfinNode():
         self, 
         id, 
         name, 
-        isStart=False,
-        ctermNodes=[], 
+        trim=(False, False),
+        cap=None,
+        ctermNodeId=-1, 
         rot=[[1,0,0],[0,1,0],[0,0,1]], 
-        tran=[0,0,0]):
+        tran=[0,0,0],
+        extraAttachments=[]
+    ):
         self.id = id
         self.name = name
-        self.isStart = isStart
-        self.ctermNodes = ctermNodes
+        self.trim = trim
+        self.cap = cap
+        self.ctermNodeId = ctermNodeId
         self.rot = rot
         self.tran = tran
+
+        # Default is to cap the end that is not trimmed
+        if self.cap == None:
+            self.cap = (not trim[0], not trim[1])
+
+        # Error checking
+        if self.id < 0:
+            raise ValueError('Node ID should never be negative: id={}'.format(self.id))
+
+        if len(self.trim) != 2:
+            raise ValueError('ElfinNode trim vector length != 2: trim={}'.format(self.trim))
+
+        if not self.trim[0] and not self.trim[1]:
+            print ('Warning: ElfinNode trim vector both ends are NOT trimmed. '
+            'This should only happen if the chain has one single node, which '
+            'is not thought to be common.')
+
+        for i in xrange(0,2):
+            if self.trim[i] and self.cap[i]:
+                raise ValueError('Cannot cap a trimmed end[{}]: name={}, id={}'
+                    .format(i, self.name, self.id))
 
     def transform(self, rot, tran):
         self.rot = (np.dot(self.rot, rot)).tolist()
@@ -49,6 +72,10 @@ def genPymolTxm(rot, tran):
     rotTpTran = np.append(rotTp, np.transpose([tran]), axis=1)
     pymolRotMat = np.append(rotTpTran, [[0,0,0,1]], axis=0)
     return '[' + ', '.join(map(str, pymolRotMat.ravel())) + ']'
+
+
+def getChain(struct, chainName='A'):
+    return struct.child_list[0].child_dict[chainName]
 
 def getResidueCount(pdb):
     return sum([len(c.child_list) for c in pdb.child_list[0].child_list])
@@ -200,6 +227,15 @@ def readCsvPoints(csvFile):
     
     return pts
 
+def readCsv(filePath, delim=','):
+    rows = []
+    with open(filePath) as csvfile:
+        sreader = csv.reader(csvfile, delimiter=delim)
+        for r in sreader:
+            rows.append(r)
+
+    return rows
+
 def saveCsv(npArray, saveFile, delimiter=' '):
     with open(saveFile, 'wb') as csvFile:
         wt = csv.writer(csvFile, delimiter=delimiter)
@@ -298,9 +334,15 @@ def readJSON(filename):
     with open(filename, 'r') as openFile:
         return json.load(openFile)
 
-def readPdb(customName, inFile, permissive=0):
+def readPdb(
+    inFile,
+    pdbName=None,
+    permissive=0
+):
+    if pdbName == None:
+        pdbName = inFile.split('/')[-1].replace('.', '_')
     parser = Bio.PDB.PDBParser(permissive)
-    structure = parser.get_structure(customName, inFile)
+    structure = parser.get_structure(pdbName, inFile)
     return structure
 
 def saveCif(struct, saveFile):
