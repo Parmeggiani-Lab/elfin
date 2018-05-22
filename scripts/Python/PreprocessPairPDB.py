@@ -66,7 +66,7 @@ def main():
 	print 'Working on {}'.format(args.input)
 	if underscores[0] == -1:
 		print 'Input {} is a simple pair and does not need loop replacement'.format(args.input)
-		pair = readPdb('pair', pairFile)
+		pair = readPdb(pairFile)
 		mergeChainsAndCleanse(pair)
 		savePdb(pair, args.outputDir + '/' + pairName + '.pdb')
 		exit(0)
@@ -84,11 +84,11 @@ def main():
 	spairFile = pairFile[:pairFile.rfind('/')+1] + spairName + '.pdb'
 
 	# Load PDBs
-	pair = readPdb('pair', pairFile)
+	pair = readPdb(pairFile)
 	pairChains = pair.child_list[0].child_list
 	assert(len(pairChains) == 2)
 
-	spair = readPdb('spair', spairFile) #spair is the simple pair
+	spair = readPdb(spairFile) #spair is the simple pair
 	spairChains = spair.child_list[0].child_list
 	assert(len(spairChains) == 2)
 
