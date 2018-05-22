@@ -2,6 +2,7 @@
 **/*.cif
 
 GA/output
+res/capping_repeats
 res/db/
 res/elfin-db
 res/*.zip

@@ -39,13 +39,13 @@ def main():
         lambda(i,el): ElfinNode(
             i, 
             el, 
-            isStart=(True if i == 0 else False),
-            ctermNodes=([i+1] if i < nNodes - 1 else [])
+            trim=[(False if i == 0 else True), (False if i == nNodes - 1 else True)],
+            ctermNodeId=((i+1) if i < nNodes - 1 else -1)
             ), 
         enumerate(ecOut['nodes'])
     )
 
-    graph = ElfinGraph('c1', nodes, nodes[0].id) # c1 for chain number 1
+    graph = ElfinGraph('c1', nodes) # c1 for chain number 1
     graphs = [graph]
 
     assert(len(graphs) == 1)
