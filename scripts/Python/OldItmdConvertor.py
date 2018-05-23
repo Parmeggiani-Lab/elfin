@@ -36,7 +36,7 @@ def main():
 
     nNodes = len(ecOut['nodes'])
     nodes = map(
-        lambda(i,el): ElfinNode(
+        lambda (i, el): ElfinNode(
             i, 
             el, 
             trim=[(False if i == 0 else True), (False if i == nNodes - 1 else True)],
@@ -51,7 +51,7 @@ def main():
     assert(len(graphs) == 1)
 
     xdb = readJSON(args.xdbPath)
-    map(lambda(i, el): computeOldGraphTxm(xdb, el), enumerate(graphs))
+    map(lambda (i, el): computeOldGraphTxm(xdb, el), enumerate(graphs))
 
     if args.multichainTest:
         graphs.append(copy.deepcopy(graph))
@@ -67,7 +67,7 @@ def main():
         outputFile = args.input.replace('.json', '.new.json')
 
     with open(outputFile, 'wb') as ofp:
-        json.dump(graphs, ofp, default=lambda(o): o.__dict__)
+        json.dump(graphs, ofp, default=lambda o: o.__dict__)
         print 'Saved to: ' + outputFile
 
 if __name__ == '__main__':
