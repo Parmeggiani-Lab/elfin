@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Reminder: Make sure to run with ". ./activate" to effectively set environment variables!'
+echo 'Reminder: Make sure to run with ". ./activate" to effectively set environment variables!'
 
 source ./venv/bin/activate
 

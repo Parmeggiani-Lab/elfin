@@ -5,14 +5,24 @@ import ElfinUtils
 import glob
 import numpy as np
 import codecs, json
+import argparse
 from collections import OrderedDict
 
 def main():
-    pairDir         = './res/relaxed/pair/'
-    singleDir       = './res/relaxed/single/'
-    alignedLibDir   = './res/aligned/'
-    outFile         = './res/xDB.json'
-    xdbg = XDBGenrator(pairDir, singleDir, alignedLibDir, outFile)
+    ap = argparse.ArgumentParser(description='Generates the xDB database from preprocessed single and pair modules.');
+    ap.add_argument('--outputAlignedDir', default='./res/aligned/')
+    ap.add_argument('--pairDir', default='./res/relaxed/pair/')
+    ap.add_argument('--singleDir', default='./res/relaxed/single/')
+    ap.add_argument('--output', default='./res/xDB.json')
+    ap.add_argument('--genFakeHubs', action='store_true')
+    args = ap.parse_args()
+
+    xdbg = XDBGenrator(
+        args.pairDir, 
+        args.singleDir, 
+        args.outputAlignedDir, 
+        args.output, 
+        args.genFakeHubs)
     ElfinUtils.safeExec(xdbg.run)
 
 class XDBGenrator:
@@ -20,16 +30,17 @@ class XDBGenrator:
     def __init__(self,
                 pairDir,
                 singleDir,
-                alignedLibDir,
+                outputAlignedDir,
                 outFile,
-                permissive=0):
+                genFakeHubs):
         self.pairDir        = pairDir
         self.singleDir      = singleDir
-        ElfinUtils.mkdir(alignedLibDir)
-        ElfinUtils.mkdir(alignedLibDir     + '/pair/')
-        ElfinUtils.mkdir(alignedLibDir     + '/single/')
-        self.alignedLibDir  = alignedLibDir
+        ElfinUtils.mkdir(outputAlignedDir)
+        ElfinUtils.mkdir(outputAlignedDir     + '/pair/')
+        ElfinUtils.mkdir(outputAlignedDir     + '/single/')
+        self.outputAlignedDir  = outputAlignedDir
         self.outFile        = outFile
+        self.genFakeHubs    = genFakeHubs
         self.si             = Bio.PDB.Superimposer()
         self.pairsData      = {}
         self.singlesData    = {}
@@ -154,7 +165,7 @@ class XDBGenrator:
         self.moveToOrigin(single)
         ElfinUtils.savePdb(
             single, 
-            self.alignedLibDir + '/single/' + singleName + '.pdb'
+            self.outputAlignedDir + '/single/' + singleName + '.pdb'
         )
         self.singlePDBs[singleName] = single
 
@@ -260,7 +271,7 @@ class XDBGenrator:
         # and we should consider using mmCIF
         ElfinUtils.savePdb(
             pair, 
-            self.alignedLibDir + '/pair/' + pairName + '.pdb'
+            self.outputAlignedDir + '/pair/' + pairName + '.pdb'
         )
 
         data = OrderedDict([
@@ -286,18 +297,9 @@ class XDBGenrator:
         singleDataA['linkCount'] = singleDataA['linkCount'] + 1;
         self.singlesData[singleNameA] = singleDataA;
 
-        if(singleNameB != singleNameA):
-            singleDataB = self.singlesData.get(singleNameB,
-                 OrderedDict([
-                    ('linkCount', 0),
-                    ('radii', radA)
-                    ]));
-            self.singlesData[singleNameB] = singleDataB;
-
-    def dumpJSON(self):
+    def dumpXDB(self):
         toDump = OrderedDict([
             ('singlesData',  self.singlesData),
-            ('complexity',  self.complexity),
             ('pairsData',   self.pairsData)
             ])
 
@@ -307,30 +309,46 @@ class XDBGenrator:
             ensure_ascii=False,
             indent=4)
 
+    def genFakeHubs(self):
+
+
+    def dumpFakeHubs(self):
+        toDump = OrderedDict([
+            ('singlesData',  self.fakeHubsData.singles),
+            ('pairsData',   self.fakeHubsData.pairs)
+            ])
+
+        json.dump(toDump,
+            open(self.outFile, 'w'),
+            separators=(',', ':'),
+            ensure_ascii=False,
+            indent=4)
+
     def run(self):
-        # Center all single modules
-        files = glob.glob(self.singleDir + '/*.pdb')
-        nFiles = len(files)
-        for i in range(0, nFiles):
-            print '[XDBG] Centering single #{}/{}: {}' \
-                .format(i+1, nFiles, files[i])
-            self.processSingle(files[i])
+        if self.genFakeHubs:
+            print '[MSG] Generating fake hubs'
+            self.genFakeHubs()
+            self.dumpFakeHubs()
+        else:
+            # Center all single modules
+            files = glob.glob(self.singleDir + '/*.pdb')
+            nSingles = len(files)
 
-        # _0001 stands for relaxed PDBs
-        files = glob.glob(self.pairDir + '/*.pdb')
-        nFiles = len(files)
-        for i in range(0, nFiles):
-            print '[XDBG] Aligning pair #{}/{}: {}' \
-                .format(i+1, nFiles, files[i])
-            self.processPair(files[i])
+            for i in range(0, nSingles):
+                print '[MSG] Centering single #{}/{}: {}' \
+                    .format(i+1, nSingles, files[i])
+                self.processSingle(files[i])
 
-        self.complexity = 1
-        for s in self.singlesData:
-            self.complexity = self.complexity * \
-                self.singlesData.get(s)['linkCount']
+            # _0001 stands for relaxed PDBs
+            files = glob.glob(self.pairDir + '/*.pdb')
+            nPairs = len(files)
+            for i in range(0, nPairs):
+                print '[MSG] Aligning pair #{}/{}: {}' \
+                    .format(i+1, nPairs, files[i])
+                self.processPair(files[i])
 
-        print '[XDBG] Complexity: {}'.format(self.complexity)
+            print '[Summary] {} singles, {} pairs'.format(nSingles, nPairs)
 
-        self.dumpJSON()
+            self.dumpXDB()
 
 if __name__ =='__main__': main()
