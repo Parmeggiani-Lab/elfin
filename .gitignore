@@ -1,11 +1,13 @@
 **/*.pdb
 **/*.cif
+**/*.obj
 
 GA/output
 res/capping_repeats
 res/db/
 res/elfin-db
 res/*.zip
+
 slurm-*.out
 temp*
 *.tmp
