@@ -10,7 +10,6 @@ import argparse
 RadiiTypes = ['avgAll', 'maxCA', 'maxHeavy']
 INF = float('inf')
 
-
 class ElfinGraph():
     """Representation of a chain. It might be tree-like or even cyclic"""
     def __init__(self, name='', nodes=[]):
