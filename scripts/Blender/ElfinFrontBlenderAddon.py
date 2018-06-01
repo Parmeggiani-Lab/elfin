@@ -11,22 +11,21 @@ bl_info = {'name': 'Elfin Front Addon', 'category': 'Object'}
 #   * There should be no discontinuities in an object
 #       * Code should verify this
 #   x Unit conversion: 1 blender unit is 10 A, or 1 nm
+#       x In other words 1 unit in blender is 10 pymol units
 #   * Module avatar generation:
 #       * Singles are pairs exported as OBJ from Pymol
 #           * Pre-process OBJs:
 #               * Load OBJ
+#               * Remove doubles (edit mode)
+#                   bpy.ops.mesh.remove_doubles()
 #               * Decimate to 0.05 ratio
+#                   bpy.ops.object.modifier_add(type='DECIMATE')
+#                   bpy.context.object.modifiers["Decimate"].ratio = 0.05
+#                   bpy.ops.object.modifier_apply(apply_as='DATA', modifier="Decimate")
 #               * Save as new OBJ
 #       * How to do avatars in viewport elegantly?
-
-# API notes
-# filename = 'C:\\Users\\Akaoni\\Desktop\\ElfinWork\\elfin\\scripts\\Python\\ElfinFrontBlenderAddon.py'; exec(compile(open(filename).read(), filename, 'exec'))
-# bpy.ops.object.mode_set(mode='OBJECT')
-# bpy.ops.object.select_all(action='SELECT')
-# bpy.ops.object.editmode_toggle()
-# bpy.ops.mesh.select_all(action='SELECT')
-# bpy.ops.mesh.select_all(action='DESELECT')
-# bpy.ops.mesh.delete(type='ONLY_FACE')
+#
+# filename = 'C:\\Users\\Akaoni\\Desktop\\ElfinWork\\elfin\\scripts\\Blender\\ElfinFrontBlenderAddon.py'; exec(compile(open(filename).read(), filename, 'exec'))
 
 
 
