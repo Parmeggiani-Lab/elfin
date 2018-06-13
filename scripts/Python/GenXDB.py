@@ -10,9 +10,9 @@ from collections import OrderedDict
 
 def main():
     ap = argparse.ArgumentParser(description='Generates the xDB database from preprocessed single and pair modules.');
-    ap.add_argument('--outputAlignedDir', default='./res/aligned/')
-    ap.add_argument('--pairDir', default='./res/relaxed/pair/')
-    ap.add_argument('--singleDir', default='./res/relaxed/single/')
+    ap.add_argument('--outputAlignedDir', default='./res/aligned_modules/')
+    ap.add_argument('--pairDir', default='./res/relaxed_modules/pair/')
+    ap.add_argument('--singleDir', default='./res/relaxed_modules/single/')
     ap.add_argument('--output', default='./res/xDB.json')
     ap.add_argument('--genFakeHubs', action='store_true')
     args = ap.parse_args()

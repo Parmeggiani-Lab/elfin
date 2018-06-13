@@ -7,8 +7,8 @@ from ElfinUtils import *
 
 def main():
 	ap = argparse.ArgumentParser(description='Template Python script');
-	ap.add_argument('--inputDir', default='./res/db/')
-	ap.add_argument('--outputDir', default='./res/preprocessed/')
+	ap.add_argument('--inputDir', default='./res/raw_modules/')
+	ap.add_argument('--outputDir', default='./res/preprocessed_modules/')
 	args = ap.parse_args()
 
 	if args.inputDir is None or args.outputDir is None:
