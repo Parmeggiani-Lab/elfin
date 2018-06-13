@@ -72,6 +72,15 @@ def genPymolTxm(rot, tran):
     pymolRotMat = np.append(rotTpTran, [[0,0,0,1]], axis=0)
     return '[' + ', '.join(map(str, pymolRotMat.ravel())) + ']'
 
+def stripResidues(pdb):
+    residues = []
+    for model in pdb:
+        for chain in model:
+            tmp = list(chain.child_list)
+            for r in tmp:
+                chain.detach_child(r.id)
+            residues += tmp
+    return residues
 
 def getChain(struct, chainName='A'):
     return struct.child_list[0].child_dict[chainName]
@@ -305,7 +314,7 @@ def die(condition, str):
         exit()
 
 def checkCollision(xdb, collisionMeasure, nodes, newNode, shape):
-    newCOM = xdb['pairsData'][nodes[-1]][newNode]['comB']
+    newCOM = xdb['doublesData'][nodes[-1]][newNode]['comB']
 
     # previous node PAIR (not just single node!) is inherently non-colliding
     for i in xrange(0, len(nodes) - 2):
@@ -319,9 +328,9 @@ def checkCollision(xdb, collisionMeasure, nodes, newNode, shape):
     return False
 
 def getXDBStat(xDB):
-    # xdb = readJSON('res/xDB.json')
+    # xdb = readJSON('resources/xDB.json')
 
-    pd = xDB['pairsData']
+    pd = xDB['doublesData']
     dists = []
     for s1 in pd.keys():
         for s2 in pd[s1].keys():

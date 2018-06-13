@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def main():
 	ap = argparse.ArgumentParser(description='Compute the number of combinations for a given MMC protein length');
-	ap.add_argument('--xdbFile', default='./res/xDB.json')
+	ap.add_argument('--xdbFile', default='./resources/xDB.json')
 	ap.add_argument('--length', type=int, default=21)
 
 	globals().update(vars(ap.parse_args()))
@@ -20,7 +20,7 @@ def main():
 	print xdbFile
 	with open(xdbFile, 'r') as file:
 		xdb = json.load(file)
-		pd = xdb['pairsData']
+		dd = xdb['doublesData']
 
 		singleNames = xdb['singlesData'].keys()
 		dim = len(singleNames)
@@ -28,9 +28,9 @@ def main():
 	dim = len(singleNames)
 	adjMat = np.zeros([dim, dim])
 
-	for pdk in pd.keys():
+	for pdk in dd.keys():
 		i1 = singleNames.index(pdk)
-		for pdkk in pd[pdk].keys():
+		for pdkk in dd[pdk].keys():
 			i2 = singleNames.index(pdkk)
 			adjMat[i1][i2] = 1
 

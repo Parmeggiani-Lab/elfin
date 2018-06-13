@@ -28,15 +28,15 @@ def main():
     ap.add_argument('num', type=int)
     ap.add_argument('--length', type=int, default=10)
     ap.add_argument('--maxRetries', type=int, default=-1)
-    ap.add_argument('--dbFile', default=elfinDir + 'res/xDB.json')
-    ap.add_argument('--singlesDir', default='res/aligned_modules/single/')
-    ap.add_argument('--pairsDir', default='res/aligned_modules/pair/')
+    ap.add_argument('--dbFile', default=elfinDir + 'resources/xDB.json')
+    ap.add_argument('--singlesDir', default='./resources/pdb_aligned/singles/')
+    ap.add_argument('--doublesDir', default='./resources/pdb_aligned/doubles/')
     ap.add_argument('--radiusType', default='maxHeavy')
 
     args = ap.parse_args()
 
     bg = BenchmarkGenerator(args.dbFile, 
-                            args.pairsDir, 
+                            args.doublesDir, 
                             args.singlesDir, 
                             args.outdir, 
                             args.radiusType)
@@ -47,7 +47,7 @@ class BenchmarkGenerator:
     
     def __init__(self,
                 dbFile,
-                pairsDir,
+                doublesDir,
                 singlesDir,
                 outDir,
                 collisionMeasure):
@@ -65,7 +65,7 @@ class BenchmarkGenerator:
 
             print('DB has {} non-terminal nodes'.format(len(self.nonTerms)))
 
-            self.pairsDir = pairsDir
+            self.doublesDir = doublesDir
             self.singlesDir = singlesDir
             self.outDir = outDir
             self.bmarks = []
@@ -126,7 +126,7 @@ class BenchmarkGenerator:
         motherPdb, _ = ElfinUtils.makePdbFromNodes(
             self.xDB, 
             nodes, 
-            elfinDir + self.pairsDir,
+            elfinDir + self.doublesDir,
             elfinDir + self.singlesDir
         )
 

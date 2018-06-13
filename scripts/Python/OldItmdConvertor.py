@@ -6,11 +6,11 @@ from ElfinUtils import *
 
 def computeOldGraphTxm(xdb, graph):
     nodes = graph.nodes
-    pairsData = xdb['pairsData']
+    doublesData = xdb['doublesData']
     for i in xrange(0, len(nodes)-1):
         nodeA = nodes[i] 
         nodeB = nodes[i+1]
-        rel = pairsData[nodeA.name][nodeB.name]
+        rel = doublesData[nodeA.name][nodeB.name]
         for j in xrange(0, i+1):
             nodes[j].transform(rel['rot'], rel['tran'])
 
@@ -18,7 +18,7 @@ def main():
     ap = argparse.ArgumentParser(description='Converts old Elfin core intermediate output into new format');
     ap.add_argument('input') # No dash means mandatory
     ap.add_argument('--output')
-    ap.add_argument('--xdbPath', default='res/xDB.json')
+    ap.add_argument('--xdbPath', default='resources/xDB.json')
     ap.add_argument('--multichainTest', action='store_true')
     args = ap.parse_args()
     

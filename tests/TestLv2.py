@@ -8,7 +8,7 @@ import time
 import numpy as np
 
 def main():
-    xDB     = readJSON('res/xDB.json')
+    xDB     = readJSON('resources/xDB.json')
     bmDir 	= 'bm/l10'
 
     designers = []
@@ -42,6 +42,6 @@ def main():
                 print 'Failed'
                 # pauseCode()
 
-            makePdbFromNodes(xDB, nodes, 'res/centered_pdb/pair', jsonFile.replace('.json', '_' + designerName + '_LV2.pdb'))
+            makePdbFromNodes(xDB, nodes, 'resources/centered_pdb/pair', jsonFile.replace('.json', '_' + designerName + '_LV2.pdb'))
 
 if __name__ =='__main__': safeExec(main)
