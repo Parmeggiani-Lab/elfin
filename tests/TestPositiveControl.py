@@ -6,7 +6,7 @@ from utils import *
 import time
 
 def main():
-    xDB     = readJSON('res/xDB.json')
+    xDB     = readJSON('resources/xDB.json')
     bmDir 	= 'bm/l10'
 
     designers = []
@@ -37,7 +37,7 @@ def main():
     
             makePdbFromNodes(xDB, 
                 nodes, 
-                'res/centered_pdb/pair', 
+                'resources/centered_pdb/pair', 
                 jsonFile.replace('.json', suffixPdb(
                     designerName, 
                     'PCT',
