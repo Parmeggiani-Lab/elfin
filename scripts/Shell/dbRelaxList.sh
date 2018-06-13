@@ -1,6 +1,6 @@
 #!/bin/bash
 
-default_input_pdbs="./res/preprocessed_modules/*/*.pdb"
+default_input_pdbs="./resources/pdb_prepped/*/*.pdb"
 input_pdbs=${1:-$default_input_pdbs}
 env_vars=${2:-""} 
 

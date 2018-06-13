@@ -1,17 +1,17 @@
 #!/bin/bash
 
-inputDir=${1:-"./res/preprocessed_modules/"}
-outputDir=${2:-"./res/aligned_relaxed_modules/"}
+inputDir=${1:-"./resources/pdb_preppd/"}
+outputDir=${2:-"./resources/pdb_relaxed/"}
 
-mkdir -p $outputDir'/single/'
-mkdir -p $outputDir'/pair/'
+mkdir -p $outputDir'/singles/'
+mkdir -p $outputDir'/doubles/'
 
-for f in `ls $inputDir/single/*_0001.pdb`; do
+for f in `ls $inputDir/singles/*_0001.pdb`; do
 	bn=`basename $f`
-	cp $f $outputDir'/single/'${bn/_0001/}
+	cp $f $outputDir'/singles/'${bn/_0001/}
 done
 
-for f in `ls $inputDir/pair/*_0001.pdb`; do
+for f in `ls $inputDir/doubles/*_0001.pdb`; do
 	bn=`basename $f`
-	cp $f $outputDir'/pair/'${bn/_0001/}
+	cp $f $outputDir'/doubles/'${bn/_0001/}
 done

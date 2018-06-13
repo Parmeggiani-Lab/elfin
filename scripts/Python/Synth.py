@@ -22,14 +22,14 @@ class Synthesiser:
     def __init__(
         self, 
         spec, 
-        pairsDir, 
+        doublesDir, 
         singlesDir, 
         crDir, 
         showFusion=False,
         disableCapping=False
     ):
         self.spec           = spec
-        self.pairsDir       = pairsDir
+        self.doublesDir       = doublesDir
         self.singlesDir     = singlesDir
         self.crDir          = crDir
         self.showFusion     = showFusion
@@ -41,12 +41,6 @@ class Synthesiser:
         self.cappingRepeatRIdDict = {}
         for row in readCsv(self.crDir + '/repeat_indicies.csv', delim=' '):
             self.cappingRepeatRIdDict[row[0].split('.')[0].replace('DHR', 'D')] = [int(idx) for idx in row[1:]]
-
-    def stripResidues(self, pdb):
-        chain = getChain(pdb)
-        residues = [r for r in chain.child_list]
-        [chain.detach_child(r.id) for r in residues]
-        return residues
 
     def resetResidueId(self):
         self.residueID = 1
@@ -63,9 +57,9 @@ class Synthesiser:
         nCapRes = len(capRes)
 
         # We could use as many shared residues as possible for alignment but
-        # that could create gaps due to some of the residues in primary being
-        # affected by interface. Therefore here we use one eigth like GenXDB
-        # does (repeat index range / 4 is 1/8 of the module).
+        # that could create gaps (jumps) due to some of the residues in
+        # primary being affected by interface. Therefore here we use one eigth
+        # like GenXDB does (repeat index range / 4 is 1/8 of the module).
         if nTerm:
             matchStartIdx = [i for (i,el) in enumerate(capRes) if el.id[1] == crRids[0]][0]
             for cri in xrange(matchStartIdx, nCapRes):
@@ -104,7 +98,7 @@ class Synthesiser:
         self.si.set_atoms(primAtoms, capAtoms)
         rot, tran = self.si.rotran
 
-        map(lambda r: r.transform(rot, tran), realCapRes)
+        [r.transform(rot, tran) for r in realCapRes]
         
         return realCapRes
 
@@ -132,26 +126,26 @@ class Synthesiser:
             # there's only one single node in the entire chain
             print ('Warning: \n'
                     '   Single-node chains still use transformation '
-                    '   matricies calculated with pair fusion in mind. '
+                    '   matricies calculated with double fusion in mind. '
                     '   This might cause some inaccuracy when applied '
-                    '   not on a trimmed pair but a single module.')
+                    '   not on a trimmed double but a single module.')
             chainId = graph['name'] + '_' + str(nodeA['id'])
-            residues = self.stripResidues(singleA)
+            residues = stripResidues(singleA)
 
         elif nCtermNodes == 1:
             nodeB = ctermNodes[0]
 
             singleB = readPdb(self.singlesDir + '/' + nodeB['name'] + '.pdb')
-            pair = readPdb(self.pairsDir + '/' + (nodeA['name'] + '-' + nodeB['name']) + '.pdb')
+            double = readPdb(self.doublesDir + '/' + (nodeA['name'] + '-' + nodeB['name']) + '.pdb')
 
             resiCountB = getResidueCount(singleB)
-            resiCountPair = getResidueCount(pair)
+            resiCountDouble = getResidueCount(double)
 
             chainId = graph['name'] + '_' + str(nodeA['id']) + '-' + str(nodeB['id'])
-            residues = self.stripResidues(pair)
+            residues = stripResidues(double)
 
             # Compute trim residue indicies that minimise effect on 
-            # atom position caused by pair interfaces
+            # atom position caused by double interfaces
             prefixResidues = []
             suffixResidues = []
             if nodeA['trim'][0]:
@@ -165,7 +159,7 @@ class Synthesiser:
                     capAndRepeat = readPdb(self.crDir + '/' + capName + '_NI.pdb')
                     prefixResidues = self.getCapping(
                         primRes=residues, 
-                        capRes=self.stripResidues(capAndRepeat), 
+                        capRes=stripResidues(capAndRepeat), 
                         crRids=self.cappingRepeatRIdDict[capName], 
                         nTerm=True
                     )
@@ -173,9 +167,9 @@ class Synthesiser:
                     print 'Warning: untrimmed N-Terminus is not capped'
             
             if nodeB['trim'][1]:
-                endResi = resiCountPair - intCeil(float(resiCountB)/2)
+                endResi = resiCountDouble - intCeil(float(resiCountB)/2)
             else:
-                endResi = resiCountPair
+                endResi = resiCountDouble
 
                 # We expect an untrimmed end to be capped
                 if nodeB['cap'][1]:
@@ -183,7 +177,7 @@ class Synthesiser:
                     capAndRepeat = readPdb(self.crDir + '/' + capName + '_IC.pdb')
                     suffixResidues = self.getCapping(
                         primRes=residues, 
-                        capRes=self.stripResidues(capAndRepeat), 
+                        capRes=stripResidues(capAndRepeat), 
                         crRids=self.cappingRepeatRIdDict[capName], 
                         nTerm=False
                     )
@@ -244,9 +238,9 @@ def main():
     ap = argparse.ArgumentParser(description='Generate atom model in CIF format using output from Elfin core');
     ap.add_argument('specFile')
     ap.add_argument('--outFile', default='')
-    ap.add_argument('--singlesDir', default='res/relaxed_modules/single/')
-    ap.add_argument('--pairsDir', default='res/relaxed_modules/pair/')
-    ap.add_argument('--cappingRepeatsDir', default='res/relaxed_cappings/')
+    ap.add_argument('--singlesDir', default='./resources/pdb_aligned/singles/')
+    ap.add_argument('--doublesDir', default='./resources/pdb_aligned/doubles/')
+    ap.add_argument('--cappingRepeatsDir', default='./resources/pdb_relaxed/cappings')
     ap.add_argument('--showFusion', action='store_true')
     ap.add_argument('--disableCapping', action='store_true')
 
@@ -269,7 +263,7 @@ def main():
 
     model = Synthesiser(
         spec, 
-        args.pairsDir,
+        args.doublesDir,
         args.singlesDir,
         args.cappingRepeatsDir,
         args.showFusion,

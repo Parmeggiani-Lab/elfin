@@ -1,4 +1,4 @@
-: ${execFile='./src/GA/bin/elfin'}
+: ${execFile='./src/cpp/bin/elfin'}
 : ${configFile='elfinConfig.json'}
 : ${outputDir='output'}
 : ${extraArgs=''}

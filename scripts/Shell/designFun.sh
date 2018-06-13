@@ -2,8 +2,8 @@
 
 trap "exit" INT
 
-config=${config:-"src/GA/config.json"}
-xdb=${xdb:-"res/xDB.json"}
+config=${config:-"src/cpp/config.json"}
+xdb=${xdb:-"resources/xDB.json"}
 gps=${gps:-524288}
 local=${local:-"no"}
 outdir=${outdir:-"bm/funOut/"}
@@ -16,7 +16,7 @@ do
 	myOutdir=$outdir'/'${filename/\.csv/}
 	mkdir -p $myOutdir
 
-	cmd="./src/GA/bin/elfin -i $f -c $config -gps $gps -x $xdb -o $myOutdir"
+	cmd="./src/cpp/bin/elfin -i $f -c $config -gps $gps -x $xdb -o $myOutdir"
 	echo CMD is $cmd
   	if [[ "$local" == "yes" ]]; then
 		echo local

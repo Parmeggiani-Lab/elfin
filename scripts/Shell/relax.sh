@@ -30,7 +30,7 @@ if [[ "$variant" == "mpi" ]]; then
 fi
 
 cmd="$wrapper relax.$variant.$release -overwrite -s $input -out:path:score $outDir -out:file:scorefile $scOutput -out:path:pdb $outDir -default_max_cycles $maxCycles"
-
+echo "cmd="$cmd
 if [[ "$local" == "yes" ]]; then
 	$cmd
 else
