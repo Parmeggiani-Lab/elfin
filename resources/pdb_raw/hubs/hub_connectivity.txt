@@ -1,0 +1,26 @@
+D18_C2_03.pdb		dimer	symmetric_C2	N_free	C_oligo	
+D18_C3_04.pdb		trimer	symmetryc_C3	N_free	C_oligo
+D18_aC2_12.pdb		dimer	asymmetric		N_free	C_oligo
+D18_aC2_13.pdb		dimer	asymmetric		N_free	C_oligo
+	D14_j1_D18-D18.pdb
+	D18-D18.pdb
+D49_aC2_24.pdb		dimer	asymmetric		N_oligo	C_free
+D49_AC2_ext.pdb		dimer	asymmetric		N_free	C_free
+	D49-D49_j1_D14.pdb
+	D49-D49_j1_D79.pdb
+	D49-D49_j1_D81.pdb
+	D49-D49.pdb (ext: this is the only one N_free can interface with)
+D4_C3_02.pdb		trimer	symmetryc_C3	N_free	C_oligo
+	D4-D4.pdb
+	D53_j1_D4-D4.pdb
+D4_aC2_08.pdb		dimer	asymmetric		N_oligo	C_free
+	D4-D4_j1_D64.pdb
+	D4-D4.pdb
+D79_aC2_02.pdb		dimer	asymmetric		N_oligo	C_free
+D79_aC2_04.pdb		dimer	asymmetric		N_oligo	C_free
+	D79-D79_j1_D54.pdb
+	D79-D79_j2_D14.pdb
+	D79-D79.pdb
+D81_aC2_05.pdb		dimer	asymmetric		N_oligo	C_free
+D81_aC2_09.pdb		dimer	asymmetric		N_oligo	C_free
+	D81-D81.pdb

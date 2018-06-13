@@ -9,7 +9,7 @@ import re
 import time
 
 def main():
-    xDB     = readJSON('res/xDB.json')
+    xDB     = readJSON('resources/xDB.json')
     bmDir 	= 'bm/fun'
 
     designers = []
@@ -38,6 +38,6 @@ def main():
             (nodes,shape,score) = designer.design(spec, targetLen)
             print "{:.2f}s, score: {}".format(time.clock() - startTime, score)
             
-            makePdbFromNodes(xDB, nodes, 'res/centered_pdb/pair', charFile.replace('.csv', '_' + designerName + '_FUN.pdb'))
+            makePdbFromNodes(xDB, nodes, 'resources/centered_pdb/pair', charFile.replace('.csv', '_' + designerName + '_FUN.pdb'))
             
 if __name__ =='__main__': safeExec(main)

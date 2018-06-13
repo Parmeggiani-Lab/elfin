@@ -1,18 +1,17 @@
-# Elfin
-Elfin is a computational protein design tool based on repeat protein module construction. A journal paper in Structural Biology describing this work has been submitted for review. A more detailed explanation of how Elfin works can be found [here](https://github.com/joy13975/elfin-thesis). 
+# Elfin V1.1 Alpha
+Elfin is a computational protein design tool based on repeat protein module construction. A journal paper explaining this in detail is [here](https://www.sciencedirect.com/science/article/pii/S1047847717301417).
 
-![alt tag](res/diagrams/ProteinBristol.png)
-Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin's GA. The visualisation was created using PyMol.
+In short, Elfin uses repeat proteins as basic building blocks to construct larger proteins that form a 3D structure as close to the user's input description as possible. Credits to Fabio Parmeggiani (UoB), TJ Brunette (UoW), David Baker (UoW), and Simon McIntosh-Smith (UoB).
 
-The main idea of Elfin is to use repeat proteins as rigid construction modules (much like how Lego works) and build 3D shapes that are as close to the user's input description as possible. Major contributors to this work are: Joy Yeh (UoB), Fabio Parmeggiani (UoB), TJ Brunette (UoW), David Baker (UoW), and Simon McIntosh-Smith (UoB).
+V1.1 is an overhaul to add complex design capabilities to the original proof-of-concept (Branch V1). The V1.1 README will get updated accordingly but it can often lag behind code changes.
+
+This resository hosts the data processing scripts, the core loop-closer, and the Blender addon script. The PDB files of the building blocks are hosted in a private repository [here](https://github.com/joy13975/elfin-db). As these data have not yet been published by their authors (F. Parmeggiani and Baker lab of the University of Washington), I cannot make them public. If you need access to these data please contact me or fabio.parmeggiani@bristol.ac.uk (Fabio Parmeggiani). You can design proteins without PDB data, but you will not be able to create the full atom model for your design.
+
+![alt tag](resources/diagrams/ProteinBristol.png)
+Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin's genetic algorithm (GA). Visualisation created using [PyMol](https://pymol.org).
 
 * UoB: University of Bristol
 * UoW: University of Washington
-
-### Access to elfin-db: 
-Elfin requires a repeat protein database called "elfin-db", which contains PDB files of the protein modules. This can be acquired from [this](https://github.com/joy13975/elfin-db) repository. Access should be asked from fabio.parmeggiani@bristol.ac.uk (Fabio). The reason for restricted access is that these files are unpublished laboratory results (from the Baker lab of the University of Washington). Without these module PDBs, Elfin can still run but will not produce PDB outputs - only module centre-of-mass information.
-
-The old repository with the complete change history is [here](https://github.com/joy13975/elfin-old). Files were migrated to this new repository to get rid of massive pack files that git was creating. Grid search files can be found [here](https://github.com/joy13975/elfin-gridsearch).
 
 ### Content:
 1. [Prerequisites](#1-prerequisites)
@@ -66,7 +65,7 @@ Version 0.0.2
 - [ ] Allow multi-chain option in Synthesiser
 - [ ] Improve GPU performance (?)
 
-![alt tag](res/diagrams/ElfinFlow.png)
+![alt tag](resources/diagrams/ElfinFlow.png)
 - Blue: implemented
 - Yellow: implemented but possibly needs modification for upcoming new features
 - Orange: implemented but definitely needs modification for upcoming new features
@@ -99,7 +98,7 @@ cd elfin                                                #you should now be at re
 
 ```
                                                         #you should be at repository root
-virtualenv --python=<path/to/your/python-2.7.9> venv    #the name 'venv' is required
+virtualenv --python=<path/to/your/python-2.7.9> .venv   #the name '.venv' is required
 . ./activate                                            #activate the virtual environment
 pip install -r requirements.txt                         #install required libraries locally
 ```
@@ -194,10 +193,10 @@ unzip elfin-db/aligned_modules.zip
 
 **Preprocess and relax module PDBs**
 ```
-unzip elfin-db/raw_modules.zip                          #module PDBs are now at ./res/raw_modules/
+unzip elfin-db/raw_modules.zip                          #module PDBs are now at ./resources/raw_modules/
 cd ..                                                   #go back to repo root
 ./scripts/Python/PreprocessAllPDBs.py                   #fix junction pair loop interfaces 
-                                                        #now there should be a ./res/proprocessed_modules folder
+                                                        #now there should be a ./resources/proprocessed_modules folder
 
 ./scripts/Shell/dbRelaxList.sh > dbRelaxList.sh         #prepare db relaxation command list
 
@@ -222,12 +221,12 @@ This relaxation can take quite a while simply because the process is computation
 
 **Generating the xDB**
 
-After relaxation, you should see a new PDB suffixed with ```_0001.pdb``` for each PDB in ```./res/preprocessed_modules/```. These are the relaxed versions of the original preprocessed PDBs. Now copy these into a separate folder for the next step:
+After relaxation, you should see a new PDB suffixed with ```_0001.pdb``` for each PDB in ```./resources/preprocessed_modules/```. These are the relaxed versions of the original preprocessed PDBs. Now copy these into a separate folder for the next step:
 ```
 ./scripts/Shell/copyRelaxedPDBs.sh
 ```
 
-Lastly, invoke the ```./scripts/Python/GenXDB.py``` script. This script aligns each pair's reference frames to the reference frame of their first single module (e.g. ```D4-D4_j1_D64``` would be superimposed onto ```D4```), producing the ```./res/aligned_modules/``` folder. This folder contains aligned singles and pairs that will be used to reconstruct Elfin's output structures in the final stage of design. Geometric relationships will also be calculated to produce a ```./res/xDB.json``` "pair relationship database".
+Lastly, invoke the ```./scripts/Python/GenXDB.py``` script. This script aligns each pair's reference frames to the reference frame of their first single module (e.g. ```D4-D4_j1_D64``` would be superimposed onto ```D4```), producing the ```./resources/aligned_modules/``` folder. This folder contains aligned singles and pairs that will be used to reconstruct Elfin's output structures in the final stage of design. Geometric relationships will also be calculated to produce a ```./resources/xDB.json``` "pair relationship database".
 ```
 ./scripts/Python/GenXDB.py
 ```
@@ -244,7 +243,7 @@ Inspect the output file to see what it contains (score and module/node names). T
 
 **PDB Reconstruction**
 
-Now, reconstruct the output protein structure using the ```./scripts/Python/Synth.py``` script, which makes use of files in ```./res/aligned_modules/```.
+Now, reconstruct the output protein structure using the ```./scripts/Python/Synth.py``` script, which makes use of files in ```./resources/aligned_modules/```.
 ```
 ./scripts/Python/Synth.py ./GA/output/0x10e63c000.json
 ```

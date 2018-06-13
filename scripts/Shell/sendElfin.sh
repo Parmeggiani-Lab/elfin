@@ -1,11 +1,11 @@
-#!/bin/bash
+	#!/bin/bash
 
 : ${jobName=elfin};
 : ${queueName="batch"};
 : ${ppn="256:knl"};
 : ${runScript="./runElfin.sh"};
 : ${walltime="00:30:00"};
-: ${execFile='./src/GA/bin/elfin'};
+: ${execFile='./src/cpp/bin/elfin'};
 : ${configFile='elfinConfig.json'};
 : ${outputDir="output"};
 : ${extraArgs=''};

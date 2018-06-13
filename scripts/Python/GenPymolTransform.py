@@ -6,9 +6,9 @@ from ElfinUtils import *
 
 def main():
 	ap = argparse.ArgumentParser(description='Generate Grid Search configurations');
-	ap.add_argument('pairName')
-	ap.add_argument('--xdbPath', default='res/xDB.json')
-	ap.add_argument('--pairDir', default='/Users/joy/src/elfin/res/aligned_modules/pair/')
+	ap.add_argument('doubleName')
+	ap.add_argument('--xdbPath', default='resources/xDB.json')
+	ap.add_argument('--doubleDir', default='/Users/joy/src/elfin/resources/pdb_aligned/doubles/')
 
 	args = ap.parse_args()
 
@@ -20,13 +20,13 @@ def main():
 		'hide everything, {}\n' + \
 		'show cartoon, {}\n') \
 		.format(
-			args.pairName, 
-			args.pairDir + '/' + args.pairName + '.pdb',
-			args.pairName,
-			args.pairName
+			args.doubleName, 
+			args.doubleDir + '/' + args.doubleName + '.pdb',
+			args.doubleName,
+			args.doubleName
 		)
-	singleNames = args.pairName.split('-')
-	rel = xDB['pairsData'][singleNames[0]][singleNames[1]]
+	singleNames = args.doubleName.split('-')
+	rel = xDB['doublesData'][singleNames[0]][singleNames[1]]
 	rotTp = np.transpose(rel['rot'])
 	rotTpTran = np.append(rotTp, np.transpose([rel['tran']]), axis=1)
 	pymolRotMat = np.append(rotTpTran, [[0,0,0,1]], axis=0)
@@ -36,7 +36,7 @@ def main():
 	txString = \
 		'cmd.transform_selection({}, {}, homogenous=0)' \
 		.format(
-			"\'" + args.pairName + "\'",
+			"\'" + args.doubleName + "\'",
 			pymolRotMatStr
 		)
 	

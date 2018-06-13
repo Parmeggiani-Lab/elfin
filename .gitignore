@@ -2,23 +2,21 @@
 **/*.cif
 **/*.obj
 **/*.zip
+**/*.pyc
+**/*.tmp
+**/*.blend
+**/.DS_Store
 
-res/elfin-db
-res/aligned_*
-res/relaxed_*
-res/preprocessed_*
+resources/elfin-db
+resources/pdb_*
 
-GA/output
+cpp/output
+cpp/bin
 
-slurm-*.out
+**/slurm-*.out
 temp*
-*.tmp
-.DS_Store
-*.pyc
-venv
+.venv
 movieOutput
-GA/bin
-GA/.obj
 dbRelaxList.sh
 #gridSearchConfigs
 #gs_out
