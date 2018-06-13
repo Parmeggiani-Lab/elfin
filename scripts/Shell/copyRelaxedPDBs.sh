@@ -1,7 +1,7 @@
 #!/bin/bash
 
-inputDir=${inputDir:-"./res/preprocessed/"}
-outputDir=${outputDir:-"./res/relaxed/"}
+inputDir=${1:-"./res/preprocessed_modules/"}
+outputDir=${2:-"./res/aligned_relaxed_modules/"}
 
 mkdir -p $outputDir'/single/'
 mkdir -p $outputDir'/pair/'
