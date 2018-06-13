@@ -13,11 +13,17 @@ maxCycles="$2"
 outDir=`dirname $input`
 scOutput="${input/\.pdb/_relax.sc}"
 
-maxCycles=${maxCycles:-200}
-local=${local:-"no"}
-variant=${variant:-"mpi"}
-release=${release:-"linuxgccrelease"}
-wrapper=${wrapper:-""}
+defaultMaxCycles=200
+defaultLocal="yes" 					# or no
+defaultVariant="omp" 				# or mpi
+defaultRelease="linuxgccrelease"	# or macosclangrelease 
+defaultWrapper="" 					# or mpirun
+
+maxCycles=${maxCycles:-$defaultMaxCycles}
+local=${local:-$defaultLocal}
+variant=${variant:-$defaultVariant}
+release=${release:-$defaultRelease}
+wrapper=${wrapper:-$defaultWrapper}
 
 if [[ "$variant" == "mpi" ]]; then
 	wrapper=$wrapper" mpirun"

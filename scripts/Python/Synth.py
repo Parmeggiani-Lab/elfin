@@ -62,12 +62,10 @@ class Synthesiser:
 
         nCapRes = len(capRes)
 
-        # We could use as many shared residues as possible
-        # for alignment but that could create gaps due to 
-        # some of the residues in primary being affected
-        # by interface. Therefore here we use one eigth like
-        # GenXDB does (repeat index range / 4 is 1/8 of the 
-        # module).
+        # We could use as many shared residues as possible for alignment but
+        # that could create gaps due to some of the residues in primary being
+        # affected by interface. Therefore here we use one eigth like GenXDB
+        # does (repeat index range / 4 is 1/8 of the module).
         if nTerm:
             matchStartIdx = [i for (i,el) in enumerate(capRes) if el.id[1] == crRids[0]][0]
             for cri in xrange(matchStartIdx, nCapRes):
@@ -119,9 +117,8 @@ class Synthesiser:
         print 'Processing node: id={}, name={}'.format(nodeA['id'], nodeA['name'])
 
         if not nodeA['trim'][1]:
-            # This is an end-node and end-node atoms 
-            # are already covered by their preceeding 
-            # non-end node
+            # This is an end-node and end-node atoms are already covered by
+            # their preceeding non-end node
             return chains
 
         singleA = readPdb(self.singlesDir + '/' + nodeA['name'] + '.pdb')
@@ -131,6 +128,8 @@ class Synthesiser:
         nCtermNodes = len(ctermNodes)
 
         if nCtermNodes == 0:
+            # end-nodes don't reach here - this only fires in cases where
+            # there's only one single node in the entire chain
             print ('Warning: \n'
                     '   Single-node chains still use transformation '
                     '   matricies calculated with pair fusion in mind. '
@@ -245,9 +244,9 @@ def main():
     ap = argparse.ArgumentParser(description='Generate atom model in CIF format using output from Elfin core');
     ap.add_argument('specFile')
     ap.add_argument('--outFile', default='')
-    ap.add_argument('--singlesDir', default='res/aligned/single/')
-    ap.add_argument('--pairsDir', default='res/aligned/pair/')
-    ap.add_argument('--cappingRepeatsDir', default='res/capping_repeats')
+    ap.add_argument('--singlesDir', default='res/relaxed_modules/single/')
+    ap.add_argument('--pairsDir', default='res/relaxed_modules/pair/')
+    ap.add_argument('--cappingRepeatsDir', default='res/relaxed_cappings/')
     ap.add_argument('--showFusion', action='store_true')
     ap.add_argument('--disableCapping', action='store_true')
 

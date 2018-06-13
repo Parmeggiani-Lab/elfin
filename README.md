@@ -183,18 +183,18 @@ After acquiring the 3D coordinates, copy them to a CSV file and ensure the forma
 . ./activate                                            #make sure venv is active
 cd res
 git clone https://github.com/joy13975/elfin-db.git 
-unzip elfin-db/db.zip                                   #module PDBs are now at ./res/db/
 ```
 
 Read [here](#access-to-elfin-db) about elfin-db access permission.
-If you're not interested in knowing how to generate the abstract module database, simply decompress the aligned module folder:
+If you're not interested in rebuilding the abstract module database, simply decompress ```aligned_modules.zip```:
 ```
-unzip elfin-db/aligned.zip
+unzip elfin-db/aligned_modules.zip
 ```
 
 
 **Preprocess and relax module PDBs**
 ```
+unzip elfin-db/raw_modules.zip                          #module PDBs are now at ./res/raw_modules/
 cd ..                                                   #go back to repo root
 ./scripts/Python/PreprocessAllPDBs.py                   #fix junction pair loop interfaces 
                                                         #now there should be a ./res/proprocessed folder
@@ -222,12 +222,12 @@ This relaxation can take quite a while simply because the process is computation
 
 **Generating the xDB**
 
-After relaxation, you should see a new PDB suffixed with ```_0001.pdb``` for each PDB in ```./res/preprocessed/```. These are the relaxed versions of the original preprocessed PDBs. Now copy these into a separate folder for the next step:
+After relaxation, you should see a new PDB suffixed with ```_0001.pdb``` for each PDB in ```./res/preprocessed_modules/```. These are the relaxed versions of the original preprocessed PDBs. Now copy these into a separate folder for the next step:
 ```
 ./scripts/Shell/copyRelaxedPDBs.sh
 ```
 
-Lastly, invoke the ```./scripts/Python/GenXDB.py``` script. This script aligns each pair's reference frames to the reference frame of their first single module (e.g. ```D4-D4_j1_D64``` would be superimposed onto ```D4```), producing the ```./res/aligned/``` folder. This folder contains aligned singles and pairs that will be used to reconstruct Elfin's output structures in the final stage of design. Geometric relationships will also be calculated to produce a ```./res/xDB.json``` "pair relationship database".
+Lastly, invoke the ```./scripts/Python/GenXDB.py``` script. This script aligns each pair's reference frames to the reference frame of their first single module (e.g. ```D4-D4_j1_D64``` would be superimposed onto ```D4```), producing the ```./res/aligned_modules/``` folder. This folder contains aligned singles and pairs that will be used to reconstruct Elfin's output structures in the final stage of design. Geometric relationships will also be calculated to produce a ```./res/xDB.json``` "pair relationship database".
 ```
 ./scripts/Python/GenXDB.py
 ```
@@ -244,7 +244,7 @@ Inspect the output file to see what it contains (score and module/node names). T
 
 **PDB Reconstruction**
 
-Now, reconstruct the output protein structure using the ```./scripts/Python/Synth.py``` script, which makes use of files in ```./res/aligned/```.
+Now, reconstruct the output protein structure using the ```./scripts/Python/Synth.py``` script, which makes use of files in ```./res/aligned_modules/```.
 ```
 ./scripts/Python/Synth.py ./GA/output/0x10e63c000.json
 ```

@@ -29,8 +29,8 @@ def main():
     ap.add_argument('--length', type=int, default=10)
     ap.add_argument('--maxRetries', type=int, default=-1)
     ap.add_argument('--dbFile', default=elfinDir + 'res/xDB.json')
-    ap.add_argument('--singlesDir', default='res/aligned/single/')
-    ap.add_argument('--pairsDir', default='res/aligned/pair/')
+    ap.add_argument('--singlesDir', default='res/aligned_modules/single/')
+    ap.add_argument('--pairsDir', default='res/aligned_modules/pair/')
     ap.add_argument('--radiusType', default='maxHeavy')
 
     args = ap.parse_args()

@@ -8,7 +8,7 @@ def main():
 	ap = argparse.ArgumentParser(description='Generate Grid Search configurations');
 	ap.add_argument('pairName')
 	ap.add_argument('--xdbPath', default='res/xDB.json')
-	ap.add_argument('--pairDir', default='/Users/joy/src/elfin/res/aligned/pair/')
+	ap.add_argument('--pairDir', default='/Users/joy/src/elfin/res/aligned_modules/pair/')
 
 	args = ap.parse_args()
 
