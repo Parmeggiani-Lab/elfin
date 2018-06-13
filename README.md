@@ -197,7 +197,7 @@ unzip elfin-db/aligned_modules.zip
 unzip elfin-db/raw_modules.zip                          #module PDBs are now at ./res/raw_modules/
 cd ..                                                   #go back to repo root
 ./scripts/Python/PreprocessAllPDBs.py                   #fix junction pair loop interfaces 
-                                                        #now there should be a ./res/proprocessed folder
+                                                        #now there should be a ./res/proprocessed_modules folder
 
 ./scripts/Shell/dbRelaxList.sh > dbRelaxList.sh         #prepare db relaxation command list
 
