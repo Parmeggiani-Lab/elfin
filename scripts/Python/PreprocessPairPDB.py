@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 
-# In this preprocessing stage, all pairs are chain-merged 
-# as they come in separate chains, which denote physically
-# separate entities.
+# In this preprocessing stage, all pairs are chain-merged as they come in
+# separate chains, which denote physically separate entities.
 # 
 # Then, unwanted atoms are deleted from each single and pair.
 #
-# For "compound" pairs (those with junctions), loop interfaces 
-# are replaced with those found in their "simple" pair counter-
-# parts (those withou junctions).
+# For "compound" pairs (those with junctions), loop interfaces are replaced
+# with those found in their "simple" pair counterparts (those without
+# junctions).
 #
-# This needs to be done because we are only sure about inter-
-# face atom positions in simple pairs but not in compound 
-# pairs. If this is not done, the relaxation of database PDBs 
-# will result in sever bending and dislocation in compound pairs.
-#
+# This needs to be done because we are only sure about interface atom
+# positions in simple pairs but not in compound pairs. If this is not done,
+# the relaxation of database PDBs will result in sever bending and dislocation
+# in compound pairs.
+
 
 import argparse, sys
 from ElfinUtils import *
@@ -51,7 +50,7 @@ def mergeChainsAndCleanse(pdb):
 def main():
 	ap = argparse.ArgumentParser(description='Template Python script');
 	ap.add_argument('input')
-	ap.add_argument('--outputDir', default='./res/preprocessed/')
+	ap.add_argument('--outputDir', default='./res/preprocessed_modules/')
 	args = ap.parse_args()
 
 	if args.input is None or args.outputDir is None:

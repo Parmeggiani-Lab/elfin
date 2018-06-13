@@ -1,12 +1,14 @@
 **/*.pdb
 **/*.cif
 **/*.obj
+**/*.zip
+
+res/elfin-db
+res/aligned_*
+res/relaxed_*
+res/preprocessed_*
 
 GA/output
-res/capping_repeats
-res/db/
-res/elfin-db
-res/*.zip
 
 slurm-*.out
 temp*
