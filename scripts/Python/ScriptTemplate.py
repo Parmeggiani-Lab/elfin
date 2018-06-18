@@ -4,13 +4,9 @@ import argparse, sys
 # from ElfinUtils import *
 
 def main():
-	ap = argparse.ArgumentParser(description='Template Python script');
-	ap.add_argument('input') # No dash means mandatory
+	ap = argparse.ArgumentParser(description='Template Elfin Python script')
+	ap.add_argument('input') # Absence of dash denotes mandatory argument
 	args = ap.parse_args()
-	
-	if len(sys.argv) == 1:
-		ap.print_help()
-		sys.exit(1)
 
 if __name__ == '__main__':
 	main()
