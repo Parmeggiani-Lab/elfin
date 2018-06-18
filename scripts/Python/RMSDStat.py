@@ -13,18 +13,18 @@ mPdbDir = sys.argv[2]
 windowLen = 300
 if len(sys.argv) >= 4:
 	windowLen = int(sys.argv[3])
-die(windowLen < 0, 'Invalid windowLen: must be greater than 0')
+dieIf(windowLen < 0, 'Invalid windowLen: must be greater than 0')
 
 overlapRatio = 0.50
 if len(sys.argv) >= 5:
 	overlapRatio = float(sys.argv[4])
-die(overlapRatio < 0 or overlapRatio > 1.0,
+dieIf(overlapRatio < 0 or overlapRatio > 1.0,
 	'Invalid overlapRatio: must be between 0 and 1.0')
 
 warnThreshold = 5.0
 if len(sys.argv) >= 6:
 	warnThreshold = float(sys.argv[5])
-die(warnThreshold < 0,
+dieIf(warnThreshold < 0,
 	'Invalid warnThreshold: must be greater than 0')
 
 overlap = int(overlapRatio * windowLen)

@@ -5,7 +5,7 @@ import numpy as np
 from ElfinUtils import *
 
 def main():
-	ap = argparse.ArgumentParser(description='Generate Grid Search configurations');
+	ap = argparse.ArgumentParser(description='Generate Pymol Transform');
 	ap.add_argument('doubleName')
 	ap.add_argument('--xdbPath', default='resources/xDB.json')
 	ap.add_argument('--doubleDir', default='/Users/joy/src/elfin/resources/pdb_aligned/doubles/')
@@ -27,11 +27,7 @@ def main():
 		)
 	singleNames = args.doubleName.split('-')
 	rel = xDB['doublesData'][singleNames[0]][singleNames[1]]
-	rotTp = np.transpose(rel['rot'])
-	rotTpTran = np.append(rotTp, np.transpose([rel['tran']]), axis=1)
-	pymolRotMat = np.append(rotTpTran, [[0,0,0,1]], axis=0)
-
-	pymolRotMatStr = '[' + ', '.join(map(str, pymolRotMat.ravel())) + ']'
+	pymolRotMatStr = genPymolTxm(rel['rot'], rel['tran'])
 
 	txString = \
 		'cmd.transform_selection({}, {}, homogenous=0)' \
