@@ -35,7 +35,7 @@ def getSpecSolRot(specFile, solCsv):
     return pymolRotMatStr
 
 def main():
-	ap = argparse.ArgumentParser(description='Generate Grid Search configurations');
+	ap = argparse.ArgumentParser(description='Generate spec to solution rotation string for Pymol');
 	ap.add_argument('specFile')
 	ap.add_argument('solFile')
 	args = ap.parse_args()

@@ -1,11 +1,10 @@
-import inspect, sys, code, traceback
+import inspect, os, sys, code, traceback
 import json
-import os
+
 import Bio.PDB
 import numpy as np
-import csv
-import re
-import argparse
+
+import csv,re
 
 RadiiTypes = ['avgAll', 'maxCA', 'maxHeavy']
 INF = float('inf')
@@ -53,11 +52,11 @@ class ElfinNode():
             raise ValueError('ElfinNode trim vector length != 2: trim={}'.format(self.trim))
 
         if not self.trim[0] and not self.trim[1]:
-            print ('Warning: ElfinNode trim vector both ends are NOT trimmed. '
+            print('Warning: ElfinNode trim vector both ends are NOT trimmed. '
             'This should only happen if the chain has one single node, which '
-            'is not thought to be common.')
+            'is not thought to be common. Proceed only if this is deliberate.')
 
-        for i in xrange(0,2):
+        for i in [0, 1]:
             if self.trim[i] and self.cap[i]:
                 raise ValueError('Cannot cap a trimmed end[{}]: name={}, id={}'
                     .format(i, self.name, self.id))
@@ -88,12 +87,6 @@ def getChain(struct, chainName='A'):
 def getResidueCount(pdb):
     return sum([len(c.child_list) for c in pdb.child_list[0].child_list])
 
-def getAtomCount(pdb):
-    i = 0
-    for a in pdb.get_atoms():
-        i += 1
-    return i
-
 def intCeil(f):
     return int(np.ceil(f))
 
@@ -107,18 +100,18 @@ def upsample(spec, pts):
 
     # Compute longer shape total length
     mpTotalLength = 0.0
-    for i in xrange(1, N):
+    for i in range(1, N):
         mpTotalLength += np.linalg.norm(morePoints[i] - morePoints[i - 1])
 
     if mpTotalLength == INF:
-        print 'Something fishy... mpTotalLength is inf!'
+        print('Something fishy... mpTotalLength is inf!')
 
     fpTotalLength = 0.0
-    for i in xrange(1, len(fewerPoints)):
+    for i in range(1, len(fewerPoints)):
         fpTotalLength += np.linalg.norm(fewerPoints[i] - fewerPoints[i - 1])
 
     if mpTotalLength == INF:
-        print 'Something fishy... fpTotalLength is inf!'
+        print('Something fishy... fpTotalLength is inf!')
 
     # Upsample fewerPoints
     upsampled = np.zeros([0, 3])
@@ -129,7 +122,7 @@ def upsample(spec, pts):
     mpProportion = 0.0
     fpProportion = 0.0
     mpi = 1
-    for i in xrange(1, len(fewerPoints)):
+    for i in range(1, len(fewerPoints)):
         baseFpPoint = fewerPoints[i - 1]
         nextFpPoint = fewerPoints[i]
         baseFpProportion = fpProportion
@@ -157,76 +150,6 @@ def upsample(spec, pts):
 
     return upsampled
 
-# def upsample(pts1, pts2):
-#     # Upsample the shape with fewer points
-#     pts1IsLonger = len(pts1) > len(pts2)
-#     N = max(len(pts1), len(pts2))
-
-#     # Use a proportion based algorithm because
-#     # we want to assume both shapes are roughly
-#     # the same length, but not exactly
-#     if pts1IsLonger:
-#         morePoints, fewerPoints = (np.copy(pts1), np.copy(pts2))
-#     else:
-#         morePoints, fewerPoints = (np.copy(pts2), np.copy(pts1))
-
-#     # Compute longer shape total length
-#     mpTotalLength = 0.0
-#     for i in xrange(1, N):
-#         mpTotalLength += np.linalg.norm(morePoints[i] - morePoints[i - 1])
-
-#     if mpTotalLength == INF:
-#         print 'Something fishy... mpTotalLength is inf!'
-
-#     fpTotalLength = 0.0
-#     for i in xrange(1, len(fewerPoints)):
-#         fpTotalLength += np.linalg.norm(fewerPoints[i] - fewerPoints[i - 1])
-
-#     if mpTotalLength == INF:
-#         print 'Something fishy... fpTotalLength is inf!'
-
-#     # Upsample fewerPoints
-#     upsampled = np.zeros([0, 3])
-
-#     # First and last points are the same
-#     upsampled = np.append(upsampled, [fewerPoints[0]], axis=0)
-
-#     mpProportion = 0.0
-#     fpProportion = 0.0
-#     mpi = 1
-#     for i in xrange(1, len(fewerPoints)):
-#         baseFpPoint = fewerPoints[i - 1]
-#         nextFpPoint = fewerPoints[i]
-#         baseFpProportion = fpProportion
-#         fpSegment = np.linalg.norm(nextFpPoint - baseFpPoint) / fpTotalLength
-#         vec = nextFpPoint - baseFpPoint
-
-#         fpProportion += fpSegment
-#         while (mpProportion <= fpProportion and mpi < N):
-#             mpSegment = \
-#                 np.linalg.norm(morePoints[mpi] - morePoints[mpi - 1]) \
-#                 / mpTotalLength
-
-#             if (mpProportion + mpSegment) > fpProportion:
-#                 break
-#             mpProportion += mpSegment
-
-#             s = (mpProportion - baseFpProportion) / fpSegment
-#             upsampled = np.append(upsampled, [baseFpPoint + (vec * s)], axis=0)
-
-#             mpi += 1
-
-#     # Sometimes the last node is automatically added
-#     if len(upsampled) < N:
-#         upsampled = np.append(upsampled, [fewerPoints[-1]], axis=0)
-
-#     if pts1IsLonger:
-#         pts2 = upsampled 
-#     else: 
-#         pts1 = upsampled
-
-#     return pts1, pts2
-
 def readCsvPoints(csvFile):
     pts = []
     
@@ -240,7 +163,7 @@ def readCsv(filePath, delim=','):
     with open(filePath) as csvfile:
         sreader = csv.reader(csvfile, delimiter=delim)
         for r in sreader:
-            rows.append(r)
+            rows.append([c.strip() for c in r])
 
     return rows
 
@@ -250,37 +173,12 @@ def saveCsv(npArray, saveFile, delimiter=' '):
         for row in npArray:
             wt.writerow(row)
 
-def canConvertToFloat(str):
-    try:
-        float(str)
-        return True
-    except ValueError:
-        return False
-
-# Credits to http://stackoverflow.com/questions/2597278/python-load-variables-in-a-dict-into-namespace
-class Bunch(object):
-  def __init__(self, adict):
-    self.__dict__.update(adict)
-
 def floatApproximates(a, b, error=1e-6):
     return abs(a-b) < error
 
-def realPath(path):
-    return os.path.realpath(path)
-
-def normPath(path):
-    return os.path.normpath(path)
-
-def suffixPdb(className, fromFunction, scale, targetLen):
-    return '_{}_{}_s{}_l{}.pdb'.format(
-            className, 
-            fromFunction,
-            scale, 
-            targetLen)
-
 def minDistFromLine(point, linePoints, allowPerp=True):
-    minDist = float('inf')
-    for i in xrange(1, len(linePoints)):
+    minDist = INF
+    for i in range(1, len(linePoints)):
         lineSeg = (linePoints[i-1], linePoints[i])
 
         # First determine whether point is outside line segment regime
@@ -308,16 +206,16 @@ def minDistFromLine(point, linePoints, allowPerp=True):
 
     return minDist
 
-def die(condition, str):
+def dieIf(condition, str="Death condition met"):
     if condition:
-        print str
-        exit()
+        print(str)
+        exit(1)
 
 def checkCollision(xdb, collisionMeasure, nodes, newNode, shape):
     newCOM = xdb['doublesData'][nodes[-1]][newNode]['comB']
 
     # previous node PAIR (not just single node!) is inherently non-colliding
-    for i in xrange(0, len(nodes) - 2):
+    for i in range(0, len(nodes) - 2):
         comDist = np.linalg.norm(shape[i] - newCOM)
         collisionDist = xdb['singlesData'][newNode]['radii'][collisionMeasure] + \
                             xdb['singlesData'][nodes[i]]['radii'][collisionMeasure]
@@ -361,24 +259,14 @@ def saveCif(struct, saveFile):
 def savePdb(struct, saveFile):
     io = Bio.PDB.PDBIO()
     io.set_structure(struct)
-    io.save(saveFile)
     io.save(saveFile + ('' if saveFile.endswith('.pdb') else '.pdb'))
-
-def interact(globalVars=None, localsVars=None):
-    print "Entering interactive mode"
-    print
-    if(localsVars == None):
-        localsVars = locals()
-    if(globalVars == None):
-        globalVars = globals()
-    code.interact(local=dict(globalVars, **localsVars))
 
 def mkdir(dir):
     if not os.path.exists(dir):
         os.makedirs(dir)
 
 def pauseCode(frame=None):
-    print '---------pauseCode()---------'
+    print('\n------------------pauseCode()------------------')
     if frame is None:
         # Use current frame (one above the exception wrapper)
         frame = inspect.currentframe().f_back
@@ -391,7 +279,7 @@ def safeExec(func, *args):
     try:
         func(*args)
     except Exception as e:
-        print '---------safeExec() caught exception---------'
+        print('\n------------------safeExec() caught exception------------------')
 
         # Find last (failed) inner frame
         type, value, tb = sys.exc_info()
@@ -399,3 +287,4 @@ def safeExec(func, *args):
         frame = last_frame().tb_frame
         traceback.print_exc()
         pauseCode(frame)
+

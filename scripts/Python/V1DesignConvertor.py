@@ -21,10 +21,6 @@ def main():
     ap.add_argument('--xdbPath', default='resources/xDB.json')
     ap.add_argument('--multichainTest', action='store_true')
     args = ap.parse_args()
-    
-    if len(sys.argv) == 1:
-        ap.print_help()
-        sys.exit(1)
 
     ecOut = readJSON(args.input)
 
@@ -35,15 +31,14 @@ def main():
         return 1
 
     nNodes = len(ecOut['nodes'])
-    nodes = map(
-        lambda (i, el): ElfinNode(
-            i, 
-            el, 
-            trim=[(False if i == 0 else True), (False if i == nNodes - 1 else True)],
-            ctermNodeId=((i+1) if i < nNodes - 1 else -1)
-            ), 
-        enumerate(ecOut['nodes'])
-    )
+    nodes = [ 
+              ElfinNode(
+                i, 
+                el, 
+                trim=[(False if i == 0 else True), (False if i == nNodes - 1 else True)],
+                ctermNodeId=((i+1) if i < nNodes - 1 else -1)
+              ) for (i, el) in enumerate(ecOut['nodes'])
+            ]
 
     graph = ElfinGraph('c1', nodes) # c1 for chain number 1
     graphs = [graph]
