@@ -1,12 +1,12 @@
 import inspect, os, sys, code, traceback
-import json
 
 import Bio.PDB
 import numpy as np
 
+import json
 import csv,re
 
-RadiiTypes = ['avgAll', 'maxCA', 'maxHeavy']
+RadiiTypes = ['average_all','max_ca_dist','max_heavy_dist']
 INF = float('inf')
 
 class ElfinGraph():
