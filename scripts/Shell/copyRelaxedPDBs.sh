@@ -1,17 +1,16 @@
 #!/bin/bash
 
-inputDir=${1:-"./resources/pdb_preppd/"}
-outputDir=${2:-"./resources/pdb_relaxed/"}
+if [[ "$#" -lt 2 ]]; then
+	echo 'copyRelaxedPDBs.sh <inputDir> <outputDir>'
+	exit
+fi
 
-mkdir -p $outputDir'/singles/'
-mkdir -p $outputDir'/doubles/'
+inputDir=$1
+outputDir=$2
 
-for f in `ls $inputDir/singles/*_0001.pdb`; do
+mkdir -p $outputDir
+
+for f in `ls $inputDir/*_0001.pdb`; do
 	bn=`basename $f`
-	cp $f $outputDir'/singles/'${bn/_0001/}
-done
-
-for f in `ls $inputDir/doubles/*_0001.pdb`; do
-	bn=`basename $f`
-	cp $f $outputDir'/doubles/'${bn/_0001/}
+	cp $f $outputDir'/'${bn/_0001/}
 done

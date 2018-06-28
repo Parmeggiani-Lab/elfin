@@ -5,9 +5,9 @@ echo 'Reminder: Make sure to run with ". ./activate" to effectively set environm
 source ./.venv/bin/activate
 
 # Add elfin library path
-PYTHONPATH="$PWD/scripts/Python/:$PYTHONPATH"
+PYTHONPATH="$PWD/pyelfin/:$PYTHONPATH"
 
 export PYTHONPATH
 
 # Add all scripts folders to path
-PATH=$(find ./scripts/ -type d -printf ":%p" ):/$PATH
+PATH=./pyelfin/:/$(find ./scripts/ -type d -printf ":%p" ):/$PATH
