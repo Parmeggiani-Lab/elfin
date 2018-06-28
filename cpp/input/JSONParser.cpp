@@ -3,7 +3,7 @@
 #include "JSONParser.hpp"
 #include "util.h"
 
-namespace xdbUtils
+namespace elfin
 {
 
 void JSONParser::parseDB(
@@ -18,14 +18,14 @@ void JSONParser::parseDB(
 		wrn("JSONParser::parseDB(): argument relMatOut is not empty!");
 
 	relMatOut.clear();
-	JSON pairsData = j["pairsData"];
-	const size_t dim = pairsData.size();
+	JSON doublesData = j["doublesData"];
+	const size_t dim = doublesData.size();
 	relMatOut.resize(dim);
 
 	// First we need the name-to-ID map
 	unsigned int id = 0;
-	for (JSON::iterator it = pairsData.begin();
-	        it != pairsData.end();
+	for (JSON::iterator it = doublesData.begin();
+	        it != doublesData.end();
 	        ++it)
 	{
 		// JSON::iterator does not support offsetting,
@@ -48,8 +48,8 @@ void JSONParser::parseDB(
 	// This is thinking ahead for the data to be operated
 	// on by a more C-like kernel. In that case strings
 	// strings are definitely bad for performance
-	for (JSON::iterator it = pairsData.begin();
-	        it != pairsData.end();
+	for (JSON::iterator it = doublesData.begin();
+	        it != doublesData.end();
 	        ++it) {
 		id = nameMapOut[it.key()];
 		RelaRow & row = relMatOut.at(id);
