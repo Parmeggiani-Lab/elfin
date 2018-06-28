@@ -44,7 +44,7 @@ def mergeChainsAndCleanse(pdb):
 	model.add(newChain)
 
 def main():
-	ap = argparse.ArgumentParser(description='Template Python script');
+	ap = argparse.ArgumentParser(description='Preprocess double modules');
 	ap.add_argument('input')
 	ap.add_argument('--outputDir', default='./resources/pdb_prepped/')
 	args = ap.parse_args()
@@ -89,6 +89,7 @@ def main():
 	# Get residue counts
 	sdoubleRCount = getResidueCount(sdouble)
 
+  # Compute interface residue range
 	sdoubleStartIdx = int(np.ceil(sdoubleRCount*0.375))+1
 	sdoubleEndIdx = int(np.floor(sdoubleRCount*0.625))-1
 	sdoubleEndOffset = sdoubleEndIdx - len(sdoubleChains[0].child_list)
@@ -111,8 +112,7 @@ def main():
 	# Superimpose double onto sdouble
 	si = Bio.PDB.Superimposer()
 	si.set_atoms(sdoubleAtoms, doubleAtoms)
-	rot, tran = si.rotran	
-	double.transform(rot, tran)
+	double.transform(*si.rotran)
 
 	# Merge chains and remove bad atoms
 	mergeChainsAndCleanse(double)
