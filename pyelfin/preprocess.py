@@ -2,20 +2,7 @@
 
 import argparse, sys
 import subprocess, glob
-from ElfinUtils import *
-
-def preprocess_hub(hub_file):
-  """
-  Abc
-
-  Args:
-  pdb - Bio.PDB.Structure.Structure of the hub
-
-  Returns: 
-  Bio.PDB.Structure.Structure - the modified PDB, used for chaining
-  calls
-  """
-  pass
+from elfin import *
 
 def merge_chains(pdb):
   """
@@ -198,7 +185,7 @@ def main():
   for i in range(N):
     hub_file = hubFiles[i]
     print('Prepping hub [{}/{}] {}'.format(i+1, N, hub_file))
-    save_pdb(preprocess_hub(hub_file), hub_output_dir + '/' + os.path.basename(hub_file))
+    save_pdb(cleanse_atoms(read_pdb(hub_file)), hub_output_dir + '/' + os.path.basename(hub_file))
 
 if __name__ == '__main__':
   safe_exec(main)
