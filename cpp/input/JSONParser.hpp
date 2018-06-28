@@ -7,7 +7,7 @@
 #include "DBParser.hpp"
 #include "../data/PairRelationship.hpp"
 
-namespace xdbUtils
+namespace elfin
 {
 
 // Credits to nolhmann from https://github.com/nlohmann/json

@@ -22,16 +22,16 @@ class Synthesiser:
     def __init__(
         self, 
         spec, 
-        doublesDir, 
-        singlesDir, 
-        crDir, 
+        pdbDir, 
+        cappingsDir,
+        metadataDir, 
         showFusion=False,
         disableCapping=False
     ):
         self.spec           = spec
-        self.doublesDir       = doublesDir
-        self.singlesDir     = singlesDir
-        self.crDir          = crDir
+        self.doublesDir     = pdbDir + "/doubles/"
+        self.singlesDir     = pdbDir + "/singles/"
+        self.crDir          = cappingsDir
         self.showFusion     = showFusion
         self.disableCapping = disableCapping
 
@@ -39,7 +39,7 @@ class Synthesiser:
 
         # Parse and convert capping repeat indicies into a dictionary
         self.cappingRepeatRIdDict = {}
-        for row in readCsv(self.crDir + '/repeat_indicies.csv', delim=' '):
+        for row in readCsv(metadataDir + '/repeat_indicies.csv', delim=' '):
             self.cappingRepeatRIdDict[row[0].split('.')[0].replace('DHR', 'D')] = [int(idx) for idx in row[1:]]
 
     def resetResidueId(self):
@@ -155,7 +155,7 @@ class Synthesiser:
 
                 # We expect an untrimmed end to be capped
                 if nodeA['cap'][0]:
-                    capName = nodeA['name'].split('_')[-1]
+                    capName = nodeA['name'].split('_')[0]
                     capAndRepeat = readPdb(self.crDir + '/' + capName + '_NI.pdb')
                     prefixResidues = self.getCapping(
                         primRes=residues, 
@@ -238,16 +238,11 @@ def main():
     ap = argparse.ArgumentParser(description='Generate atom model in CIF format using output from Elfin core');
     ap.add_argument('specFile')
     ap.add_argument('--outFile', default='')
-    ap.add_argument('--singlesDir', default='./resources/pdb_aligned/singles/')
-    ap.add_argument('--doublesDir', default='./resources/pdb_aligned/doubles/')
-    ap.add_argument('--cappingRepeatsDir', default='./resources/pdb_relaxed/cappings')
+    ap.add_argument('--pdbDir', default='./resources/pdb_aligned/')
+    ap.add_argument('--cappingsDir', default='./resources/pdb_relaxed/cappings')
+    ap.add_argument('--metadataDir', default='./resources/metadata/')
     ap.add_argument('--showFusion', action='store_true')
     ap.add_argument('--disableCapping', action='store_true')
-
-    if len(sys.argv) == 1:
-        ap.print_help()
-        sys.exit(1)
-        
     args = ap.parse_args()
 
     specExt = args.specFile[args.specFile.rfind('.'):]
@@ -263,9 +258,9 @@ def main():
 
     model = Synthesiser(
         spec, 
-        args.doublesDir,
-        args.singlesDir,
-        args.cappingRepeatsDir,
+        args.pdbDir,
+        args.cappingsDir,
+        args.metadataDir,
         args.showFusion,
         args.disableCapping
     ).run()
@@ -274,8 +269,8 @@ def main():
         args.outFile = args.specFile
     args.outfile = '.'.join(args.outFile.split('.')[:-1])
 
-    print 'Saving CIF...'
-    saveCif(model, args.outFile + '.cif')
+    print 'Saving...'
+    saveCif(model, file)
 
     # Todo: output coms for multiple chains
     #   Need to change csv format such that points
@@ -285,4 +280,4 @@ def main():
     # saveCsv(coms, args.outFile + '.csv')
 
 if __name__ == '__main__':
-    main()
+    safeExec(main)

@@ -1,0 +1,12 @@
+D18_C2_03.pdb, dimer, symmetric, N_free, C_oligo, D18, 2
+D18_C3_04.pdb, trimer, symmetric, N_free, C_oligo, D18, 3
+D18_aC2_12.pdb, dimer, asymmetric, N_free, C_oligo, D18, 2
+D18_aC2_13.pdb, dimer, asymmetric, N_free, C_oligo, D18, 2
+D49_aC2_24.pdb, dimer, asymmetric, N_oligo, C_free, D49, 2
+D4_C3_02.pdb, trimer, symmetric, N_free, C_oligo, D4, 3
+D4_aC2_08.pdb, dimer, asymmetric, N_oligo, C_free, D4, 2
+D79_aC2_02.pdb, dimer, asymmetric, N_oligo, C_free, D79, 2
+D79_aC2_04.pdb, dimer, asymmetric, N_oligo, C_free, D79, 2
+D81_aC2_05.pdb, dimer, asymmetric, N_oligo, C_free, D81, 2
+D81_aC2_09.pdb, dimer, asymmetric, N_oligo, C_free, D81, 2
+D49_aC2_ext.pdb, dimer, asymmetric, N_free, C_free, D49, 2
