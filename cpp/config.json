@@ -1,5 +1,5 @@
 {
-	"inputFile": "../bm/l10/1696.json",
+	"inputFile": "../benchmarks/l10/1696.json",
 	"xDBFile": "../resources/xDB.json",
 	"outputDir": "./output/",
 

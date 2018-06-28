@@ -13,19 +13,20 @@ mPdbDir = sys.argv[2]
 windowLen = 300
 if len(sys.argv) >= 4:
 	windowLen = int(sys.argv[3])
-dieIf(windowLen < 0, 'Invalid windowLen: must be greater than 0')
+if(windowLen < 0)
+  raise ValueError('Invalid windowLen: must be greater than 0')
 
 overlapRatio = 0.50
 if len(sys.argv) >= 5:
 	overlapRatio = float(sys.argv[4])
-dieIf(overlapRatio < 0 or overlapRatio > 1.0,
-	'Invalid overlapRatio: must be between 0 and 1.0')
+if(overlapRatio < 0 or overlapRatio > 1.0)
+	raise ValueError('Invalid overlapRatio: must be between 0 and 1.0')
 
 warnThreshold = 5.0
 if len(sys.argv) >= 6:
 	warnThreshold = float(sys.argv[5])
-dieIf(warnThreshold < 0,
-	'Invalid warnThreshold: must be greater than 0')
+if(warnThreshold < 0)
+	raise ValueError('Invalid warnThreshold: must be greater than 0')
 
 overlap = int(overlapRatio * windowLen)
 print 'Using window length {} and overlap ratio {} (={} CA atoms), warn at {}A'.format(
