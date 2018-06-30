@@ -11,6 +11,8 @@ from bpy.props import *
 
 import glob, os
 
+from blelfin.pyelfin import kabsch
+
 bl_info = {'name': 'Elfin Front', 'category': 'Elfin'}
 
 # Addon design notes
