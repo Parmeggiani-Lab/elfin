@@ -1,6 +1,6 @@
 
 #
-# Elfin's Front end as a Blender addon
+# Elfin's GUI Front-end as a Blender addon
 # 
 # Author: Joy Yeh 
 # Email: joyyeh.tw@gmail.com
@@ -23,9 +23,8 @@ bl_info = {'name': 'Elfin Front', 'category': 'Elfin'}
 #   x Unit conversion: 1 blender unit is 10 A, or 1 nm
 #       x 1 blender unit === 10 pymol units
 #   * Module avatar generation:
-#       * Singles and pairs exported as OBJ from Pymol
-#           * Pre-process OBJs
-#       * How to do avatars in viewport elegantly?
+#       * How to do avatars in viewport elegantly? 
+#           * Use links so none of the models can be edited
 #
 
 class ElfinPropertyGroup(bpy.types.PropertyGroup):
