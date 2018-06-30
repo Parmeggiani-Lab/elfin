@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import glob, json, sys
-from ElfinUtils import *
+from utilities import *
 
-### This is a tool for converting spec JSON files into pure CoMs in CSV form ###
+### Converts spec JSON files into pure CoMs in CSV form ###
 
 if len(sys.argv) < 2:
     print './Json2Csv.py <sourceDir> <outDir=sourceDir>'

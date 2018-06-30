@@ -1,43 +1,44 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 import argparse, sys
 import copy
-from ElfinUtils import *
+from utilities import *
 
-def computeOldGraphTxm(xdb, graph):
+def compute_old_graph_txm(xdb, graph):
     nodes = graph.nodes
-    doublesData = xdb['doublesData']
-    for i in xrange(0, len(nodes)-1):
-        nodeA = nodes[i] 
-        nodeB = nodes[i+1]
-        rel = doublesData[nodeA.name][nodeB.name]
-        for j in xrange(0, i+1):
+    doubles_data = xdb['doubles_data']
+    for i in range(len(nodes)-1):
+        node_a = nodes[i] 
+        node_b = nodes[i+1]
+        rel = doubles_data[node_a.name][node_b.name]
+        for j in range(i+1):
             nodes[j].transform(rel['rot'], rel['tran'])
 
 def main():
     ap = argparse.ArgumentParser(description='Converts old Elfin core intermediate output into new format');
     ap.add_argument('input') # No dash means mandatory
     ap.add_argument('--output')
-    ap.add_argument('--xdbPath', default='resources/xDB.json')
-    ap.add_argument('--multichainTest', action='store_true')
+    ap.add_argument('--xdb_path', default='resources/xDB.json')
+    ap.add_argument('--multichain_test', action='store_true')
     args = ap.parse_args()
 
-    ecOut = readJSON(args.input)
+    # Elfin core output
+    ec_out = read_json(args.input)
 
     # Make sure we're working with the old format
-    keys = ecOut.keys()
+    keys = ec_out.keys()
     if not 'nodes' in keys:
         print('Input file does not look like the old Elfin core output file')
         return 1
 
-    nNodes = len(ecOut['nodes'])
+    n_nodes = len(ec_out['nodes'])
     nodes = [ 
               ElfinNode(
                 i, 
                 el, 
-                trim=[(False if i == 0 else True), (False if i == nNodes - 1 else True)],
-                ctermNodeId=((i+1) if i < nNodes - 1 else -1)
-              ) for (i, el) in enumerate(ecOut['nodes'])
+                trim=[(False if i == 0 else True), (False if i == n_nodes - 1 else True)],
+                cterm_node_id=((i+1) if i < n_nodes - 1 else -1)
+              ) for (i, el) in enumerate(ec_out['nodes'])
             ]
 
     graph = ElfinGraph('c1', nodes) # c1 for chain number 1
@@ -45,10 +46,10 @@ def main():
 
     assert(len(graphs) == 1)
 
-    xdb = readJSON(args.xdbPath)
-    map(lambda (i, el): computeOldGraphTxm(xdb, el), enumerate(graphs))
+    xdb = read_json(args.xdb_path)
+    map(lambda (i, el): compute_old_graph_txm(xdb, el), enumerate(graphs))
 
-    if args.multichainTest:
+    if args.multichain_test:
         graphs.append(copy.deepcopy(graph))
 
         # Note: flipping z direction can cause problems in PyMol 
@@ -57,13 +58,13 @@ def main():
         graphs[1].transform([[1,0,0],[0,1,0],[0,0,1]],[-100,-100,0])
         graphs[1].name = 'c2'
 
-    outputFile = args.output
-    if outputFile == None:
-        outputFile = args.input.replace('.json', '.new.json')
+    output_file = args.output
+    if output_file == None:
+        output_file = args.input.replace('.json', '.new.json')
 
-    with open(outputFile, 'wb') as ofp:
+    with open(output_file, 'wb') as ofp:
         json.dump(graphs, ofp, default=lambda o: o.__dict__)
-        print 'Saved to: ' + outputFile
+        print('Saved to: ' + output_file)
 
 if __name__ == '__main__':
     main()
