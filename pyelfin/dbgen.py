@@ -392,17 +392,18 @@ class XDBGenerator:
 
   def align(
     self, 
-    *,
-    moving, 
-    fixed, 
-    moving_resi_offset=0, 
-    fixed_resi_offset=0,
-    match_count=-1
+    **kwargs
   ):
     """
     Moves the moving Bio.PDB.Structure.Structure to the fixed
     Bio.PDB.Structure.Structure.
     """
+    moving = kwargs.pop('moving')
+    fixed = kwargs.pop('fixed')
+    moving_resi_offset = kwargs.pop('moving_resi_offset', 0)
+    fixed_resi_offset = kwargs.pop('fixed_resi_offset', 0)
+    match_count = kwargs.pop('match_count', -1)
+
     rot, tran = self.get_rot_trans(
       moving=moving, 
       fixed=fixed,
@@ -414,14 +415,7 @@ class XDBGenerator:
 
   def get_rot_trans(
     self, 
-    *,
-    moving, 
-    moving_chain_id='A',
-    fixed, 
-    fixed_chain_id='A',
-    moving_resi_offset=0, 
-    fixed_resi_offset=0,
-    match_count=-1
+    **kwargs
   ):
     """
     Computes the rotatio and transformation matrices using BioPython's
@@ -443,6 +437,16 @@ class XDBGenerator:
     - (rot, tran) - a tuple containing the rotation and transformation
       matrices.
     """
+
+    moving = kwargs.pop('moving') 
+    moving_chain_id = kwargs.pop('moving_chain_id', 'A')
+    fixed = kwargs.pop('fixed')
+    fixed_chain_id = kwargs.pop('fixed_chain_id', 'A')
+    moving_resi_offset = kwargs.pop('moving_resi_offset', 0) 
+    fixed_resi_offset = kwargs.pop('fixed_resi_offset', 0)
+    match_count = kwargs.pop('match_count', -1)
+
+
     moving_chain = get_chain(moving, chain_id=moving_chain_id)
     ma = [
           al[0] for al in [[a for a in r.child_list if a.name == 'CA'] 

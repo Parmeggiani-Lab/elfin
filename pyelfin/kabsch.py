@@ -32,7 +32,7 @@ def kabsch_rotate(P, Q):
     return P
 
 
-def kabsch(P, Q):
+def run_kabsch(P, Q):
     """
     The optimal rotation matrix U is calculated and then used to rotate matrix
     P unto matrix Q so the minimum root-mean-square deviation (RMSD) can be
