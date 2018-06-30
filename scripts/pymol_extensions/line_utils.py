@@ -134,7 +134,7 @@ def draw_json(specFile, scale=1.0, width=2.0, centred=False, shift=None):
     cmd.reset()
     cmd.set("depth_cue", 0)
 
-def draw_axis(l=350, w = 1):
+def draw_axis(l=700, w = 1):
     draw(-l,0,0, l,0,0, 1,0,0, w, label='X');
     draw(0,-l,0, 0,l,0, 0,1,0, w, label='Y');
     draw(0,0,-l, 0,0,l, 0,0,1, w, label='Z');
@@ -152,7 +152,7 @@ cmd.extend("draw_csv", draw_csv)
 cmd.extend("draw_json", draw_json)
 draw_axis()
 noclip()
-print 'LineUtils Loaded'
+print 'Line Utils Loaded'
 
 # a simple example
 #draw_line(x=18.232,  y=17.150,  z=9.488,
