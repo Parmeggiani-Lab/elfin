@@ -3,6 +3,7 @@
 import argparse, sys
 import subprocess, glob
 from utilities import *
+from pdb_utilities import *
 
 def merge_chains(pdb):
   """
@@ -148,19 +149,21 @@ def main():
   ap = argparse.ArgumentParser(description='Preprocess all raw single and double PDBs');
   ap.add_argument('--input_dir', default='./resources/pdb_raw/')
   ap.add_argument('--output_dir', default='./resources/pdb_prepped/')
+  ap.add_argument('--dry_run', action='store_true')
   args = ap.parse_args()
 
   if args.input_dir is None or args.output_dir is None:
     ap.print_help()
     sys.exit(1)
 
-  make_dir(args.output_dir)
-  double_output_dir = args.output_dir + '/doubles/'
-  make_dir(double_output_dir)
-  single_output_dir = args.output_dir + '/singles/'
-  make_dir(single_output_dir)
-  hub_output_dir = args.output_dir + '/hubs/'
-  make_dir(hub_output_dir)
+  if not args.dry_run:
+    make_dir(args.output_dir)
+    double_output_dir = args.output_dir + '/doubles/'
+    make_dir(double_output_dir)
+    single_output_dir = args.output_dir + '/singles/'
+    make_dir(single_output_dir)
+    hub_output_dir = args.output_dir + '/hubs/'
+    make_dir(hub_output_dir)
 
   # Doubles
   doubleFiles = glob.glob(args.input_dir + '/doubles/*.pdb')
@@ -168,7 +171,9 @@ def main():
   for i in range(N):
     double_file = doubleFiles[i]
     print('Prepping double [{}/{}] {}'.format(i+1, N, double_file))
-    save_pdb(struct=preprocess_double(double_file), save_path=double_output_dir + '/' + os.path.basename(double_file))
+    double = preprocess_double(double_file)
+    if not args.dry_run:
+      save_pdb(struct=double, save_path=double_output_dir + '/' + os.path.basename(double_file))
 
   # Singles
   singleFiles = glob.glob(args.input_dir + '/singles/*.pdb')
@@ -177,7 +182,9 @@ def main():
     single_file = singleFiles[i]
     print('Prepping single [{}/{}] {}'.format(i+1, N, single_file))
     # Singles need nothing other than cleansing
-    save_pdb(struct=cleanse_atoms(read_pdb(single_file)), save_path=single_output_dir + '/' + os.path.basename(single_file))
+    single = cleanse_atoms(read_pdb(single_file))
+    if not args.dry_run:
+      save_pdb(struct=single, save_path=single_output_dir + '/' + os.path.basename(single_file))
 
   # Hubs
   hubFiles = glob.glob(args.input_dir + '/hubs/*.pdb')
@@ -185,7 +192,9 @@ def main():
   for i in range(N):
     hub_file = hubFiles[i]
     print('Prepping hub [{}/{}] {}'.format(i+1, N, hub_file))
-    save_pdb(struct=cleanse_atoms(read_pdb(hub_file)), save_path=hub_output_dir + '/' + os.path.basename(hub_file))
+    hub = cleanse_atoms(read_pdb(hub_file))
+    if not args.dry_run:
+      save_pdb(struct=hub, save_path=hub_output_dir + '/' + os.path.basename(hub_file))
 
 if __name__ == '__main__':
   safe_exec(main)
