@@ -10,4 +10,4 @@ PYTHONPATH="$PWD/pyelfin/:$PYTHONPATH"
 export PYTHONPATH
 
 # Add all scripts folders to path
-PATH=./pyelfin/:/$(find ./scripts/ -type d -printf ":%p" ):/$PATH
+PATH=./pyelfin/$(find ./scripts/ -type d -printf ":%p" ):/$PATH
