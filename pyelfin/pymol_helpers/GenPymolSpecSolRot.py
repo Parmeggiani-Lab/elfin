@@ -2,8 +2,8 @@
 
 import argparse, sys
 import numpy as np
-import Kabsch
-from ElfinUtils import *
+import kabsch
+from utilities import *
 
 def getSpecSolRot(specFile, solCsv):
     if specFile.rfind('.csv') != -1:
@@ -40,7 +40,7 @@ def main():
 	ap.add_argument('solFile')
 	args = ap.parse_args()
 
-	print getSpecSolRot(args.specFile, args.solFile)
+	print(getSpecSolRot(args.specFile, args.solFile))
 
 if __name__ == '__main__':
 	main()

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 #
 # This script creates the atom model of an Elfin design solution
@@ -22,195 +22,195 @@ class Synthesiser:
     def __init__(
         self, 
         spec, 
-        pdbDir, 
-        cappingsDir,
-        metadataDir, 
-        showFusion=False,
-        disableCapping=False
+        pdb_dir, 
+        cappings_dir,
+        metadata_dir, 
+        show_fusion=False,
+        disable_capping=False
     ):
-        self.spec           = spec
-        self.doublesDir     = pdbDir + "/doubles/"
-        self.singlesDir     = pdbDir + "/singles/"
-        self.crDir          = cappingsDir
-        self.showFusion     = showFusion
-        self.disableCapping = disableCapping
+        self.spec             = spec
+        self.pdb_dir          = pdb_dir
+        self.cr_dir           = cappings_dir
+        self.show_fusion      = show_fusion
+        self.disable_capping  = disable_capping
 
-        self.si             = Bio.PDB.Superimposer()
+        self.si               = Bio.PDB.Superimposer()
 
         # Parse and convert capping repeat indicies into a dictionary
-        self.cappingRepeatRIdDict = {}
-        for row in readCsv(metadataDir + '/repeat_indicies.csv', delim=' '):
-            self.cappingRepeatRIdDict[row[0].split('.')[0].replace('DHR', 'D')] = [int(idx) for idx in row[1:]]
+        self.capping_repeat_r_id_dict = {}
+        for row in readCsv(metadata_dir + '/repeat_indicies.csv', delim=' '):
+            self.capping_repeat_r_id_dict[row[0].split('.')[0].replace('DHR', 'D')] = [int(idx) for idx in row[1:]]
 
-    def resetResidueId(self):
-        self.residueID = 1
+    def reset_residue_id(self):
+        self.residue_id = 1
 
-    def getNextResidueId(self):
-        rid = self.residueID
-        self.residueID += 1
+    def get_next_residue_id(self):
+        rid = self.residue_id
+        self.residue_id += 1
         return rid
 
-    def getCapping(self, primRes, capRes, crRids, nTerm=True):
-        if self.disableCapping:
+    def get_capping(self, prim_res, cap_res, cr_r_ids, n_term=True):
+        if self.disable_capping:
             return []
 
-        nCapRes = len(capRes)
+        n_cap_res = len(cap_res)
 
         # We could use as many shared residues as possible for alignment but
         # that could create gaps (jumps) due to some of the residues in
         # primary being affected by interface. Therefore here we use one eigth
         # like GenXDB does (repeat index range / 4 is 1/8 of the module).
-        if nTerm:
-            matchStartIdx = [i for (i,el) in enumerate(capRes) if el.id[1] == crRids[0]][0]
-            for cri in xrange(matchStartIdx, nCapRes):
-                primIdx = cri - matchStartIdx
-                if primRes[primIdx].resname != capRes[cri].resname: 
+        if n_term:
+            match_start_idx = [i for (i,el) in enumerate(cap_res) if el.id[1] == cr_r_ids[0]][0]
+            for cri in range(match_start_idx, n_cap_res):
+                prim_idx = cri - match_start_idx
+                if prim_res[prim_idx].resname != cap_res[cri].resname: 
                         break
-                maxMatchIdx = cri
+                max_match_idx = cri
 
-            maxAlignLen = intFloor((maxMatchIdx - matchStartIdx) / 4)
-            primAlignRes = primRes[:maxAlignLen]
-            capAlignRes = capRes[matchStartIdx:matchStartIdx+maxAlignLen]
-            realCapRes = capRes[:matchStartIdx]
+            max_align_len = int_floor((max_match_idx - match_start_idx) / 4)
+            prim_align_res = prim_res[:max_align_len]
+            cap_align_res = cap_res[match_start_idx:match_start_idx+max_align_len]
+            real_cap_res = cap_res[:match_start_idx]
 
-            print 'N-Terminus capping align len: {}'.format(maxAlignLen)
+            print('N-Terminus capping align len: {}'.format(max_align_len))
         else:
-            matchEndIdx = [i for (i,el) in enumerate(capRes) if el.id[1] == crRids[3]][0]
-            for cri in reversed(xrange(0, matchEndIdx + 1)):
-                primIdx = cri - matchEndIdx - 1
-                if primRes[primIdx].resname != capRes[cri].resname: 
+            match_end_idx = [i for (i,el) in enumerate(cap_res) if el.id[1] == cr_r_ids[3]][0]
+            for cri in reversed(range(match_end_idx + 1)):
+                prim_idx = cri - match_end_idx - 1
+                if prim_res[prim_idx].resname != cap_res[cri].resname: 
                         break
-                minMatchIdx = cri
+                min_match_idx = cri
 
-            maxAlignLen = intFloor((matchEndIdx - minMatchIdx) / 4)
-            primAlignRes = primRes[-maxAlignLen:]
-            capAlignRes = capRes[matchEndIdx-maxAlignLen+1:matchEndIdx+1]
-            realCapRes = capRes[matchEndIdx+1:]
+            max_align_len = int_floor((match_end_idx - min_match_idx) / 4)
+            prim_align_res = prim_res[-max_align_len:]
+            cap_align_res = cap_res[match_end_idx-max_align_len+1:match_end_idx+1]
+            real_cap_res = cap_res[match_end_idx+1:]
 
-            print 'C-Terminus capping align len: {}'.format(maxAlignLen)
+            print('C-Terminus capping align len: {}'.format(max_align_len))
 
-        for i in xrange(0, len(primAlignRes)):
-            assert(primAlignRes[i].resname == capAlignRes[i].resname)
+        for i in range(len(prim_align_res)):
+            assert(prim_align_res[i].resname == cap_align_res[i].resname)
 
-        primAtoms       = [al[0] for al in [[a for a in r.child_list if a.name == 'CA'] for r in primAlignRes]]
-        capAtoms        = [al[0] for al in [[a for a in r.child_list if a.name == 'CA'] for r in capAlignRes]]
+        prim_atoms       = [al[0] for al in [[a for a in r.child_list if a.name == 'CA'] for r in prim_align_res]]
+        cap_atoms        = [al[0] for al in [[a for a in r.child_list if a.name == 'CA'] for r in cap_align_res]]
         
-        self.si.set_atoms(primAtoms, capAtoms)
+        self.si.set_atoms(prim_atoms, cap_atoms)
         rot, tran = self.si.rotran
 
-        [r.transform(rot, tran) for r in realCapRes]
+        for r in real_cap_res:
+          r.transform(rot, tran)
         
-        return realCapRes
+        return real_cap_res
 
-    def projectModuleInstance(
+    def project_module_instance(
         self, 
         graph,
         chains, 
-        nodeA
+        node_a
     ):
-        print 'Processing node: id={}, name={}'.format(nodeA['id'], nodeA['name'])
+        print('Processing node: id={}, name={}'.format(node_a['id'], node_a['name']))
 
-        if not nodeA['trim'][1]:
+        if not node_a['trim'][1]:
             # This is an end-node and end-node atoms are already covered by
             # their preceeding non-end node
             return chains
 
-        singleA = readPdb(self.singlesDir + '/' + nodeA['name'] + '.pdb')
-        resiCountA = getResidueCount(singleA)
+        single_a = read_pdb(self.pdb_dir + '/singles/' + node_a['name'] + '.pdb')
+        resi_count_a = get_residue_count(single_a)
 
-        ctermNodes = ctermNodes=[n for n in graph['nodes'] if n['id'] == nodeA['ctermNodeId']]
-        nCtermNodes = len(ctermNodes)
+        cterm_nodes = cterm_nodes=[n for n in graph['nodes'] if n['id'] == node_a['cterm_node_id']]
+        n_cterm_nodes = len(cterm_nodes)
 
-        if nCtermNodes == 0:
+        if n_cterm_nodes == 0:
             # end-nodes don't reach here - this only fires in cases where
             # there's only one single node in the entire chain
-            print ('Warning: \n'
+            print('Warning: \n'
                     '   Single-node chains still use transformation '
                     '   matricies calculated with double fusion in mind. '
                     '   This might cause some inaccuracy when applied '
                     '   not on a trimmed double but a single module.')
-            chainId = graph['name'] + '_' + str(nodeA['id'])
-            residues = stripResidues(singleA)
+            chain_id = graph['name'] + '_' + str(node_a['id'])
+            residues = strip_residues(single_a)
 
-        elif nCtermNodes == 1:
-            nodeB = ctermNodes[0]
+        elif n_cterm_nodes == 1:
+            node_b = cterm_nodes[0]
 
-            singleB = readPdb(self.singlesDir + '/' + nodeB['name'] + '.pdb')
-            double = readPdb(self.doublesDir + '/' + (nodeA['name'] + '-' + nodeB['name']) + '.pdb')
+            singleB = read_pdb(self.pdb_dir + '/singles/' + node_b['name'] + '.pdb')
+            double = read_pdb(self.pdb_dir + '/doubles/' + (node_a['name'] + '-' + node_b['name']) + '.pdb')
 
-            resiCountB = getResidueCount(singleB)
-            resiCountDouble = getResidueCount(double)
+            resi_count_b = get_residue_count(singleB)
+            resi_count_double = get_residue_count(double)
 
-            chainId = graph['name'] + '_' + str(nodeA['id']) + '-' + str(nodeB['id'])
-            residues = stripResidues(double)
+            chain_id = graph['name'] + '_' + str(node_a['id']) + '-' + str(node_b['id'])
+            residues = strip_residues(double)
 
             # Compute trim residue indicies that minimise effect on 
             # atom position caused by double interfaces
-            prefixResidues = []
-            suffixResidues = []
-            if nodeA['trim'][0]:
-                startResi = intFloor(float(resiCountA)/2)
+            prefix_residues = []
+            suffix_residues = []
+            if node_a['trim'][0]:
+                start_resi = int_floor(float(resi_count_a)/2)
             else:
-                startResi = 0
+                start_resi = 0
 
                 # We expect an untrimmed end to be capped
-                if nodeA['cap'][0]:
-                    capName = nodeA['name'].split('_')[0]
-                    capAndRepeat = readPdb(self.crDir + '/' + capName + '_NI.pdb')
-                    prefixResidues = self.getCapping(
-                        primRes=residues, 
-                        capRes=stripResidues(capAndRepeat), 
-                        crRids=self.cappingRepeatRIdDict[capName], 
-                        nTerm=True
+                if node_a['cap'][0]:
+                    cap_name = node_a['name'].split('_')[0]
+                    cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_NI.pdb')
+                    prefix_residues = self.get_capping(
+                        prim_res=residues, 
+                        cap_res=strip_residues(cap_and_repeat), 
+                        cr_r_ids=self.capping_repeat_r_id_dict[cap_name], 
+                        n_term=True
                     )
                 else:
-                    print 'Warning: untrimmed N-Terminus is not capped'
+                    print('Warning: untrimmed N-Terminus is not capped')
             
-            if nodeB['trim'][1]:
-                endResi = resiCountDouble - intCeil(float(resiCountB)/2)
+            if node_b['trim'][1]:
+                end_resi = resi_count_double - int_ceil(float(resi_count_b)/2)
             else:
-                endResi = resiCountDouble
+                end_resi = resi_count_double
 
                 # We expect an untrimmed end to be capped
-                if nodeB['cap'][1]:
-                    capName = nodeB['name'].split('_')[-1]
-                    capAndRepeat = readPdb(self.crDir + '/' + capName + '_IC.pdb')
-                    suffixResidues = self.getCapping(
-                        primRes=residues, 
-                        capRes=stripResidues(capAndRepeat), 
-                        crRids=self.cappingRepeatRIdDict[capName], 
-                        nTerm=False
+                if node_b['cap'][1]:
+                    cap_name = node_b['name'].split('_')[-1]
+                    cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_IC.pdb')
+                    suffix_residues = self.get_capping(
+                        prim_res=residues, 
+                        cap_res=strip_residues(cap_and_repeat), 
+                        cr_r_ids=self.capping_repeat_r_id_dict[cap_name], 
+                        n_term=False
                     )
                 else:
-                    print 'Warning: untrimmed C-Terminus is not capped'
+                    print('Warning: untrimmed C-Terminus is not capped')
 
-            residues = prefixResidues + residues[startResi:endResi] + suffixResidues
+            residues = prefix_residues + residues[start_resi:end_resi] + suffix_residues
         else:
-            raise ValueError('nCtermNodes = ' + str(nCtermNodes))
+            raise ValueError('n_cterm_nodes = ' + str(n_cterm_nodes))
 
         # Steal residues from the PDB and put in our chain
-        if self.showFusion:
-            currChain = Bio.PDB.Chain.Chain(chainId)
-            chains.append(currChain)
+        if self.show_fusion:
+            curr_chain = Bio.PDB.Chain.Chain(chain_id)
+            chains.append(curr_chain)
         else:
-            currChain = chains[0]
+            curr_chain = chains[0]
 
         for r in residues:
-            r.id = (r.id[0], self.getNextResidueId(), r.id[2]) 
-            r.transform(np.asarray(nodeA['rot']), nodeA['tran'])
-            currChain.add(r)
+            r.id = (r.id[0], self.get_next_residue_id(), r.id[2]) 
+            r.transform(np.asarray(node_a['rot']), node_a['tran'])
+            curr_chain.add(r)
 
-    def makeChains(self, graph):
+    def make_chains(self, graph):
         chains = []
 
-        if not self.showFusion:
+        if not self.show_fusion:
             chains.append(Bio.PDB.Chain.Chain(graph['name']))
 
         for node in graph['nodes']:
-            self.projectModuleInstance(
+            self.project_module_instance(
                 graph=graph,
                 chains=chains, 
-                nodeA=node
+                node_a=node
             )
 
         return chains
@@ -219,13 +219,13 @@ class Synthesiser:
         model = Bio.PDB.Model.Model(0)
         si = Bio.PDB.Superimposer()
 
-        if self.showFusion:
-            print 'showFusion is on'
+        if self.show_fusion:
+            print('Note: show_fusion is on')
 
-        self.resetResidueId()
-        for graphIdx in xrange(0, len(self.spec)):
-            print 'Processing graph: idx={}, name={}'.format(graphIdx, self.spec[graphIdx]['name'])
-            map(lambda c: model.add(c), self.makeChains(self.spec[graphIdx]))
+        self.reset_residue_id()
+        for graph_idx in range(len(self.spec)):
+            print('Processing graph: idx={}, name={}'.format(graph_idx, self.spec[graph_idx]['name']))
+            map(lambda c: model.add(c), self.make_chains(self.spec[graph_idx]))
 
         sb = Bio.PDB.StructureBuilder.StructureBuilder()
         sb.init_structure('0')
@@ -236,48 +236,48 @@ class Synthesiser:
 
 def main():
     ap = argparse.ArgumentParser(description='Generate atom model in CIF format using output from Elfin core');
-    ap.add_argument('specFile')
-    ap.add_argument('--outFile', default='')
-    ap.add_argument('--pdbDir', default='./resources/pdb_aligned/')
-    ap.add_argument('--cappingsDir', default='./resources/pdb_relaxed/cappings')
-    ap.add_argument('--metadataDir', default='./resources/metadata/')
-    ap.add_argument('--showFusion', action='store_true')
-    ap.add_argument('--disableCapping', action='store_true')
+    ap.add_argument('spec_file')
+    ap.add_argument('--out_file', default='')
+    ap.add_argument('--pdb_dir', default='./resources/pdb_aligned/')
+    ap.add_argument('--cappings_dir', default='./resources/pdb_relaxed/cappings')
+    ap.add_argument('--metadata_dir', default='./resources/metadata/')
+    ap.add_argument('--show_fusion', action='store_true')
+    ap.add_argument('--disable_capping', action='store_true')
     args = ap.parse_args()
 
-    specExt = args.specFile[args.specFile.rfind('.'):]
+    spec_ext = args.spec_file[args.spec_file.rfind('.'):]
 
-    if specExt == '.json':
-        spec = readJSON(args.specFile)
+    if spec_ext == '.json':
+        spec = readJSON(args.spec_file)
     else:
-        print 'Unknown spec file type: {}'.format(specExt)
+        print('Unknown spec file type: {}'.format(spec_ext))
         exit()
 
     if len(spec) > 1:
-        print 'Warning: multi-chain feature is not well tested yet'
+        print('Warning: multi-chain feature is not well tested yet')
 
     model = Synthesiser(
         spec, 
-        args.pdbDir,
-        args.cappingsDir,
-        args.metadataDir,
-        args.showFusion,
-        args.disableCapping
+        args.pdb_dir,
+        args.cappings_dir,
+        args.metadata_dir,
+        args.show_fusion,
+        args.disable_capping
     ).run()
 
-    if args.outFile == '':
-        args.outFile = args.specFile
-    args.outfile = '.'.join(args.outFile.split('.')[:-1])
+    if args.out_file == '':
+        args.out_file = args.spec_file
+    args.out_file = '.'.join(args.out_file.split('.')[:-1])
 
-    print 'Saving...'
-    saveCif(model, file)
+    print('Saving...')
+    save_cif(model, file)
 
     # Todo: output coms for multiple chains
     #   Need to change csv format such that points
     # aren't connected between chains
     
     # coms = [map(lambda el: el['tran'], spec[0]['nodes'])]
-    # saveCsv(coms, args.outFile + '.csv')
+    # saveCsv(coms, args.out_file + '.csv')
 
 if __name__ == '__main__':
-    safeExec(main)
+    safe_exec(main)
