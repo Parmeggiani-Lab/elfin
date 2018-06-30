@@ -16,7 +16,7 @@ import argparse
 import Bio.PDB
 import Bio.SubsMat.MatrixInfo
 import Bio.PDB.StructureBuilder
-from ElfinUtils import *
+from utilities import *
 
 class Synthesiser:
     def __init__(
