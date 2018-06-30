@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 import argparse, sys
 import subprocess, glob
-from elfin import *
+from utilities import *
 
 def merge_chains(pdb):
   """
@@ -136,7 +136,7 @@ def preprocess_double(double_file):
   # Replace double residues where it should be sdouble residues
   double_residues = get_chain(double).child_list
   sdouble_residues = strip_residues(sdouble)
-  for rIdx in xrange(sdouble_start_idx, sdouble_end_idx):
+  for rIdx in range(sdouble_start_idx, sdouble_end_idx):
     offset_r_idx = rIdx + (0 if sdouble_first else double_chain_lens[0]-sdouble_chain_lens[0])
     old_r_id = double_residues[offset_r_idx].id
     double_residues[offset_r_idx] = sdouble_residues[rIdx]
@@ -168,7 +168,7 @@ def main():
   for i in range(N):
     double_file = doubleFiles[i]
     print('Prepping double [{}/{}] {}'.format(i+1, N, double_file))
-    save_pdb(preprocess_double(double_file), double_output_dir + '/' + os.path.basename(double_file))
+    save_pdb(struct=preprocess_double(double_file), save_path=double_output_dir + '/' + os.path.basename(double_file))
 
   # Singles
   singleFiles = glob.glob(args.input_dir + '/singles/*.pdb')
@@ -177,7 +177,7 @@ def main():
     single_file = singleFiles[i]
     print('Prepping single [{}/{}] {}'.format(i+1, N, single_file))
     # Singles need nothing other than cleansing
-    save_pdb(cleanse_atoms(read_pdb(single_file)), single_output_dir + '/' + os.path.basename(single_file))
+    save_pdb(struct=cleanse_atoms(read_pdb(single_file)), save_path=single_output_dir + '/' + os.path.basename(single_file))
 
   # Hubs
   hubFiles = glob.glob(args.input_dir + '/hubs/*.pdb')
@@ -185,7 +185,7 @@ def main():
   for i in range(N):
     hub_file = hubFiles[i]
     print('Prepping hub [{}/{}] {}'.format(i+1, N, hub_file))
-    save_pdb(cleanse_atoms(read_pdb(hub_file)), hub_output_dir + '/' + os.path.basename(hub_file))
+    save_pdb(struct=cleanse_atoms(read_pdb(hub_file)), save_path=hub_output_dir + '/' + os.path.basename(hub_file))
 
 if __name__ == '__main__':
   safe_exec(main)

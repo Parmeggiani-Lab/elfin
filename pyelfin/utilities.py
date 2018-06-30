@@ -14,7 +14,7 @@ class ElfinGraph():
   def __init__(self, name='', nodes=[]):
     self.name = name
     self.nodes = nodes
-
+    
   def transform(self, rot, tran):
     for n in self.nodes:
       n.transform(rot, tran)
@@ -23,6 +23,7 @@ class ElfinNode():
   """Representation of a single module instance and stores info about connectivity"""
   def __init__(
     self, 
+    *,
     id, 
     name, 
     trim=(False, False),
@@ -103,9 +104,9 @@ def strip_residues(pdb, chain_ids=None):
         residues += tmp
   return residues
 
-def get_chain(struct, chainName='A'):
+def get_chain(struct, chain_id='A'):
   """Returns a specific chain from a Bio.PDB.Structure.Structure."""
-  return struct.child_list[0].child_dict[chainName]
+  return struct.child_list[0].child_dict[chain_id]
 
 def get_chains(struct):
   """Returns all chains of a Bio.PDB.Structure.Structure."""
@@ -186,7 +187,7 @@ def float_approximates(a, b, error=1e-6):
   """Returns whether float a is approximately b within error tolerance"""
   return abs(a-b) < error
 
-def min_dist_from_line(point, line_points, allow_perp=True):
+def min_dist_from_line(*, point, line_points, allow_perp=True):
   """
   Computes the minimum dist from a line to a point.
 
@@ -230,7 +231,7 @@ def min_dist_from_line(point, line_points, allow_perp=True):
 
   return min_dist
 
-def check_collision(xdb, collision_measure, nodes, new_node, shape):
+def check_collision(*, xdb, collision_measure, nodes, new_node, shape):
   """
   Tests whether a to-be-added node is too close to any node in partially or
   completely formed shape.
@@ -308,7 +309,7 @@ def read_csv(read_path, delim=','):
 
   return rows
 
-def save_points_as_csv(points, save_path, delim=' '):
+def save_points_as_csv(*, points, save_path, delim=' '):
   """
   Saves a list of points into a CSV file.
 
@@ -357,7 +358,7 @@ def read_pdb(
   structure = parser.get_structure(pdb_name, read_path)
   return structure
 
-def save_cif(struct, save_path):
+def save_cif(*, struct, save_path):
   """
   Saves a Bio.PDB.Structure.Structure as a CIF file. Does not automatically
   append .cif extension.
@@ -376,7 +377,7 @@ def save_cif(struct, save_path):
     # ""`) to the end of the file may help.")
     file.writelines('_citation.title  "Elfin"')
 
-def save_pdb(struct, save_path):
+def save_pdb(*, struct, save_path):
   """
   Saves a Bio.PDB.Structure.Structure as a PDB file.
 
