@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 """
 Calculate RMSD between two XYZ files
@@ -173,14 +173,14 @@ def write_coordinates(atoms, V, title=""):
     """
     N, D = V.shape
 
-    print str(N)
-    print title
+    print(str(N))
+    print(title)
 
-    for i in xrange(N):
+    for i in range(N):
         atom = atoms[i]
         atom = atom[0].upper() + atom[1:]
         line = "{0:2s} {1:15.8f} {2:15.8f} {3:15.8f}".format(atom, V[i, 0], V[i, 1], V[i, 2])
-        print line
+        print(line)
 
 
 def get_coordinates(filename, fmt):
@@ -412,6 +412,6 @@ Quater: RMSD after coordinates are translated and rotated using quaternions.
         write_coordinates(p_atoms, p_all, title="{} translated".format(args.structure_a))
         quit()
 
-    print "Normal RMSD:", normal_rmsd
-    print "Kabsch RMSD:", kabsch_rmsd(P, Q)
-    print "Quater RMSD:", quaternion_rmsd(P, Q)
+    print("Normal RMSD:", normal_rmsd)
+    print("Kabsch RMSD:", kabsch_rmsd(P, Q))
+    print("Quater RMSD:", quaternion_rmsd(P, Q))

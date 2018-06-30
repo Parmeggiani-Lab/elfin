@@ -28,16 +28,16 @@ class ElfinNode():
     name, 
     trim=(False, False),
     cap=None,
-    ctermNodeId=-1, 
+    cterm_node_id=-1, 
     rot=[[1,0,0],[0,1,0],[0,0,1]], 
     tran=[0,0,0],
-    extraAttachments=[]
+    extra_attachments=[]
   ):
     self.id = id
     self.name = name
     self.trim = trim
     self.cap = cap
-    self.ctermNodeId = ctermNodeId
+    self.cterm_node_id = cterm_node_id
     self.rot = rot
     self.tran = tran
 
@@ -248,15 +248,15 @@ def check_collision(*, xdb, collision_measure, nodes, new_node, shape):
   - bool - whether or not the new node, when added to the shape, causes
     collision.
   """
-  newCOM = xdb['doublesData'][nodes[-1]][new_node]['comB']
+  newCOM = xdb['doubles_data'][nodes[-1]][new_node]['com_b']
 
   # previous node PAIR (not just single node!) is inherently non-colliding
   for i in range(0, len(nodes) - 2):
-    comDist = np.linalg.norm(shape[i] - newCOM)
-    collisionDist = xdb['singlesData'][new_node]['radii'][collision_measure] + \
-                        xdb['singlesData'][nodes[i]]['radii'][collision_measure]
+    com_dist = np.linalg.norm(shape[i] - newCOM)
+    collision_dist = xdb['singles_data'][new_node]['radii'][collision_measure] + \
+                        xdb['singles_data'][nodes[i]]['radii'][collision_measure]
 
-    if comDist < collisionDist:
+    if com_dist < collision_dist:
       return True
 
   return False
@@ -273,11 +273,11 @@ def com_dist_info(xdb):
   - (_,_,_) - tuple containing average, min and max values for centre-of-mass
     distances.
   """
-  pd = xdb['doublesData']
+  pd = xdb['doubles_data']
   dists = []
   for s1 in pd.keys():
     for s2 in pd[s1].keys():
-      dists.append(np.linalg.norm(pd[s1][s2]['comB']))
+      dists.append(np.linalg.norm(pd[s1][s2]['com_b']))
 
   return np.average(dists), min(dists), max(dists)
 

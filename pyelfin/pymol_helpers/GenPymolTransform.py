@@ -2,7 +2,7 @@
 
 import argparse, sys
 import numpy as np
-from ElfinUtils import *
+from utilities import *
 
 def main():
 	ap = argparse.ArgumentParser(description='Generate Pymol Transform');
