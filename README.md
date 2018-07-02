@@ -35,7 +35,7 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 10. [Design Verification](#10-design-verification)
 
 ## 1. Prerequisites
-1. [Python 2.7.9](https://www.python.org/downloads/release/python-279/)
+1. [Python 2.7.9+](https://www.python.org/downloads/release/python-279/)
 2. [VirtualEnv](https://virtualenv.pypa.io/en/stable/) for separation of python environment
 
 ## 2. Optional Tools
@@ -98,7 +98,7 @@ cd elfin                                                #you should now be at re
 
 ```
                                                         #you should be at repository root
-virtualenv --python=<path/to/your/python-2.7.9> .venv   #the name '.venv' is required
+virtualenv .venv   										#the name '.venv' is required
 . ./activate                                            #activate the virtual environment
 pip install -r requirements.txt                         #install required libraries locally
 ```
