@@ -14,7 +14,6 @@ cpp/output
 cpp/bin
 
 **/slurm-*.out
-temp*
 .venv
 movieOutput
 dbRelaxList.sh
