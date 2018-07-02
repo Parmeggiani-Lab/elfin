@@ -4,7 +4,7 @@
 **/*.zip
 **/*.pyc
 **/*.tmp
-**/*.blend
+resources/**/*.blend
 **/.DS_Store
 
 resources/elfin-db
