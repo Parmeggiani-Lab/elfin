@@ -1,4 +1,4 @@
-#!/usr/bin/pytohn3
+#!/usr/bin/env python3
 
 import argparse, sys
 import multiprocessing

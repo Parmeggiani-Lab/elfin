@@ -10,4 +10,9 @@ PYTHONPATH="$PWD/pelfin/:$PYTHONPATH"
 export PYTHONPATH
 
 # Add all scripts folders to path
-PATH=./pelfin/$(find ./scripts/ -type d -printf ":%p" ):/$PATH
+ 
+# https://stackoverflow.com/questions/1527049/join-elements-of-an-array
+function join_by { local IFS="$1"; shift; echo "$*"; }
+script_dirs=$(join_by : $(find ./scripts/ -type d))
+
+PATH=./pelfin/:$script_dirs:$PATH
