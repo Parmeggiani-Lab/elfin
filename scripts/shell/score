@@ -3,7 +3,7 @@
 trap "exit" INT
 
 if [ $# -lt 2 ]; then
-	echo "Usage: score.sh <min_pdb> <native_pdb>"
+	echo "Usage: score <min_pdb> <native_pdb>"
 	exit
 fi
 
