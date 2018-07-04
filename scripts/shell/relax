@@ -3,7 +3,7 @@
 trap "exit" INT
 
 if [ $# -lt 1 ]; then
-	echo "Usage: relax.sh <input_pdb> <max_cycles=200> <overwrite=no>"
+	echo "Usage: relax <input_pdb> <max_cycles=200> <overwrite=no>"
 	exit
 fi
 
@@ -16,7 +16,7 @@ scOutput="${input}_relax.sc"
 
 defaultMaxCycles=200
 defaultLocal="yes" 					# or no
-defaultVariant="omp" 				# or mpi
+defaultVariant="mpi" 				# or omp
 defaultRelease="linuxgccrelease"	# or macosclangrelease 
 defaultWrapper="" 					# or mpirun
 
