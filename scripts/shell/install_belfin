@@ -1,0 +1,58 @@
+#!/bin/bash
+
+echo
+echo "This script installs the Elfin Front Blender addon."
+echo "For custom Blender path, set the \"bl_dir\" environment variable."
+echo 
+
+OS=${OS:-$(uname -s)}
+
+
+
+# realpath function to cover Darwin
+realpath() {
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+}
+
+if [[ $OS == "Darwin" ]]; then
+	bl_dir=${bl_dir:-"$HOME/Library/Application Support/Blender/"}	
+elif [[ $OS == "Linux" ]]; then
+	echo "Please provide your Blender path (without the version, and without quotation marks):"
+	read -r bl_dir
+else
+	echo "Is this Windows? Installation for Windows is not yet implemented."
+	exit 1
+fi
+
+eval bl_dir=\"${bl_dir}\"
+
+# Prevent path spaces from breaking ls output into separate elements
+IFS='
+'
+if [[ ! -d $bl_dir ]]; then
+	echo "Blender directory $bl_dir does not exist."
+	exit 1
+fi
+
+bl_vers=($(ls -d "$bl_dir"*/))
+n_vers=${#bl_vers[@]}
+
+for i in `seq 1 $n_vers`; do
+	echo "[${i}] " $(basename ${bl_vers[$(expr ${i} - 1)]})
+done
+
+echo "Which version of Blender would you like to install to? Choose [1-${n_vers}]"
+read use_ver_idx
+if [[ $use_ver_idx -le $n_vers ]] && [[ $use_ver_idx -gt 0 ]]; then
+	use_ver=${bl_vers[$(expr ${use_ver_idx} - 1)]}
+	bl_addon_path=${use_ver}/scripts/addons/
+	echo "Will symlink belfin into ${bl_addon_path}"
+else
+	echo "Selection invalid"
+	exit 1
+fi
+
+belfin_rpath=$(realpath "belfin")
+bl_addon_rpath=$(realpath "$bl_addon_path")
+mkdir -p $bl_addon_rpath
+ln -s "$belfin_rpath" "$bl_addon_rpath/belfin"
