@@ -7,9 +7,7 @@ source ./.venv/bin/activate
 # Add elfin library path
 PYTHONPATH="$PWD/pelfin/:$PYTHONPATH"
 
-export PYTHONPATH
-
-# Add all scripts folders to path
+# Add all scripts folders to PATH
  
 # https://stackoverflow.com/questions/1527049/join-elements-of-an-array
 function join_by { local IFS="$1"; shift; echo "$*"; }
