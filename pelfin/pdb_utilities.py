@@ -1,5 +1,13 @@
 import Bio.PDB
 
+def get_pdb_residue_count(pdb):
+  """Returns the residue count of a Bio.PDB.Structure.Structure."""
+  return sum([len(c.child_list) for c in pdb.child_list[0].child_list])
+
+def get_chain_residue_count(chain):
+  """Returns the residue count of a Bio.PDB.Structure.Structure."""
+  return len(chain.child_list)
+
 def strip_residues(pdb, chain_ids=None):
   """
   Returns returns residues removed from a PDB.
