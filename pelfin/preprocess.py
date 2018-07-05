@@ -103,7 +103,7 @@ def preprocess_double(double_file):
   assert(len(sdouble_chains) == 2)
 
   # Get residue counts
-  sdouble_r_count = get_residue_count(sdouble)
+  sdouble_r_count = get_pdb_residue_count(sdouble)
 
   # Compute interface residue range
   sdouble_start_idx = int(np.ceil(sdouble_r_count*0.375))+1 # 0.375 is 75% of first single

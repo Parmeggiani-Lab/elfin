@@ -79,10 +79,6 @@ def gen_pymol_txm(rot, tran):
   pymolRotMat = np.append(rotTpTran, [[0,0,0,1]], axis=0)
   return '[' + ', '.join(map(str, pymolRotMat.ravel())) + ']'
 
-def get_residue_count(pdb):
-  """Returns the residue count of a Bio.PDB.Structure.Structure."""
-  return sum([len(c.child_list) for c in pdb.child_list[0].child_list])
-
 def int_ceil(f):
   """Ceil a float then turn it into an int."""
   return int(np.ceil(f))
