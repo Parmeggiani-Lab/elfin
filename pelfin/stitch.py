@@ -116,7 +116,7 @@ class Synthesiser:
             return chains
 
         single_a = read_pdb(self.pdb_dir + '/singles/' + node_a['name'] + '.pdb')
-        resi_count_a = get_residue_count(single_a)
+        resi_count_a = get_pdb_residue_count(single_a)
 
         cterm_nodes = cterm_nodes=[n for n in graph['nodes'] if n['id'] == node_a['cterm_node_id']]
         n_cterm_nodes = len(cterm_nodes)
@@ -138,8 +138,8 @@ class Synthesiser:
             singleB = read_pdb(self.pdb_dir + '/singles/' + node_b['name'] + '.pdb')
             double = read_pdb(self.pdb_dir + '/doubles/' + (node_a['name'] + '-' + node_b['name']) + '.pdb')
 
-            resi_count_b = get_residue_count(singleB)
-            resi_count_double = get_residue_count(double)
+            resi_count_b = get_pdb_residue_count(singleB)
+            resi_count_double = get_pdb_residue_count(double)
 
             chain_id = graph['name'] + '_' + str(node_a['id']) + '-' + str(node_b['id'])
             residues = strip_residues(double)
