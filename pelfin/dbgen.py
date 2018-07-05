@@ -44,9 +44,9 @@ class XDBGenerator:
     self.aligned_pdb_dir  = aligned_pdb_dir
     self.out_file         = out_file
     self.si               = Bio.PDB.Superimposer()
-    self.double_data     = {}
-    self.single_data     = {}
-    self.hub_data     = {}
+    self.double_data      = {}
+    self.single_data      = {}
+    self.hub_data         = {}
 
     # Cache in memory as disk I/O is really heavy here
     self.single_pdbs      = {}
@@ -84,16 +84,18 @@ class XDBGenerator:
           # Here we do not use the second quadrant method, because during
           # stitching none of the hubs' residues get changed. The stitching
           # will take place at the end of the hub's component's terminal.
-          rc_a = get_residue_count(self.single_pdbs[comp_name])
-          fusion_count = int_ceil(float(rc_a)/8)
+          pause_code()
+          rc_dbl_a = get_pdb_residue_count(self.single_pdbs[comp_name])
+          rc_hub_a = get_chain_residue_count(get_chain(hub, chain_id))
+          fusion_count = int_ceil(float(rc_dbl_a)/8)
           double = self.double_pdbs[comp_name][single_b_name]
 
           rot, tran = self.get_rot_trans(
             moving=hub,
             moving_chain_id=chain_id,
             fixed=double, 
-            moving_resi_offset=rc_a - fusion_count,
-            fixed_resi_offset=rc_a - fusion_count,
+            moving_resi_offset=rc_hub_a - fusion_count,
+            fixed_resi_offset=rc_dbl_a - fusion_count,
             match_count=fusion_count
           )
 
@@ -102,8 +104,8 @@ class XDBGenerator:
       if comp_info['n_free']:
         for single_a_name in [a_name for a_name in self.double_data if comp_name in self.double_data[a_name]]:
           # Same as c_free except comp acts as single b
-          rc_a = get_residue_count(self.single_pdbs[single_a_name])
-          rc_b = get_residue_count(self.single_pdbs[comp_name])
+          rc_a = get_pdb_residue_count(self.single_pdbs[single_a_name])
+          rc_b = get_pdb_residue_count(self.single_pdbs[comp_name])
           fusion_count = int_ceil(float(rc_b)/8)
           double = self.double_pdbs[single_a_name][comp_name]
 
@@ -139,9 +141,9 @@ class XDBGenerator:
     single_a = self.single_pdbs[single_name_a]
     single_b = self.single_pdbs[single_name_b]
 
-    rc_a = get_residue_count(single_a)
-    rc_b = get_residue_count(single_b)
-    rc_double = get_residue_count(double)
+    rc_a = get_pdb_residue_count(single_a)
+    rc_b = get_pdb_residue_count(single_b)
+    rc_double = get_pdb_residue_count(double)
 
     rc_a_half = int_floor(float(rc_a)/2)
     rc_b_half = int_ceil(float(rc_b)/2)
@@ -207,9 +209,8 @@ class XDBGenerator:
     #   Double is already aligned to first single so there is no need for
     # the first transformation.
     #
-    #   You can check this is true by varifying that
-    # self.get_rot_trans(double, single_a) has identity rotation and zero
-    # translation.
+    #   This can be varifyed by checking that self.get_rot_trans(double,
+    # single_a) has identity rotation and zero translation.
     #
     #   Only align the second quardrant of single_b in order to be
     # consistent with the Stitch script, where doubles are fused together
