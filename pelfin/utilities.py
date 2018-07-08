@@ -1,9 +1,8 @@
 import inspect, os, sys, code, traceback
-
 import numpy as np
-
 import json
 import csv,re
+import importlib, types
 
 RadiiTypes = ['average_all','max_ca_dist','max_heavy_dist']
 INF = float('inf')
@@ -61,6 +60,22 @@ class ElfinNode():
   def transform(self, rot, tran):
       self.rot = (np.dot(self.rot, rot)).tolist()
       self.tran = (np.dot(self.tran, rot) + tran).tolist()
+
+def recursive_reload(module):
+    """Recursively reload modules."""
+
+    reloaded = set()
+    def _reload(module):
+      try:
+        importlib.reload(module)
+      except Exception as e:
+        print('Warning: {}'.format(e))
+      reloaded.add(module)
+      for attribute_name in dir(module):
+          attribute = getattr(module, attribute_name)
+          if type(attribute) is types.ModuleType and attribute not in reloaded:
+              _reload(attribute)
+    _reload(module)
 
 def gen_pymol_txm(rot, tran):
   """

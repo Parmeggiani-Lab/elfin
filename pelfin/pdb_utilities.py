@@ -39,8 +39,7 @@ def get_chains(struct):
 
 def read_pdb(
     read_path,
-    pdb_name=None,
-    permissive=0
+    pdb_name=None
 ):
   """
   Reads a PDB file.
@@ -48,14 +47,13 @@ def read_pdb(
   Args:
   - read_path - PDB string file path to read from.
   - pdb_name - a string to set as the name of the Bio.PDB.Structure.Structure.
-  - permissive - sets whether the Bio.PDB.PDBParser is permissive.
-
+  
   Returns:
   - structure - Bio.PDB.Structure.Structure.
   """
   if pdb_name == None:
     pdb_name = read_path.split('/')[-1].replace('.', '_')
-  parser = Bio.PDB.PDBParser(permissive)
+  parser = Bio.PDB.PDBParser(PERMISSIVE=False)
   structure = parser.get_structure(pdb_name, read_path)
   return structure
 
