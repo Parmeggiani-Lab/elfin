@@ -11,8 +11,8 @@ resources/**/*.blend*
 resources/elfin-db
 resources/pdb_*
 
-cpp/output
-cpp/bin
+celfin/output
+celfin/bin
 
 **/slurm-*.out
 .venv
