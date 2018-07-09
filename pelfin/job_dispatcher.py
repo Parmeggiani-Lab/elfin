@@ -9,11 +9,15 @@ from utilities import *
 def star_call(*cmd_and_arg):
   subprocess.check_call(*cmd_and_arg)
 
-def main():
-  ap = argparse.ArgumentParser(description='Run single threaded jobs in separate processes')
-  ap.add_argument('cmd_list')
-  ap.add_argument('-worker_count', default='cpu_count')
-  args = ap.parse_args()
+
+def parse_args(args):
+  parser = argparse.ArgumentParser(description='Run single threaded jobs in separate processes')
+  parser.add_argument('cmd_list')
+  parser.add_argument('-worker_count', default='cpu_count')
+  return parser.parse_args(args)
+
+def main(test_args=None):
+  args = parse_args(sys.argv[1:] if test_args is None else test_args)
 
   try:
     if args.worker_count == 'cpu_count':

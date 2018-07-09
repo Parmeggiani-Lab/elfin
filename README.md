@@ -1,17 +1,17 @@
-# Elfin V1.1 Alpha
-Elfin is a computational protein design tool based on repeat protein module construction. A journal paper explaining this in detail is [here](https://www.sciencedirect.com/science/article/pii/S1047847717301417).
+# Elfin v2
+Elfin is a computational protein design tool based on [repeat protein assembly](https://www.sciencedirect.com/science/article/pii/S1047847717301417). 
 
-In short, Elfin uses repeat proteins as basic building blocks to construct larger proteins that form a 3D structure as close to the user's input description as possible. Credits to Fabio Parmeggiani (UoB), TJ Brunette (UoW), David Baker (UoW), and Simon McIntosh-Smith (UoB).
-
-V1.1 is an overhaul to add complex design capabilities to the original proof-of-concept (Branch V1). The V1.1 README will get updated accordingly but it can often lag behind code changes.
-
-This resository hosts the data processing scripts, the core loop-closer, and the Blender addon script. The PDB files of the building blocks are hosted in a private repository [here](https://github.com/joy13975/elfin-db). As these data have not yet been published by their authors (F. Parmeggiani and Baker lab of the University of Washington), I cannot make them public. If you need access to these data please contact me or fabio.parmeggiani@bristol.ac.uk (Fabio Parmeggiani). You can design proteins without PDB data, but you will not be able to create the full atom model for your design.
-
-![alt tag](resources/diagrams/ProteinBristol.png)
-Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin's genetic algorithm (GA). Visualisation created using [PyMol](https://pymol.org).
+Repeat protein assembly means repeat proteins are used as basic building blocks to construct larger proteins that form a 3D structure as close to the user's input description as possible. Credits to Fabio Parmeggiani (UoB), TJ Brunette (UoW), David Baker (UoW), and Simon McIntosh-Smith (UoB).
 
 * UoB: University of Bristol
 * UoW: University of Washington
+
+Elfin v2 is an overhaul to add complex design capabilities to the original proof-of-concept ([branch v1](https://github.com/joy13975/elfin/tree/v1)). This resository hosts the data processing scripts, the core loop-closer, and Elfin Front (Blender addon). 
+
+The PDB files of the building blocks are hosted in a [private repository](https://github.com/joy13975/elfin-db). These data have not yet been published by their authors (F. Parmeggiani and Baker lab of the University of Washington), I cannot make them public. If you need access to these data, please contact [Fabio Parmeggiani](https://github.com/parmef) at fabio.parmeggiani@bristol.ac.uk. You can still run Elfin and design proteins without PDB data, but you will not be able to create the full atom model for your design.
+
+![alt tag](resources/diagrams/ProteinBristol.png)
+Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin's genetic algorithm (GA). Visualisation created using [PyMol](https://pymol.org).
 
 ### Content:
 1. [Prerequisites](#1-prerequisites)

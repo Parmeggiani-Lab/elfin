@@ -10,14 +10,17 @@ from collections import OrderedDict
 from utilities import *
 from pdb_utilities import *
 
-def main():
-  ap = argparse.ArgumentParser(
+def parse_args(args):
+  parser = argparse.ArgumentParser(
     description='Generates the xDB database from preprocessed single and double modules.');
-  ap.add_argument('--relaxed_pdbs_dir', default='./resources/pdb_relaxed/')
-  ap.add_argument('--metadata_dir', default='./resources/metadata/')
-  ap.add_argument('--output', default='./resources/xdb.json')
-  ap.add_argument('--aligned_pdb_dir', default='./resources/pdb_aligned/')
-  args = ap.parse_args()
+  parser.add_argument('--relaxed_pdbs_dir', default='./resources/pdb_relaxed/')
+  parser.add_argument('--metadata_dir', default='./resources/metadata/')
+  parser.add_argument('--output', default='./resources/xdb.json')
+  parser.add_argument('--aligned_pdb_dir', default='./resources/pdb_aligned/')
+  return parser.parse_args(args)
+
+def main(test_args=None):
+  args = parse_args(sys.argv[1:] if test_args is None else test_args)
 
   XDBGenerator(
     args.relaxed_pdbs_dir, 
