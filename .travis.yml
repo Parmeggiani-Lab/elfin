@@ -4,8 +4,6 @@ matrix:
       python:
         - "2.7"
         - "3.7"
-      #before_script:
-        #- cd pelfin
       install: 
         - pip install -r requirements.txt
       script:
