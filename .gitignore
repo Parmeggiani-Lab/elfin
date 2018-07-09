@@ -6,6 +6,7 @@
 **/*.tmp
 resources/**/*.blend*
 **/.DS_Store
+**/.pytest_cache
 
 resources/elfin-db
 resources/pdb_*

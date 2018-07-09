@@ -3,22 +3,25 @@
 import argparse, sys
 from utilities import *
 
-def main():
-  ap = argparse.ArgumentParser(description='Sliding-window RMSD calculator')
-  ap.add_argument('solution_dir') # Absence of dash denotes mandatory argument
-  ap.add_argument('minimised_dir')
-  ap.add_argument('-window_len', default=300)
-  ap.add_argument('-overlap_ratio', default=0.5)
-  ap.add_argument('-warn_threshold', default=5.0)
-  args = ap.parse_args()
+def parse_args(args):
+  parser = argparse.ArgumentParser(description='Sliding-window RMSD calculator')
+  parser.add_argument('solution_dir') # Absence of dash denotes mandatory argument
+  parser.add_argument('minimised_dir')
+  parser.add_argument('-window_len', default=300)
+  parser.add_argument('-overlap_ratio', default=0.5)
+  parser.add_argument('-warn_threshold', default=5.0)
+  return parser.parse_args(args)
 
-  if(args.window_len < 0)
+def main(test_args=None):
+  args = parse_args(sys.argv[1:] if test_args is None else test_args)
+
+  if(args.window_len < 0):
     raise ValueError('Invalid window_len: must be greater than 0')
 
-  if(args.overlap_ratio < 0 or args.overlap_ratio > 1.0)
+  if(args.overlap_ratio < 0 or args.overlap_ratio > 1.0):
     raise ValueError('Invalid overlap_ratio: must be between 0 and 1.0')
 
-  if(args.warn_threshold < 0)
+  if(args.warn_threshold < 0):
     raise ValueError('Invalid warn_threshold: must be greater than 0')
 
   overlap = int(args.overlap_ratio * args.window_len)
