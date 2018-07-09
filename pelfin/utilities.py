@@ -7,60 +7,6 @@ import importlib, types
 RadiiTypes = ['average_all','max_ca_dist','max_heavy_dist']
 INF = float('inf')
 
-class ElfinGraph():
-  """
-  A network of nodes that are connected either by doubles or through hubs.
-  Might be multi-chain.
-  """
-  def __init__(self, name='', nodes=[]):
-    self.name = name
-    self.nodes = nodes
-    
-  def transform(self, rot, tran):
-    for n in self.nodes:
-      n.transform(rot, tran)
-
-class ElfinNode():
-  """
-  A single module instance and stores info about connectivity
-  """
-  def __init__(
-    self, 
-    **kwargs
-  ):
-    self.id = kwargs.pop('id')
-    self.name = kwargs.pop('name')
-    self.trim = kwargs.pop('trim', (False, False))
-    self.cap = kwargs.pop('cap', None)
-    self.cterm_node_id = kwargs.pop('cterm_node_id', -1)
-    self.rot = kwargs.pop('rot', [[1,0,0],[0,1,0],[0,0,1]])
-    self.tran = kwargs.pop('tran', [0,0,0])
-
-    # Default is to cap the end that is not trimmed
-    if self.cap == None:
-      self.cap = (not trim[0], not trim[1])
-
-    # Error checking
-    if self.id < 0:
-      raise ValueError('Node ID should never be negative: id={}'.format(self.id))
-
-    if len(self.trim) != 2:
-      raise ValueError('ElfinNode trim vector length != 2: trim={}'.format(self.trim))
-
-    if not self.trim[0] and not self.trim[1]:
-      print('Warning: ElfinNode trim vector both ends are NOT trimmed. '
-      'This should only happen if the chain has one single node, which '
-      'is not thought to be common. Proceed only if this is deliberate.')
-
-    for i in [0, 1]:
-      if self.trim[i] and self.cap[i]:
-        raise ValueError('Cannot cap a trimmed end[{}]: name={}, id={}'
-          .format(i, self.name, self.id))
-
-  def transform(self, rot, tran):
-      self.rot = (np.dot(self.rot, rot)).tolist()
-      self.tran = (np.dot(self.tran, rot) + tran).tolist()
-
 def recursive_reload(module):
     """Recursively reload modules."""
 
@@ -374,3 +320,8 @@ def safe_exec(func, *args):
     traceback.print_exc()
     pause_code(frame)
 
+def main():
+  raise RuntimeError('This module should not be executed like a script')
+
+if __name__ =='__main__': 
+  main()
