@@ -1,3 +1,3 @@
 [submodule "celfin/jutil"]
 	path = celfin/jutil
-	url = git@github.com:joy13975/jutil.git
+	url = https://github.com/joy13975/jutil.git
