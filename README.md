@@ -1,8 +1,5 @@
-# Elfin v2
+# Elfin v2 [![Build Status](https://travis-ci.com/joy13975/elfin.svg?branch=master)](https://travis-ci.com/joy13975/elfin)
 Elfin is a computational protein design tool based on [repeat protein assembly](https://www.sciencedirect.com/science/article/pii/S1047847717301417). 
-
-### Status
-[![Build Status](https://travis-ci.com/joy13975/elfin.svg?branch=master)](https://travis-ci.com/joy13975/elfin)
 
 Repeat protein assembly means repeat proteins are used as basic building blocks to construct larger proteins that form a 3D structure as close to the user's input description as possible. Credits to Fabio Parmeggiani (UoB), TJ Brunette (UoW), David Baker (UoW), and Simon McIntosh-Smith (UoB).
 

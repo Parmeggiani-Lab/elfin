@@ -7,11 +7,18 @@ matrix:
       install: 
         - pip install -r requirements.txt
       script:
-        - pytest pelfin
+        - if [[ $TRAVIS_PYTHON_VERSION == 2.7 ]]; then py.test pelfin; else pytest pelfin; fi
         # - pytest belfin
     - language: cpp
+      dist: trusty
       before_script:
         - cd celfin
+      before_install:
+        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        - sudo apt-get update -qq
+      install:
+        - sudo apt-get install -qq g++-6
+        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 90
       compiler: 
         - gcc
         # - clang
