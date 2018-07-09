@@ -4,10 +4,14 @@ import argparse, sys
 from collections import OrderedDict
 from utilities import *
 
-def main():
-  ap = argparse.ArgumentParser(description='Converts hub info metadata from csv to json.')
-  ap.add_argument('input') # Absence of dash denotes mandatory argument
-  args = ap.parse_args()
+
+def parse_args(args):
+  parser = argparse.ArgumentParser(description='Converts hub info metadata from csv to json.')
+  parser.add_argument('input') # Absence of dash denotes mandatory argument
+  return parser.parse_args(args)
+
+def main(test_args=None):
+  args = parse_args(sys.argv[1:] if test_args is None else test_args)
 
   csv_data = read_csv(args.input)
   new_data = OrderedDict({})
