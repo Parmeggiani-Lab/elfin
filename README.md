@@ -30,7 +30,7 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 
 7. [Usage](#7-usage)
 
-8. [Protein Design UI](#8-protein-design-UI)
+8. [Protein Design UI](#8-protein-design-ui)
 
 9. [Database Preparation](#9-database-preparation)
 
