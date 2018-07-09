@@ -1,0 +1,25 @@
+matrix:
+  include:
+    - language: python
+      python:
+        - "2.7"
+        - "3.7"
+      #before_script:
+        #- cd pelfin
+      install: 
+        - pip install -r requirements.txt
+      script:
+        - pytest pelfin
+        # - pytest belfin
+    - language: cpp
+      before_script:
+        - cd celfin
+      compiler: 
+        - gcc
+        # - clang
+      env: 
+        - OMP_NUM_THREADS=4
+
+notifications:
+  email:
+    - joyyeh.tw@gmail.com

@@ -415,3 +415,9 @@ Quater: RMSD after coordinates are translated and rotated using quaternions.
     print("Normal RMSD:", normal_rmsd)
     print("Kabsch RMSD:", kabsch_rmsd(P, Q))
     print("Quater RMSD:", quaternion_rmsd(P, Q))
+
+def main():
+  raise RuntimeError('This module should not be executed like a script')
+
+if __name__ =='__main__': 
+  main()

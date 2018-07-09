@@ -93,3 +93,9 @@ def save_pdb(**kwargs):
   io = Bio.PDB.PDBIO()
   io.set_structure(struct)
   io.save(save_path)
+
+def main():
+  raise RuntimeError('This module should not be executed like a script')
+
+if __name__ =='__main__': 
+  main()
