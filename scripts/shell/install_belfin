@@ -17,10 +17,11 @@ realpath() {
 if [[ $OS == "Darwin" ]]; then
 	bl_dir=${bl_dir:-"$HOME/Library/Application Support/Blender/"}	
 elif [[ $OS == "Linux" ]]; then
+	echo "Could not guess Blender directory."
 	echo "Please provide your Blender path (without the version, and without quotation marks):"
 	read -r bl_dir
 else
-	echo "Is this Windows? Installation for Windows is not yet implemented."
+	echo "Is this Windows? Installation for Windows is not supported and not likely to be in the future."
 	exit 1
 fi
 
