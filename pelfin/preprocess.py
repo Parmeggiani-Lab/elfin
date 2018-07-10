@@ -6,7 +6,7 @@ from utilities import *
 from pdb_utilities import *
 
 def merge_chains(pdb):
-  """
+  '''
   Merge all chains in a PDB structure and re-number the residue IDs
   accordingly
 
@@ -16,7 +16,7 @@ def merge_chains(pdb):
   Returns: 
   Bio.PDB.Structure.Structure - the modified PDB, used for chaining
   calls
-  """
+  '''
   newChain = Bio.PDB.Chain.Chain('A')
   rid = 1
   for r in strip_residues(pdb):
@@ -36,7 +36,7 @@ def merge_chains(pdb):
   return pdb # for chaining calls
 
 def cleanse_atoms(pdb):
-  """
+  '''
   Delete 1H, 2H, 3H and OXT atoms from the PDB structure
 
   Args:
@@ -45,7 +45,7 @@ def cleanse_atoms(pdb):
   Returns: 
   Bio.PDB.Structure.Structure - the modified PDB, used for chaining
   calls
-  """
+  '''
   for c in get_chains(pdb):
     for r in c.child_list:
       badAtoms = []
@@ -57,7 +57,7 @@ def cleanse_atoms(pdb):
   return pdb
 
 def preprocess_double(double_file):
-  """
+  '''
   Merge chains, cleanse atoms if double_file is a simple double (no junction).
   If double_file is a complex double (one with a junction), replace its
   interfacing residues with those of a simple double, then merge chains and
@@ -73,7 +73,7 @@ def preprocess_double(double_file):
 
   Returns:
   Bio.PDB.Structure.Structure - preprocessed double PDB
-  """
+  '''
   double_name = os.path.basename(double_file).replace('.pdb', '')
   underscores = [double_name.find('_'), double_name.rfind('_')]
 
