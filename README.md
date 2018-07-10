@@ -175,7 +175,6 @@ First, decompress the Blender protein model library:
 ```
 # cd to resources
 7z x elfin_front_library.7z
-mv library.blend elfin_front_library.blend
 ```
 
 Next, make sure Blender is installed. Then invoke the addon installation script:
