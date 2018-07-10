@@ -21,7 +21,7 @@ elif [[ $OS == "Linux" ]]; then
 	echo "Please provide your Blender path (without the version, and without quotation marks):"
 	read -r bl_dir
 else
-	echo "Is this Windows? Installation for Windows is not supported and not likely to be in the future."
+	echo "Is this Windows? Installation for Windows requires creating a Windows symlink, which cannot be done through WSL."
 	exit 1
 fi
 
