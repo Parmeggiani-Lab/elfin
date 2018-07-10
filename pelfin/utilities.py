@@ -8,7 +8,7 @@ RadiiTypes = ['average_all','max_ca_dist','max_heavy_dist']
 INF = float('inf')
 
 def recursive_reload(module):
-    """Recursively reload modules."""
+    '''Recursively reload modules.'''
 
     reloaded = set()
     def _reload(module):
@@ -24,7 +24,7 @@ def recursive_reload(module):
     _reload(module)
 
 def gen_pymol_txm(rot, tran):
-  """
+  '''
   Converts BioPython-style rotation and translation into pymol's
   transformation matrix string.
 
@@ -34,23 +34,23 @@ def gen_pymol_txm(rot, tran):
 
   Returns:
   - _ - string of pymol's transformation matrix.
-  """
+  '''
   rotTp = np.transpose(rot)
   rotTpTran = np.append(rotTp, np.transpose([tran]), axis=1)
   pymolRotMat = np.append(rotTpTran, [[0,0,0,1]], axis=0)
   return '[' + ', '.join(map(str, pymolRotMat.ravel())) + ']'
 
 def int_ceil(f):
-  """Ceil a float then turn it into an int."""
+  '''Ceil a float then turn it into an int.'''
   return int(np.ceil(f))
 
 def int_floor(f):
-  """Floor a float then turn it into an int."""
+  '''Floor a float then turn it into an int.'''
   return int(np.floor(f))
 
 def upsample(spec, pts):
-  """Upsamples points to be the same number of points in specification. This
-  is code translated from Elfin core's C++ code."""
+  '''Upsamples points to be the same number of points in specification. This
+  is code translated from Elfin core's C++ code.'''
   N = len(spec)
 
   more_points, fewer_points = (np.copy(spec), np.copy(pts))
@@ -108,11 +108,11 @@ def upsample(spec, pts):
   return upsampled
 
 def float_approximates(a, b, error=1e-6):
-  """Returns whether float a is approximately b within error tolerance"""
+  '''Returns whether float a is approximately b within error tolerance'''
   return abs(a-b) < error
 
 def min_dist_from_line(**kwargs):
-  """
+  '''
   Computes the minimum dist from a line to a point.
 
   Args:
@@ -125,7 +125,7 @@ def min_dist_from_line(**kwargs):
 
   Returns:
   - min_dist - the minimum distance.
-  """
+  '''
   points = kwargs.pop('points')
   line_points = kwargs.pop('line_points')
   allow_perp = kwargs.pop('allow_perp', True)
@@ -160,7 +160,7 @@ def min_dist_from_line(**kwargs):
   return min_dist
 
 def check_collision(**kwargs):
-  """
+  '''
   Tests whether a to-be-added node is too close to any node in partially or
   completely formed shape.
 
@@ -175,7 +175,7 @@ def check_collision(**kwargs):
   Returns:
   - bool - whether or not the new node, when added to the shape, causes
     collision.
-  """
+  '''
   xdb = kwargs.pop('xdb')
   collision_measure = kwargs.pop('collision_measure')
   nodes = kwargs.pop('nodes')
@@ -196,7 +196,7 @@ def check_collision(**kwargs):
   return False
 
 def com_dist_info(xdb):
-  """
+  '''
   Computes centre-of-mass distance information.
 
   Args:
@@ -206,7 +206,7 @@ def com_dist_info(xdb):
   Returns:
   - (_,_,_) - tuple containing average, min and max values for centre-of-mass
     distances.
-  """
+  '''
   pd = xdb['doubles_data']
   dists = []
   for s1 in pd.keys():
@@ -216,7 +216,7 @@ def com_dist_info(xdb):
   return np.average(dists), min(dists), max(dists)
 
 def read_csv_points(csvFile):
-  """A wrapper of read_csv() but returns as list of numpy array points."""
+  '''A wrapper of read_csv() but returns as list of numpy array points.'''
   pts = []
   
   with open(csvFile, 'r') as file:
@@ -225,7 +225,7 @@ def read_csv_points(csvFile):
   return pts
 
 def read_csv(read_path, delim=','):
-  """
+  '''
   Reads a generic CSV file.
 
   Args:
@@ -234,7 +234,7 @@ def read_csv(read_path, delim=','):
 
   Returns:
   - rows - list of rows where each row is a string list of cell values.
-  """
+  '''
   rows = []
   with open(read_path) as csvfile:
     sreader = csv.reader(csvfile, delimiter=delim)
@@ -244,14 +244,14 @@ def read_csv(read_path, delim=','):
   return rows
 
 def save_points_as_csv(**kwargs):
-  """
+  '''
   Saves a list of points into a CSV file.
 
   Args:
   - points - Nx(3x1 numpy array) list to be saved.
   - save_path - string path to save to.
   - delim - delimiter to use for the CSV format.
-  """
+  '''
   points = kwargs.pop('points')
   save_path = kwargs.pop('save_path')
   delim = kwargs.pop('delim',' ')
@@ -262,7 +262,7 @@ def save_points_as_csv(**kwargs):
       wt.writerow(row)
 
 def read_json(read_path):
-  """
+  '''
   Reads a JSON file.
 
   Args:
@@ -270,26 +270,26 @@ def read_json(read_path):
 
   Returns:
   - _ - dict containing data from the JSON file.
-  """
+  '''
   with open(read_path, 'r') as file:
     return json.load(file)
 
 def make_dir(dir):
-  """
+  '''
   Create directory if does not exist.
-  """
+  '''
   if not os.path.exists(dir):
     os.makedirs(dir)
 
 def pause_code(frame=None):
-  """
+  '''
   Pause execution and drop into interactive mode for debugging. This is
   intended to be manually inserted into area of code where debugging is
   needed.
 
   Args: 
   - frame - specify frame in which the globals and locals are to be debugged.
-  """
+  '''
   print('\n------------------pause_code()------------------')
   if frame is None:
     # Use current frame (one above the exception wrapper)
@@ -300,14 +300,14 @@ def pause_code(frame=None):
   code.interact(local=ns)
 
 def safe_exec(func, *args):
-  """
+  '''
   Execute func and drops into interactive mode for debugging if an exception
   is raised.
 
   Args:
   - func - the function handle to be called.
   - *args - args to be expanded for func.
-  """
+  '''
   try:
     func(*args)
   except Exception as e:
