@@ -60,6 +60,11 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
     - [.] Handle module placement & extrusion
         - [x] Singles
         - [.] Hubs
+    - [.] Feasibility validation
+        - [.] Collision detection
+            - [x] When placing and extruding modules
+            - [ ] After object transform
+        - [ ] Force symetric hubs to auto grow like a Blender modifier
 - [ ] Handle mixing of module objects with path guides and Key Points
 - [ ] Handle leeway specification on networks and Key Points
 - [ ] Blend & Export to stitch.py-readable format
@@ -203,7 +208,9 @@ Inside the 3D view port, make sure that you're in Object mode and viewing Solids
 
 When selecting a protein module from the given list, you can use ```.``` (the period mark) to indicate the beginning of the module name and the end. This is not compulsory but it helps filter your module of choice.
 
-To delete a placed module, hit <kbd>Del</kbd> or the equivalent on MacOS. Please be warned that a lot of Elfin Front's functionalities are still being developed and tested, so nothing is guaranteed.
+To delete a placed module, hit <kbd>x</kbd> and then comfirm by <kbd>Enter</kbd>. As with all Blender default operators, Elfin commands also support undo so you that can <kbd>control</kbd>+<kbd>z</kbd>/<kbd>command</kbd>+<kbd>z</kbd>.
+
+Please be warned that a lot of Elfin Front's functionalities are still being developed and tested, so nothing is guaranteed.
 
 Currently the only way to save your design is through the default Save, as a .blend file.
 

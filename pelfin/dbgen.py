@@ -56,10 +56,10 @@ class XDBGenerator:
     self.double_pdbs      = {}
 
   def process_hub(self, file_name):
-    """
+    '''
     Aligns a hub module to its A component (chain A), then computes the
     transform for aligning itself to its other components.
-    """
+    '''
 
     # Load structures
     hub = read_pdb(file_name)
@@ -131,10 +131,10 @@ class XDBGenerator:
     self.hub_data[hub_name] = data
 
   def process_double(self, file_name):
-    """
+    '''
     Aligns a double module to its A component and then computes the transform
     for aligning to its B component. Saves aligned structure to output folder.
-    """
+    '''
     # Step 1: Load structures
     double = read_pdb(file_name)
 
@@ -265,9 +265,9 @@ class XDBGenerator:
     self.double_pdbs[single_name_a][single_name_b] = double
 
   def process_single(self, file_name):
-    """
+    '''
     Centres a single module and saves to output folder.
-    """
+    '''
     single_name = file_name.split('/')[-1].replace('.pdb', '')
     single = read_pdb(file_name)
     self.move_to_origin(single)
@@ -280,9 +280,9 @@ class XDBGenerator:
     self.single_pdbs[single_name] = single
 
   def dump_xdb(self):
-    """
+    '''
     Writes singles, doubles, and hubs alignment data to a json file.
-    """
+    '''
     to_dump = OrderedDict([
       ('single_data', self.single_data),
       ('double_data', self.double_data),
@@ -303,7 +303,7 @@ class XDBGenerator:
     mother_resi_offset=0,
     match_count=-1
   ):
-    """
+    '''
     Computes centre-of-mass coordinate of a Bio.PDB.Structure.Structure.
 
     Args:
@@ -320,7 +320,7 @@ class XDBGenerator:
 
     Returns:
     - com - 3x1 numpy array of the centre-of-mass.
-    """
+    '''
     CAs = []
     for a in child.get_atoms():
       if(a.name == 'CA'):
@@ -341,7 +341,7 @@ class XDBGenerator:
     return com
 
   def get_radii(self, pose):
-    """
+    '''
     Computes three different measures of the radius
 
     Args:
@@ -351,7 +351,7 @@ class XDBGenerator:
     - _ - an OrderedDict containing: average of all atoms distances, max
       carbon alpha distance, and max heavy atom distance, each calculated
       against the centre-of-mass.
-    """
+    '''
     if not pose.at_origin:
       raise ValueError('get_radii() must be called with centered modules.')
 
@@ -384,9 +384,9 @@ class XDBGenerator:
     ]);
 
   def move_to_origin(self, pdb):
-    """
+    '''
     Centres a Bio.PDB.Structure.Structure to the global origin.
-    """
+    '''
     com = self.get_centre_of_mass(pdb)
 
     # No rotation - just move to centre
@@ -399,10 +399,10 @@ class XDBGenerator:
     self, 
     **kwargs
   ):
-    """
+    '''
     Moves the moving Bio.PDB.Structure.Structure to the fixed
     Bio.PDB.Structure.Structure.
-    """
+    '''
     moving = kwargs.pop('moving')
     fixed = kwargs.pop('fixed')
     moving_resi_offset = kwargs.pop('moving_resi_offset', 0)
@@ -422,7 +422,7 @@ class XDBGenerator:
     self, 
     **kwargs
   ):
-    """
+    '''
     Computes the rotatio and transformation matrices using BioPython's
     superimposer.
 
@@ -441,7 +441,7 @@ class XDBGenerator:
     Returns:
     - (rot, tran) - a tuple containing the rotation and transformation
       matrices.
-    """
+    '''
 
     moving = kwargs.pop('moving') 
     moving_chain_id = kwargs.pop('moving_chain_id', 'A')
@@ -477,10 +477,10 @@ class XDBGenerator:
     return self.si.rotran
 
   def run(self):
-    """
+    '''
     Calls the processing functions for singles, doubles, and hubs in that
     order. Dumps alignment data into json database.
-    """
+    '''
 
     # Single modules
     single_files = glob.glob(self.relaxed_pdbs_dir + '/singles/*.pdb')
