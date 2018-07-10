@@ -2,9 +2,9 @@ import numpy as np
 import warnings
 
 class ElfinNode():
-  """
+  '''
   A single module instance and stores info about connectivity
-  """
+  '''
   def __init__(
     self, 
     **kwargs

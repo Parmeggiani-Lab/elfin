@@ -1,30 +1,30 @@
 #!/usr/bin/env python3
 
-"""
+'''
 Calculate RMSD between two XYZ files
 
 by: Jimmy Charnley Kromann <jimmy@charnley.dk> and Lars Andersen Bratholm <larsbratholm@gmail.com>
 project: https://github.com/charnley/rmsd
 license: https://github.com/charnley/rmsd/blob/master/LICENSE
 
-"""
+'''
 
 import numpy as np
 import re
 
 
 def kabsch_rmsd(P, Q):
-    """
+    '''
     Rotate matrix P unto Q and calculate the RMSD
-    """
+    '''
     P = kabsch_rotate(P, Q)
     return rmsd(P, Q)
 
 
 def kabsch_rotate(P, Q):
-    """
+    '''
     Rotate matrix P unto matrix Q using Kabsch algorithm
-    """
+    '''
     U = kabsch(P, Q)
 
     # Rotate P
@@ -33,7 +33,7 @@ def kabsch_rotate(P, Q):
 
 
 def run_kabsch(P, Q):
-    """
+    '''
     The optimal rotation matrix U is calculated and then used to rotate matrix
     P unto matrix Q so the minimum root-mean-square deviation (RMSD) can be
     calculated.
@@ -57,7 +57,7 @@ def run_kabsch(P, Q):
     Returns:
     U -- Rotation matrix
 
-    """
+    '''
 
     # Computation of the covariance matrix
     C = np.dot(np.transpose(P), Q)
@@ -83,21 +83,21 @@ def run_kabsch(P, Q):
 
 
 def quaternion_rmsd(P, Q):
-    """
+    '''
     based on doi:10.1016/1049-9660(91)90036-O
     Rotate matrix P unto Q and calculate the RMSD
-    """
+    '''
     rot = quaternion_rotate(P, Q)
     P = np.dot(P,rot)
     return rmsd(P, Q)
 
 
 def quaternion_transform(r):
-    """
+    '''
     Get optimal rotation
     note: translation will be zero when the centroids of each molecule are the
     same
-    """
+    '''
     Wt_r = makeW(*r).T
     Q_r = makeQ(*r)
     rot = Wt_r.dot(Q_r)[:3,:3]
@@ -105,9 +105,9 @@ def quaternion_transform(r):
 
 
 def makeW(r1,r2,r3,r4=0):
-    """
+    '''
     matrix involved in quaternion rotation
-    """
+    '''
     W = np.asarray([
              [r4, r3, -r2, r1],
              [-r3, r4, r1, r2],
@@ -117,9 +117,9 @@ def makeW(r1,r2,r3,r4=0):
 
 
 def makeQ(r1,r2,r3,r4=0):
-    """
+    '''
     matrix involved in quaternion rotation
-    """
+    '''
     Q = np.asarray([
              [r4, -r3, r2, r1],
              [r3, r4, -r1, r2],
@@ -129,9 +129,9 @@ def makeQ(r1,r2,r3,r4=0):
 
 
 def quaternion_rotate(X, Y):
-    """
+    '''
     Calculate the rotation
-    """
+    '''
     N = X.shape[0]
     W = np.asarray([makeW(*Y[k]) for k in range(N)])
     Q = np.asarray([makeQ(*X[k]) for k in range(N)])
@@ -148,17 +148,17 @@ def quaternion_rotate(X, Y):
 
 
 def centroid(X):
-    """
+    '''
     Calculate the centroid from a vectorset X
-    """
+    '''
     C = sum(X)/len(X)
     return C
 
 
 def rmsd(V, W):
-    """
+    '''
     Calculate Root-mean-square deviation from two sets of vectors V and W.
-    """
+    '''
     D = len(V[0])
     N = len(V)
     rmsd = 0.0
@@ -168,9 +168,9 @@ def rmsd(V, W):
 
 
 def write_coordinates(atoms, V, title=""):
-    """
+    '''
     Print coordinates V
-    """
+    '''
     N, D = V.shape
 
     print(str(N))
@@ -184,9 +184,9 @@ def write_coordinates(atoms, V, title=""):
 
 
 def get_coordinates(filename, fmt):
-    """
+    '''
     Get coordinates from filename.
-    """
+    '''
     if fmt == "xyz":
         return get_coordinates_xyz(filename)
     elif fmt == "pdb":
@@ -195,10 +195,10 @@ def get_coordinates(filename, fmt):
 
 
 def get_coordinates_pdb(filename):
-    """
+    '''
     Get coordinates from the first chain in a pdb file
     and return a vectorset with all the coordinates.
-    """
+    '''
     # PDB files tend to be a bit of a mess. The x, y and z coordinates
     # are supposed to be in column 31-38, 39-46 and 47-54, but this is not always the case.
     # Because of this the three first columns containing a decimal is used.
@@ -262,13 +262,13 @@ def get_coordinates_pdb(filename):
 
 
 def get_coordinates_xyz(filename):
-    """
+    '''
     Get coordinates from a filename.xyz and return a vectorset with all the
     coordinates.
 
     This function has been written to parse XYZ files, but can easily be
     written to parse others.
-    """
+    '''
 
     f = open(filename, 'r')
     V = []
@@ -312,109 +312,109 @@ def get_coordinates_xyz(filename):
     return atoms, V
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    import argparse
-    import sys
+#     import argparse
+#     import sys
 
-    description = """
-Calculate Root-mean-square deviation (RMSD) between structure A and B, in XYZ
-or PDB format. The order of the atoms *must* be the same for both structures.
+#     description = '''
+# Calculate Root-mean-square deviation (RMSD) between structure A and B, in XYZ
+# or PDB format. The order of the atoms *must* be the same for both structures.
 
-citation:
- - Kabsch algorithm:
-   Kabsch W., 1976, A solution for the best rotation to relate two sets of
-   vectors, Acta Crystallographica, A32:922-923, doi:10.1107/S0567739476001873
+# citation:
+#  - Kabsch algorithm:
+#    Kabsch W., 1976, A solution for the best rotation to relate two sets of
+#    vectors, Acta Crystallographica, A32:922-923, doi:10.1107/S0567739476001873
 
- - Quaternion algorithm:
-   Michael W. Walker and Lejun Shao and Richard A. Volz, 1991, Estimating 3-D
-   location parameters using dual number quaternions, CVGIP: Image
-   Understanding, 54:358-367, doi: 10.1016/1049-9660(91)90036-o
+#  - Quaternion algorithm:
+#    Michael W. Walker and Lejun Shao and Richard A. Volz, 1991, Estimating 3-D
+#    location parameters using dual number quaternions, CVGIP: Image
+#    Understanding, 54:358-367, doi: 10.1016/1049-9660(91)90036-o
 
- - Implementation:
-   Calculate RMSD for two XYZ structures, GitHub,
-   http://github.com/charnley/rmsd
+#  - Implementation:
+#    Calculate RMSD for two XYZ structures, GitHub,
+#    http://github.com/charnley/rmsd
 
-"""
+# '''
 
-    epilog = """
-The script will return three RMSD values:
-Normal: The RMSD calculated the straight-forward way.
-Kabsch: RMSD after coordinates are translated and rotated using Kabsch.
-Quater: RMSD after coordinates are translated and rotated using quaternions.
-"""
+#     epilog = '''
+# The script will return three RMSD values:
+# Normal: The RMSD calculated the straight-forward way.
+# Kabsch: RMSD after coordinates are translated and rotated using Kabsch.
+# Quater: RMSD after coordinates are translated and rotated using quaternions.
+# '''
 
-    parser = argparse.ArgumentParser(
-                    description=description,
-                    formatter_class=argparse.RawDescriptionHelpFormatter,
-                    epilog=epilog)
+#     parser = argparse.ArgumentParser(
+#                     description=description,
+#                     formatter_class=argparse.RawDescriptionHelpFormatter,
+#                     epilog=epilog)
 
-    parser.add_argument('structure_a', metavar='structure_a.xyz', type=str)
-    parser.add_argument('structure_b', metavar='structure_b.xyz', type=str)
-    parser.add_argument('-o', '--output', action='store_true', help='print out structure A, centered and rotated unto structure B\'s coordinates in XYZ format')
-    parser.add_argument('-n', '--no-hydrogen', action='store_true', help='ignore hydrogens when calculating RMSD')
-    parser.add_argument('-f', '--format', action='store', help='Format of input files. Supports xyz or pdb.')
-    parser.add_argument('-r', '--remove-idx', nargs='+', type=int, help='index list of atoms NOT to consider')
-    parser.add_argument('-a', '--add-idx', nargs='+', type=int, help='index list of atoms to consider')
+#     parser.add_argument('structure_a', metavar='structure_a.xyz', type=str)
+#     parser.add_argument('structure_b', metavar='structure_b.xyz', type=str)
+#     parser.add_argument('-o', '--output', action='store_true', help='print out structure A, centered and rotated unto structure B\'s coordinates in XYZ format')
+#     parser.add_argument('-n', '--no-hydrogen', action='store_true', help='ignore hydrogens when calculating RMSD')
+#     parser.add_argument('-f', '--format', action='store', help='Format of input files. Supports xyz or pdb.')
+#     parser.add_argument('-r', '--remove-idx', nargs='+', type=int, help='index list of atoms NOT to consider')
+#     parser.add_argument('-a', '--add-idx', nargs='+', type=int, help='index list of atoms to consider')
 
-    if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
+#     if len(sys.argv) == 1:
+#         parser.print_help()
+#         sys.exit(1)
 
-    args = parser.parse_args()
+#     args = parser.parse_args()
 
-    # As default, load the extension as format
-    if args.format == None:
-        args.format = args.structure_a.split('.')[-1]
+#     # As default, load the extension as format
+#     if args.format == None:
+#         args.format = args.structure_a.split('.')[-1]
 
-    p_atoms, p_all = get_coordinates(args.structure_a, args.format)
-    q_atoms, q_all = get_coordinates(args.structure_b, args.format)
+#     p_atoms, p_all = get_coordinates(args.structure_a, args.format)
+#     q_atoms, q_all = get_coordinates(args.structure_b, args.format)
 
-    if np.count_nonzero(p_atoms != q_atoms):
-        exit("Atoms not in the same order")
+#     if np.count_nonzero(p_atoms != q_atoms):
+#         exit("Atoms not in the same order")
 
-    P = p_all
-    Q = q_all
+#     P = p_all
+#     Q = q_all
 
-    if args.no_hydrogen:
-        not_hydrogens = np.where(p_atoms != 'H')
-        P = p_all[not_hydrogens]
-        Q = q_all[not_hydrogens]
+#     if args.no_hydrogen:
+#         not_hydrogens = np.where(p_atoms != 'H')
+#         P = p_all[not_hydrogens]
+#         Q = q_all[not_hydrogens]
 
-    elif args.remove_idx:
-        N, = p_atoms.shape
-        index = range(N)
-        index = set(index) - set(args.remove_idx)
-        index = list(index)
-        P = p_all[index]
-        Q = q_all[index]
+#     elif args.remove_idx:
+#         N, = p_atoms.shape
+#         index = range(N)
+#         index = set(index) - set(args.remove_idx)
+#         index = list(index)
+#         P = p_all[index]
+#         Q = q_all[index]
 
-    elif args.add_idx:
-        P = p_all[args.add_idx]
-        Q = q_all[args.add_idx]
+#     elif args.add_idx:
+#         P = p_all[args.add_idx]
+#         Q = q_all[args.add_idx]
 
 
-    # Calculate 'dumb' RMSD
-    normal_rmsd = rmsd(P, Q)
+#     # Calculate 'dumb' RMSD
+#     normal_rmsd = rmsd(P, Q)
 
-    # Create the centroid of P and Q which is the geometric center of a
-    # N-dimensional region and translate P and Q onto that center.
-    # http://en.wikipedia.org/wiki/Centroid
-    Pc = centroid(P)
-    Qc = centroid(Q)
-    P -= Pc
-    Q -= Qc
+#     # Create the centroid of P and Q which is the geometric center of a
+#     # N-dimensional region and translate P and Q onto that center.
+#     # http://en.wikipedia.org/wiki/Centroid
+#     Pc = centroid(P)
+#     Qc = centroid(Q)
+#     P -= Pc
+#     Q -= Qc
 
-    if args.output:
-        U = kabsch(P, Q)
-        p_all -= Pc
-        p_all = np.dot(p_all, U)
-        write_coordinates(p_atoms, p_all, title="{} translated".format(args.structure_a))
-        quit()
+#     if args.output:
+#         U = kabsch(P, Q)
+#         p_all -= Pc
+#         p_all = np.dot(p_all, U)
+#         write_coordinates(p_atoms, p_all, title="{} translated".format(args.structure_a))
+#         quit()
 
-    print("Normal RMSD:", normal_rmsd)
-    print("Kabsch RMSD:", kabsch_rmsd(P, Q))
-    print("Quater RMSD:", quaternion_rmsd(P, Q))
+#     print("Normal RMSD:", normal_rmsd)
+#     print("Kabsch RMSD:", kabsch_rmsd(P, Q))
+#     print("Quater RMSD:", quaternion_rmsd(P, Q))
 
 def main():
   raise RuntimeError('This module should not be executed like a script')
