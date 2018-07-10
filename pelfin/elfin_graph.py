@@ -1,8 +1,8 @@
 class ElfinGraph():
-  """
+  '''
   A network of nodes that are connected either by doubles or through hubs.
   Might be multi-chain.
-  """
+  '''
   def __init__(self, name='', nodes=[]):
     self.name = name
     self.nodes = nodes
