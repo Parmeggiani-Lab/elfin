@@ -35,10 +35,10 @@ def gen_pymol_txm(rot, tran):
   Returns:
   - _ - string of pymol's transformation matrix.
   '''
-  rotTp = np.transpose(rot)
-  rotTpTran = np.append(rotTp, np.transpose([tran]), axis=1)
-  pymolRotMat = np.append(rotTpTran, [[0,0,0,1]], axis=0)
-  return '[' + ', '.join(map(str, pymolRotMat.ravel())) + ']'
+  rot_tp = np.transpose(rot)
+  rot_tp_tran = np.append(rot_tp, np.transpose([tran]), axis=1)
+  pymol_rot_mat = np.append(rot_tp_tran, [[0,0,0,1]], axis=0)
+  return '[' + ', '.join(map(str, pymol_rot_mat.ravel())) + ']'
 
 def int_ceil(f):
   '''Ceil a float then turn it into an int.'''
@@ -321,7 +321,7 @@ def safe_exec(func, *args):
     pause_code(frame)
 
 def main():
-  raise RuntimeError('This module should not be executed like a script')
+  raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
   main()
