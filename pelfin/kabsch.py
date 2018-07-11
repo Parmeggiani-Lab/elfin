@@ -417,7 +417,7 @@ def get_coordinates_xyz(filename):
 #     print("Quater RMSD:", quaternion_rmsd(P, Q))
 
 def main():
-  raise RuntimeError('This module should not be executed like a script')
+  raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
   main()

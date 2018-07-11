@@ -87,10 +87,9 @@ class XDBGenerator:
           # Here we do not use the second quadrant method, because during
           # stitching none of the hubs' residues get changed. The stitching
           # will take place at the end of the hub's component's terminal.
-          pause_code()
           rc_dbl_a = get_pdb_residue_count(self.single_pdbs[comp_name])
           rc_hub_a = get_chain_residue_count(get_chain(hub, chain_id))
-          fusion_count = int_ceil(float(rc_dbl_a)/8)
+          fusion_count = int_ceil(float(rc_dbl_a)/4)
           double = self.double_pdbs[comp_name][single_b_name]
 
           rot, tran = self.get_rot_trans(
@@ -102,7 +101,8 @@ class XDBGenerator:
             match_count=fusion_count
           )
 
-          comp_info['c_connections'][single_b_name] = { 'rot': rot.tolist(), 'tran': tran.tolist()}
+          comp_info['c_connections'][single_b_name] = \
+            { 'rot': rot.tolist(), 'tran': tran.tolist()}
 
       if comp_info['n_free']:
         for single_a_name in [a_name for a_name in self.double_data if comp_name in self.double_data[a_name]]:
@@ -121,7 +121,8 @@ class XDBGenerator:
             match_count=fusion_count
           )
 
-          comp_info['n_connections'][single_a_name] = { 'rot': rot.tolist(), 'tran': tran.tolist()}
+          comp_info['n_connections'][single_a_name] = \
+            { 'rot': rot.tolist(), 'tran': tran.tolist()}
 
     save_pdb(
       struct=hub, 
