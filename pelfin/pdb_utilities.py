@@ -95,7 +95,7 @@ def save_pdb(**kwargs):
   io.save(save_path)
 
 def main():
-  raise RuntimeError('This module should not be executed like a script')
+  raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
   main()
