@@ -11,7 +11,7 @@ def merge_chains(pdb):
   accordingly
 
   Args:
-  pdb - Bio.PDB.Structure.Structure
+  - pdb - Bio.PDB.Structure.Structure
 
   Returns: 
   Bio.PDB.Structure.Structure - the modified PDB, used for chaining
@@ -40,10 +40,10 @@ def cleanse_atoms(pdb):
   Delete 1H, 2H, 3H and OXT atoms from the PDB structure
 
   Args:
-  pdb - Bio.PDB.Structure.Structure
+  - pdb - Bio.PDB.Structure.Structure
 
   Returns: 
-  Bio.PDB.Structure.Structure - the modified PDB, used for chaining
+  - Bio.PDB.Structure.Structure - the modified PDB, used for chaining
   calls
   '''
   for c in get_chains(pdb):
@@ -69,10 +69,10 @@ def preprocess_double(double_file):
   bending and dislocation in compound doubles.
 
   Args:
-  double_file - string path of the input double PDB file
+  - double_file - string path of the input double PDB file
 
   Returns:
-  Bio.PDB.Structure.Structure - preprocessed double PDB
+  - Bio.PDB.Structure.Structure - preprocessed double PDB
   '''
   double_name = os.path.basename(double_file).replace('.pdb', '')
   underscores = [double_name.find('_'), double_name.rfind('_')]
