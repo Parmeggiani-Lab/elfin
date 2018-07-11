@@ -12,7 +12,7 @@ def main(test_args=None):
   args = parse_args(sys.argv[1:] if test_args is None else test_args)
 
 # def main():
-#   raise RuntimeError('This module should not be executed like a script')
+#   raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
   main()
