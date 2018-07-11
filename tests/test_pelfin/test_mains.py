@@ -3,7 +3,7 @@ import importlib
 
 from functools import partial
 
-import helper
+from tests import helper
 
 test_package_name = 'pelfin'
 script_main_test = partial(helper._test_script_main, package_name=test_package_name)
