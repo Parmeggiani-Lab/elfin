@@ -50,18 +50,18 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 - [x] Integrate new hub data
     - [x] Clean, align, extract transformations
 - [x] New Maths to more flexibly manipulate complex designs 
-- [.] Reimplement the design synthesis stage
+- [ ] Reimplement the design synthesis stage
     - [x] Redesign input data format
     - [x] Handle capping
     - [x] Handle multiple networks (1 network = 1 chain)
-    - [.] Handle hub-induced multi-chain network (1 network = N chains)
-- [.] UI (Blender addon)
+    - [ ] Handle hub-induced multi-chain network (1 network = N chains)
+- [ ] UI (Blender addon)
     - [x] Process Pymol .obj files into a Blender library
-    - [.] Handle module placement & extrusion
+    - [ ] Handle module placement & extrusion
         - [x] Singles
-        - [.] Hubs
-    - [.] Feasibility validation
-        - [.] Collision detection
+        - [ ] Hubs
+    - [ ] Feasibility validation
+        - [ ] Collision detection
             - [x] When placing and extruding modules
             - [ ] After object transform
         - [ ] Force symetric hubs to auto grow like a Blender modifier
@@ -71,12 +71,12 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 - [ ] Create a valid H-shaped design 
 - [ ] Elfin Core
 - [ ] Solve cyclic multi-chain design
-- [.] Handover
-    - [.] Code documentation
-    - [.] README.md update
-        - [.] Script and directory refactoring
+- [ ] Handover
+    - [ ] Code documentation
+    - [ ] README.md update
+        - [ ] Script and directory refactoring
         - [ ] Rewrite installation and running instructions
-    - [.] Simplify installation
+    - [ ] Simplify installation
         - [ ] Automate python setup
         - [x] Automate installation of Blender addon (install_belfin)
 - [ ] Extras
