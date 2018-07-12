@@ -7,24 +7,34 @@ import importlib, types
 RadiiTypes = ['average_all','max_ca_dist','max_heavy_dist']
 INF = float('inf')
 
-def recursive_reload(module):
-    '''Recursively reload modules.'''
+def get_rotation(angle_x=0, angle_y=0, angle_z=0):
+  '''
+  https://en.wikipedia.org/wiki/Rotation_matrix
+  '''
+  radian_x = np.radians(angle_x)
+  radian_y = np.radians(angle_y)
+  radian_z = np.radians(angle_z)
+  rot_x = np.array([
+      [1, 0, 0],
+      [0, np.cos(radian_x), -np.sin(radian_x)],
+      [0, np.sin(radian_x), np.cos(radian_x)]
+    ])
+  rot_y = np.array([
+      [np.cos(radian_y), 0, np.sin(radian_y)],
+      [0, 1, 0],
+      [-np.sin(radian_y), 0, np.cos(radian_y)]
+    ])
+  rot_z = np.array([
+      [np.cos(radian_z), -np.sin(radian_z), 0],
+      [np.sin(radian_z), np.cos(radian_z), 0],
+      [0, 0, 1]
+    ])
 
-    reloaded = set()
-    def _reload(module):
-      try:
-        importlib.reload(module)
-      except Exception as e:
-        print('Warning: {}'.format(e))
-      reloaded.add(module)
-      for attribute_name in dir(module):
-          attribute = getattr(module, attribute_name)
-          if type(attribute) is types.ModuleType and attribute not in reloaded:
-              _reload(attribute)
-    _reload(module)
+  return np.matmul(a=np.matmul(a=rot_x, b=rot_y), b=rot_z)
 
 def gen_pymol_txm(rot, tran):
   '''
+  Deprecated.
   Converts BioPython-style rotation and translation into pymol's
   transformation matrix string.
 
@@ -49,8 +59,10 @@ def int_floor(f):
   return int(np.floor(f))
 
 def upsample(spec, pts):
-  '''Upsamples points to be the same number of points in specification. This
-  is code translated from Elfin core's C++ code.'''
+  '''
+  Upsamples points to be the same number of points in specification. This
+  is code translated from Elfin core's C++ code.
+  '''
   N = len(spec)
 
   more_points, fewer_points = (np.copy(spec), np.copy(pts))
