@@ -41,7 +41,7 @@ if in_pymol:
     if obj_name is None:
       print(tx.__doc__)
     else:
-      rot_tran_mat = np.transpose(rot)
+      rot_tran_mat = np.array(rot)
       rot_tran_mat = np.append(rot_tran_mat, np.transpose([tran_after]), axis=1)
       rot_tran_mat = np.append(rot_tran_mat, [tran_before + [1]], axis=0)
       pymol_rot_tran_vals = [v for row in rot_tran_mat for v in row]

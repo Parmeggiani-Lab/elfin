@@ -101,8 +101,11 @@ class XDBGenerator:
             match_count=fusion_count
           )
 
+          # ----IMPORTANT----
+          # Breaking change: pre-transpose rotation so that it becomes
+          # left-multiplication (the standard way)
           comp_info['c_connections'][single_b_name] = \
-            { 'rot': rot.tolist(), 'tran': tran.tolist()}
+            { 'rot': np.transpose(rot).tolist(), 'tran': tran.tolist()}
 
       if comp_info['n_free']:
         for single_a_name in [a_name for a_name in self.double_data if comp_name in self.double_data[a_name]]:
@@ -121,8 +124,11 @@ class XDBGenerator:
             match_count=fusion_count
           )
 
+          # ----IMPORTANT----
+          # Breaking change: pre-transpose rotation so that it becomes
+          # left-multiplication (the standard way)
           comp_info['n_connections'][single_a_name] = \
-            { 'rot': rot.tolist(), 'tran': tran.tolist()}
+            { 'rot': np.transpose(rot).tolist(), 'tran': tran.tolist()}
 
     save_pdb(
       struct=hub, 
@@ -240,9 +246,12 @@ class XDBGenerator:
       save_path=self.aligned_pdb_dir + '/doubles/' + double_name + '.pdb'
     )
 
+    # ----IMPORTANT----
+    # Breaking change: pre-transpose rotation so that it becomes
+    # left-multiplication (the standard way)
     data = OrderedDict([
       ('com_b',  com_b.tolist()),
-      ('rot',   rot.tolist()),
+      ('rot',   np.transpose(rot).tolist()),
       ('tran',  tran.tolist())
     ])
 
@@ -467,6 +476,7 @@ class XDBGenerator:
 
     self.si.set_atoms(fa, ma)
 
+    # ----LEGACY----
     # The rotation from BioPython is the second dot operand instead of the
     # conventional first dot operand.
     #
