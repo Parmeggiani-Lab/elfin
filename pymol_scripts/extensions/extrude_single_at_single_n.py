@@ -50,10 +50,10 @@ if in_pymol:
       xdb=utilities.read_json(os.getcwd() + '/../../resources/xdb.json')
       double_info = xdb['double_data'][ext_single_name][single_name]
 
-      # first, drop the double for reference
+      # first, drop the double (into its A frame) for reference
       tx('double', rot=double_info['rot'], tran_after=double_info['tran'])
 
-      # extrude N term - drop into double's frame
+      # extrude N term - drop into double's A frame
       tx('single-ext', rot=double_info['rot'], tran_after=double_info['tran'])
 
       cmd.disable('single-*')
