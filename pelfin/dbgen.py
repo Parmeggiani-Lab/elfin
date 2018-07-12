@@ -89,7 +89,7 @@ class XDBGenerator:
           # will take place at the end of the hub's component's terminal.
           rc_dbl_a = get_pdb_residue_count(self.single_pdbs[comp_name])
           rc_hub_a = get_chain_residue_count(get_chain(hub, chain_id))
-          fusion_count = int_ceil(float(rc_dbl_a)/4)
+          fusion_count = int_ceil(float(rc_dbl_a)/8)
           double = self.double_pdbs[comp_name][single_b_name]
 
           rot, tran = self.get_rot_trans(
