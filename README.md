@@ -87,8 +87,8 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 1. [Python 2.7+](https://www.python.org/downloads/release/python-279/)
 2. [VirtualEnv](https://virtualenv.pypa.io/en/stable/)
 3. [Blender](https://www.blender.org/)
-4. gcc-5+
-5. 7z, either its GUI or CLI will do
+4. [gcc-5+](https://gcc.gnu.org/)
+5. [7z](https://www.7-zip.org/download.html), either its GUI or CLI will do
 
 ## 3. Optional Tools
 1. [PyMOL](https://www.pymol.org) for protein visualisation
