@@ -11,13 +11,22 @@ def main():
 if __name__ =='__main__': 
   main()
 
-def __in_pymol():
+in_pymol = False
+try:
+  import pymol
+  in_pymol = True
+except ImportError as ie:
+  main()
+
+
+if in_pymol: 
   from pymol import cmd
 
   import glob
 
   from pelfin.utilities import make_dir
 
+  @cmd.extend
   def batch_convert_modules(src_dir=None, dst_dir=None, ext='obj'):
     '''
     Batch convert Elfin protein module PDBs.
@@ -64,16 +73,4 @@ def __in_pymol():
       # Clear workspace
       cmd.delete('all')
 
-  cmd.extend("batch_convert_modules", batch_convert_modules)
-
   print('Batch Convert Loaded')
-
-in_pymol = False
-try:
-  import pymol
-  in_pymol = True
-except ImportError as ie:
-  main()
-
-
-if in_pymol: __in_pymol()

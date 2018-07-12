@@ -10,7 +10,14 @@ def main():
 if __name__ =='__main__': 
   main()
 
-def __in_pymol():
+in_pymol = False
+try:
+  import pymol
+  in_pymol = True
+except ImportError as ie:
+  main()
+
+if in_pymol:
   import pymol.cgo # constants
   from pymol import cmd
   from pymol.vfont import plain
@@ -31,6 +38,7 @@ def __in_pymol():
       return self.count
   counter = LineCounter()
 
+  @cmd.extend
   def draw_line(starting_point=None, line_vector=None, color=(1,1,1), width=1.0, label='', font_size=12):
     '''
     This function draws a line.
@@ -68,6 +76,7 @@ def __in_pymol():
       cmd.load_cgo(obj,'line'+str(counter.get()))
       counter.add()
 
+  @cmd.extend
   def draw_points(points=[], scale=1.0, width=3.0, color=(0,0,0)):
     '''
     Draws points and joins them up using colored lines.
@@ -85,6 +94,7 @@ def __in_pymol():
       draw_line(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2], width=width,
         r=r,g=g,b=b)
 
+  @cmd.extend
   def draw_csv(spec_file=None, scale=1.0, width=2.0, centered=False, shift=None):
     '''
     Draws points in a csv.
@@ -112,6 +122,7 @@ def __in_pymol():
       cmd.reset()
       cmd.set("depth_cue", 0)
 
+  @cmd.extend
   def draw_json(spec_file, scale=1.0, width=2.0, centered=False, shift=None):
     '''
     Draws points in a json.
@@ -139,6 +150,7 @@ def __in_pymol():
       cmd.reset()
       cmd.set("depth_cue", 0)
 
+  @cmd.extend
   def draw_axes(length=500, width=2, font_size=20):
     '''
     Draws the XYZ axes.
@@ -168,27 +180,15 @@ def __in_pymol():
     cmd.reset()
     cmd.set("depth_cue", 0)
 
-  def set_noclip():
+  @cmd.extend
+  def noclip():
     '''
     Sets clipping to almost infinity.
     '''
     cmd.clip('near', 99999999)
     cmd.clip('far', -99999999)
 
-  cmd.extend("draw_points", draw_points)
-  cmd.extend("draw_axes", draw_axes)
-  cmd.extend("draw_csv", draw_csv)
-  cmd.extend("draw_json", draw_json)
   draw_axes()
-  set_noclip()
+  noclip()
 
   print('Line Utils Extension Loaded')
-
-in_pymol = False
-try:
-  import pymol
-  in_pymol = True
-except ImportError as ie:
-  main()
-
-if in_pymol: __in_pymol()
