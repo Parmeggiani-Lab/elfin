@@ -4,13 +4,15 @@ echo 'Reminder: Make sure to run with ". ./activate" to effectively set environm
 
 source ./.venv/bin/activate
 
+pelfin_path="$PWD/pelfin/"
+
 # Add elfin library path
-PYTHONPATH="$PWD/pelfin/:$PYTHONPATH"
+PYTHONPATH=$pelfin_path:$PYTHONPATH
 
 # Add all scripts folders to PATH
  
 # https://stackoverflow.com/questions/1527049/join-elements-of-an-array
 function join_by { local IFS="$1"; shift; echo "$*"; }
-script_dirs=$(join_by : $(find ./scripts/ -type d))
+script_dirs="$PWD/misc/"
 
-PATH=./pelfin/:$script_dirs:$PATH
+PATH=$pelfin_path:$script_dirs:$PATH

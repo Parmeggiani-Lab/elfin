@@ -10,11 +10,6 @@ def main():
 if __name__ =='__main__': 
   main()
 
-def __in_pymol():
-  from pymol import cmd
-
-  print('Template Extension Loaded')
-
 in_pymol = False
 try:
   import pymol
@@ -22,4 +17,7 @@ try:
 except ImportError as ie:
   main()
 
-if in_pymol: __in_pymol()
+if in_pymol:
+  from pymol import cmd
+
+  print('Template Extension Loaded')
