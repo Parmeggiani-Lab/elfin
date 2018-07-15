@@ -14,302 +14,302 @@ import re
 
 
 def kabsch_rmsd(P, Q):
-    '''
-    Rotate matrix P unto Q and calculate the RMSD
-    '''
-    P = kabsch_rotate(P, Q)
-    return rmsd(P, Q)
+        '''
+        Rotate matrix P unto Q and calculate the RMSD
+        '''
+        P = kabsch_rotate(P, Q)
+        return rmsd(P, Q)
 
 
 def kabsch_rotate(P, Q):
-    '''
-    Rotate matrix P unto matrix Q using Kabsch algorithm
-    '''
-    U = kabsch(P, Q)
+        '''
+        Rotate matrix P unto matrix Q using Kabsch algorithm
+        '''
+        U = kabsch(P, Q)
 
-    # Rotate P
-    P = np.dot(P, U)
-    return P
+        # Rotate P
+        P = np.dot(P, U)
+        return P
 
 
 def run_kabsch(P, Q):
-    '''
-    The optimal rotation matrix U is calculated and then used to rotate matrix
-    P unto matrix Q so the minimum root-mean-square deviation (RMSD) can be
-    calculated.
+        '''
+        The optimal rotation matrix U is calculated and then used to rotate matrix
+        P unto matrix Q so the minimum root-mean-square deviation (RMSD) can be
+        calculated.
 
-    Using the Kabsch algorithm with two sets of paired point P and Q,
-    centered around the center-of-mass.
-    Each vector set is represented as an NxD matrix, where D is the
-    the dimension of the space.
+        Using the Kabsch algorithm with two sets of paired point P and Q,
+        centered around the center-of-mass.
+        Each vector set is represented as an NxD matrix, where D is the
+        the dimension of the space.
 
-    The algorithm works in three steps:
-    - a translation of P and Q
-    - the computation of a covariance matrix C
-    - computation of the optimal rotation matrix U
+        The algorithm works in three steps:
+        - a translation of P and Q
+        - the computation of a covariance matrix C
+        - computation of the optimal rotation matrix U
 
-    http://en.wikipedia.org/wiki/Kabsch_algorithm
+        http://en.wikipedia.org/wiki/Kabsch_algorithm
 
-    Parameters:
-    P -- (N, number of points)x(D, dimension) matrix
-    Q -- (N, number of points)x(D, dimension) matrix
+        Parameters:
+        P -- (N, number of points)x(D, dimension) matrix
+        Q -- (N, number of points)x(D, dimension) matrix
 
-    Returns:
-    U -- Rotation matrix
+        Returns:
+        U -- Rotation matrix
 
-    '''
+        '''
 
-    # Computation of the covariance matrix
-    C = np.dot(np.transpose(P), Q)
+        # Computation of the covariance matrix
+        C = np.dot(np.transpose(P), Q)
 
-    # Computation of the optimal rotation matrix
-    # This can be done using singular value decomposition (SVD)
-    # Getting the sign of the det(V)*(W) to decide
-    # whether we need to correct our rotation matrix to ensure a
-    # right-handed coordinate system.
-    # And finally calculating the optimal rotation matrix U
-    # see http://en.wikipedia.org/wiki/Kabsch_algorithm
-    V, S, W = np.linalg.svd(C)
-    d = (np.linalg.det(V) * np.linalg.det(W)) < 0.0
+        # Computation of the optimal rotation matrix
+        # This can be done using singular value decomposition (SVD)
+        # Getting the sign of the det(V)*(W) to decide
+        # whether we need to correct our rotation matrix to ensure a
+        # right-handed coordinate system.
+        # And finally calculating the optimal rotation matrix U
+        # see http://en.wikipedia.org/wiki/Kabsch_algorithm
+        V, S, W = np.linalg.svd(C)
+        d = (np.linalg.det(V) * np.linalg.det(W)) < 0.0
 
-    if d:
-        S[-1] = -S[-1]
-        V[:, -1] = -V[:, -1]
+        if d:
+                S[-1] = -S[-1]
+                V[:, -1] = -V[:, -1]
 
-    # Create Rotation matrix U
-    U = np.dot(V, W)
+        # Create Rotation matrix U
+        U = np.dot(V, W)
 
-    return U
+        return U
 
 
 def quaternion_rmsd(P, Q):
-    '''
-    based on doi:10.1016/1049-9660(91)90036-O
-    Rotate matrix P unto Q and calculate the RMSD
-    '''
-    rot = quaternion_rotate(P, Q)
-    P = np.dot(P,rot)
-    return rmsd(P, Q)
+        '''
+        based on doi:10.1016/1049-9660(91)90036-O
+        Rotate matrix P unto Q and calculate the RMSD
+        '''
+        rot = quaternion_rotate(P, Q)
+        P = np.dot(P,rot)
+        return rmsd(P, Q)
 
 
 def quaternion_transform(r):
-    '''
-    Get optimal rotation
-    note: translation will be zero when the centroids of each molecule are the
-    same
-    '''
-    Wt_r = makeW(*r).T
-    Q_r = makeQ(*r)
-    rot = Wt_r.dot(Q_r)[:3,:3]
-    return rot
+        '''
+        Get optimal rotation
+        note: translation will be zero when the centroids of each molecule are the
+        same
+        '''
+        Wt_r = makeW(*r).T
+        Q_r = makeQ(*r)
+        rot = Wt_r.dot(Q_r)[:3,:3]
+        return rot
 
 
 def makeW(r1,r2,r3,r4=0):
-    '''
-    matrix involved in quaternion rotation
-    '''
-    W = np.asarray([
-             [r4, r3, -r2, r1],
-             [-r3, r4, r1, r2],
-             [r2, -r1, r4, r3],
-             [-r1, -r2, -r3, r4] ])
-    return W
+        '''
+        matrix involved in quaternion rotation
+        '''
+        W = np.asarray([
+                         [r4, r3, -r2, r1],
+                         [-r3, r4, r1, r2],
+                         [r2, -r1, r4, r3],
+                         [-r1, -r2, -r3, r4] ])
+        return W
 
 
 def makeQ(r1,r2,r3,r4=0):
-    '''
-    matrix involved in quaternion rotation
-    '''
-    Q = np.asarray([
-             [r4, -r3, r2, r1],
-             [r3, r4, -r1, r2],
-             [-r2, r1, r4, r3],
-             [-r1, -r2, -r3, r4] ])
-    return Q
+        '''
+        matrix involved in quaternion rotation
+        '''
+        Q = np.asarray([
+                         [r4, -r3, r2, r1],
+                         [r3, r4, -r1, r2],
+                         [-r2, r1, r4, r3],
+                         [-r1, -r2, -r3, r4] ])
+        return Q
 
 
 def quaternion_rotate(X, Y):
-    '''
-    Calculate the rotation
-    '''
-    N = X.shape[0]
-    W = np.asarray([makeW(*Y[k]) for k in range(N)])
-    Q = np.asarray([makeQ(*X[k]) for k in range(N)])
-    Qt_dot_W = np.asarray([np.dot(Q[k].T,W[k]) for k in range(N)])
-    W_minus_Q = np.asarray([W[k] - Q[k] for k in range(N)])
-    C1 = -np.sum(Qt_dot_W,axis=0)
-    C2 = 0.5*N
-    C3 = np.sum(W_minus_Q,axis=0)
-    A = np.dot(C3.T,C3)*C2-C1
-    eigen = np.linalg.eigh(A)
-    r = eigen[1][:,eigen[0].argmax()]
-    rot = quaternion_transform(r)
-    return rot
+        '''
+        Calculate the rotation
+        '''
+        N = X.shape[0]
+        W = np.asarray([makeW(*Y[k]) for k in range(N)])
+        Q = np.asarray([makeQ(*X[k]) for k in range(N)])
+        Qt_dot_W = np.asarray([np.dot(Q[k].T,W[k]) for k in range(N)])
+        W_minus_Q = np.asarray([W[k] - Q[k] for k in range(N)])
+        C1 = -np.sum(Qt_dot_W,axis=0)
+        C2 = 0.5*N
+        C3 = np.sum(W_minus_Q,axis=0)
+        A = np.dot(C3.T,C3)*C2-C1
+        eigen = np.linalg.eigh(A)
+        r = eigen[1][:,eigen[0].argmax()]
+        rot = quaternion_transform(r)
+        return rot
 
 
 def centroid(X):
-    '''
-    Calculate the centroid from a vectorset X
-    '''
-    C = sum(X)/len(X)
-    return C
+        '''
+        Calculate the centroid from a vectorset X
+        '''
+        C = sum(X)/len(X)
+        return C
 
 
 def rmsd(V, W):
-    '''
-    Calculate Root-mean-square deviation from two sets of vectors V and W.
-    '''
-    D = len(V[0])
-    N = len(V)
-    rmsd = 0.0
-    for v, w in zip(V, W):
-        rmsd += sum([(v[i]-w[i])**2.0 for i in range(D)])
-    return np.sqrt(rmsd/N)
+        '''
+        Calculate Root-mean-square deviation from two sets of vectors V and W.
+        '''
+        D = len(V[0])
+        N = len(V)
+        rmsd = 0.0
+        for v, w in zip(V, W):
+                rmsd += sum([(v[i]-w[i])**2.0 for i in range(D)])
+        return np.sqrt(rmsd/N)
 
 
 def write_coordinates(atoms, V, title=""):
-    '''
-    Print coordinates V
-    '''
-    N, D = V.shape
+        '''
+        Print coordinates V
+        '''
+        N, D = V.shape
 
-    print(str(N))
-    print(title)
+        print(str(N))
+        print(title)
 
-    for i in range(N):
-        atom = atoms[i]
-        atom = atom[0].upper() + atom[1:]
-        line = "{0:2s} {1:15.8f} {2:15.8f} {3:15.8f}".format(atom, V[i, 0], V[i, 1], V[i, 2])
-        print(line)
+        for i in range(N):
+                atom = atoms[i]
+                atom = atom[0].upper() + atom[1:]
+                line = "{0:2s} {1:15.8f} {2:15.8f} {3:15.8f}".format(atom, V[i, 0], V[i, 1], V[i, 2])
+                print(line)
 
 
 def get_coordinates(filename, fmt):
-    '''
-    Get coordinates from filename.
-    '''
-    if fmt == "xyz":
-        return get_coordinates_xyz(filename)
-    elif fmt == "pdb":
-        return get_coordinates_pdb(filename)
-    exit("Could not recognize file format: {:s}".format(fmt))
+        '''
+        Get coordinates from filename.
+        '''
+        if fmt == "xyz":
+                return get_coordinates_xyz(filename)
+        elif fmt == "pdb":
+                return get_coordinates_pdb(filename)
+        exit("Could not recognize file format: {:s}".format(fmt))
 
 
 def get_coordinates_pdb(filename):
-    '''
-    Get coordinates from the first chain in a pdb file
-    and return a vectorset with all the coordinates.
-    '''
-    # PDB files tend to be a bit of a mess. The x, y and z coordinates
-    # are supposed to be in column 31-38, 39-46 and 47-54, but this is not always the case.
-    # Because of this the three first columns containing a decimal is used.
-    # Since the format doesn't require a space between columns, we use the above
-    # column indices as a fallback.
-    x_column = None
-    V = []
-    # Same with atoms and atom naming. The most robust way to do this is probably
-    # to assume that the atomtype is given in column 3.
-    atoms = []
+        '''
+        Get coordinates from the first chain in a pdb file
+        and return a vectorset with all the coordinates.
+        '''
+        # PDB files tend to be a bit of a mess. The x, y and z coordinates
+        # are supposed to be in column 31-38, 39-46 and 47-54, but this is not always the case.
+        # Because of this the three first columns containing a decimal is used.
+        # Since the format doesn't require a space between columns, we use the above
+        # column indices as a fallback.
+        x_column = None
+        V = []
+        # Same with atoms and atom naming. The most robust way to do this is probably
+        # to assume that the atomtype is given in column 3.
+        atoms = []
 
-    with open(filename) as f:
-        lines = f.readlines()
-        for line in lines:
-            if line.startswith("TER") or line.startswith("END"):
-                break
-            if line.startswith("ATOM"):
-                tokens = line.split()
-                # Try to get the atomtype
-                try:
-                    atom = tokens[2][0]
-                    if atom in ["H", "C", "N", "O", "S", "P"]:
-                        atoms.append(atom)
-                    else:
-                        # e.g. 1HD1
-                        atom = tokens[2][1]
-                        if atom == "H":
-                            atoms.append(atom)
-                        else:
-                            raise Exception
-                except:
-                        exit("Error parsing atomtype for the following line: \n%s" % line)
-
-                if x_column == None:
-                    try:
-                        # look for x column
-                        for i, x in enumerate(tokens):
-                            if "." in x and "." in tokens[i+1] and "." in tokens[i+2]:
-                                x_column = i
+        with open(filename) as f:
+                lines = f.readlines()
+                for line in lines:
+                        if line.startswith("TER") or line.startswith("END"):
                                 break
-                    except IndexError:
-                        exit("Error parsing coordinates for the following line: \n%s" % line)
-                # Try to read the coordinates
-                try:
-                    V.append(np.asarray(tokens[x_column:x_column+3],dtype=float))
-                except:
-                    # If that doesn't work, use hardcoded indices
-                    try:
-                        x = line[30:38]
-                        y = line[38:46]
-                        z = line[46:54]
-                        V.append(np.asarray([x,y,z],dtype=float))
-                    except:
-                        exit("Error parsing input for the following line: \n%s" % line)
+                        if line.startswith("ATOM"):
+                                tokens = line.split()
+                                # Try to get the atomtype
+                                try:
+                                        atom = tokens[2][0]
+                                        if atom in ["H", "C", "N", "O", "S", "P"]:
+                                                atoms.append(atom)
+                                        else:
+                                                # e.g. 1HD1
+                                                atom = tokens[2][1]
+                                                if atom == "H":
+                                                        atoms.append(atom)
+                                                else:
+                                                        raise Exception
+                                except:
+                                                exit("Error parsing atomtype for the following line: \n%s" % line)
+
+                                if x_column == None:
+                                        try:
+                                                # look for x column
+                                                for i, x in enumerate(tokens):
+                                                        if "." in x and "." in tokens[i+1] and "." in tokens[i+2]:
+                                                                x_column = i
+                                                                break
+                                        except IndexError:
+                                                exit("Error parsing coordinates for the following line: \n%s" % line)
+                                # Try to read the coordinates
+                                try:
+                                        V.append(np.asarray(tokens[x_column:x_column+3],dtype=float))
+                                except:
+                                        # If that doesn't work, use hardcoded indices
+                                        try:
+                                                x = line[30:38]
+                                                y = line[38:46]
+                                                z = line[46:54]
+                                                V.append(np.asarray([x,y,z],dtype=float))
+                                        except:
+                                                exit("Error parsing input for the following line: \n%s" % line)
 
 
-    V = np.asarray(V)
-    atoms = np.asarray(atoms)
-    assert(V.shape[0] == atoms.size)
-    return atoms, V
+        V = np.asarray(V)
+        atoms = np.asarray(atoms)
+        assert(V.shape[0] == atoms.size)
+        return atoms, V
 
 
 def get_coordinates_xyz(filename):
-    '''
-    Get coordinates from a filename.xyz and return a vectorset with all the
-    coordinates.
+        '''
+        Get coordinates from a filename.xyz and return a vectorset with all the
+        coordinates.
 
-    This function has been written to parse XYZ files, but can easily be
-    written to parse others.
-    '''
+        This function has been written to parse XYZ files, but can easily be
+        written to parse others.
+        '''
 
-    f = open(filename, 'r')
-    V = []
-    atoms = []
-    n_atoms = 0
-    # TODO use enumerate istead
-    lines_read = 0
+        f = open(filename, 'r')
+        V = []
+        atoms = []
+        n_atoms = 0
+        # TODO use enumerate istead
+        lines_read = 0
 
-    # Read the first line to obtain the number of atoms to read
-    try:
-        n_atoms = int(f.next())
-    except ValueError:
-        exit("Could not obtain the number of atoms in the .xyz file.")
+        # Read the first line to obtain the number of atoms to read
+        try:
+                n_atoms = int(f.next())
+        except ValueError:
+                exit("Could not obtain the number of atoms in the .xyz file.")
 
-    # Skip the title line
-    f.next()
+        # Skip the title line
+        f.next()
 
-    # Use the number of atoms to not read beyond the end of a file
-    for line in f:
+        # Use the number of atoms to not read beyond the end of a file
+        for line in f:
 
-        if lines_read == n_atoms:
-            break
-        lines_read += 1
+                if lines_read == n_atoms:
+                        break
+                lines_read += 1
 
-        atom = re.findall(r'[a-zA-Z]+', line)[0]
-        atom = atom.upper()
+                atom = re.findall(r'[a-zA-Z]+', line)[0]
+                atom = atom.upper()
 
-        numbers = re.findall(r'[-]?\d+\.\d*(?:[Ee][-\+]\d+)?', line)
-        numbers = [float(number) for number in numbers]
+                numbers = re.findall(r'[-]?\d+\.\d*(?:[Ee][-\+]\d+)?', line)
+                numbers = [float(number) for number in numbers]
 
-        # The numbers are not valid unless we obtain exacly three
-        if len(numbers) == 3:
-            V.append(np.array(numbers))
-            atoms.append(atom)
-        else:
-            exit("Reading the .xyz file failed in line {0}. Please check the format.".format(lines_read + 2))
+                # The numbers are not valid unless we obtain exacly three
+                if len(numbers) == 3:
+                        V.append(np.array(numbers))
+                        atoms.append(atom)
+                else:
+                        exit("Reading the .xyz file failed in line {0}. Please check the format.".format(lines_read + 2))
 
-    f.close()
-    atoms = np.array(atoms)
-    V = np.array(V)
-    return atoms, V
+        f.close()
+        atoms = np.array(atoms)
+        V = np.array(V)
+        return atoms, V
 
 
 # if __name__ == "__main__":
@@ -417,7 +417,7 @@ def get_coordinates_xyz(filename):
 #     print("Quater RMSD:", quaternion_rmsd(P, Q))
 
 def main():
-  raise RuntimeError('This module should not be executed as a script')
+    raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
-  main()
+    main()
