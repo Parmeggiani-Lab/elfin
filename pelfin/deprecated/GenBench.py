@@ -71,7 +71,7 @@ class BenchmarkGenerator:
             self.bmarks = []
 
             # Collision measure is the radius type used to check collision
-            assert collisionMeasure in ElfinUtils.RadiiTypes
+            assert collisionMeasure in ElfinUtils.RADII_TYPES
 
             self.collisionMeasure = collisionMeasure
 
