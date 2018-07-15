@@ -5,19 +5,19 @@
 #
 
 def main():
-  raise RuntimeError('This module should not be executed as a script')
+    raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
-  main()
+    main()
 
 in_pymol = False
 try:
-  import pymol
-  in_pymol = True
+    import pymol
+    in_pymol = True
 except ImportError as ie:
-  main()
+    main()
 
 if in_pymol:
-  from pymol import cmd
+    from pymol import cmd
 
-  print('Template Extension Loaded')
+    print('Template Extension Loaded')
