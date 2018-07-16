@@ -13,13 +13,13 @@ import numpy as np
 import pelfin
 
 def compare_solutions(spec_file=None, sol_csv_file=None):
-    '''
+    """
     Compares solution center-of-mass points again the specification.
 
     Args:
     - spec_file - a csv or json file string path
     - sol_csv_file - a csv file string path
-    '''
+    """
 
     if spec_file is None or sol_csv_file is None:
         print(compare_solutions.__doc__)
