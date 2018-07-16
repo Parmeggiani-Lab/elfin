@@ -1,16 +1,15 @@
 import Bio.PDB
 
 def get_pdb_residue_count(pdb):
-    '''Returns the residue count of a Bio.PDB.Structure.Structure.'''
+    """Returns the residue count of a Bio.PDB.Structure.Structure."""
     return sum([len(c.child_list) for c in pdb.child_list[0].child_list])
 
 def get_chain_residue_count(chain):
-    '''Returns the residue count of a Bio.PDB.Structure.Structure.'''
+    """Returns the residue count of a Bio.PDB.Structure.Structure."""
     return len(chain.child_list)
 
 def strip_residues(pdb, chain_ids=None):
-    '''
-    Returns returns residues removed from a PDB.
+    """Returns returns residues removed from a PDB.
 
     Args:
     - pdb - Bio.PDB.Structure.Structure.
@@ -18,7 +17,7 @@ def strip_residues(pdb, chain_ids=None):
 
     Returns:
     - residues - a list of Bio.PDB.Residue.Residue.
-    '''
+    """
     residues = []
     for model in pdb:
         for chain in model:
@@ -30,19 +29,18 @@ def strip_residues(pdb, chain_ids=None):
     return residues
 
 def get_chain(struct, chain_id='A'):
-    '''Returns a specific chain from a Bio.PDB.Structure.Structure.'''
+    """Returns a specific chain from a Bio.PDB.Structure.Structure."""
     return struct.child_list[0].child_dict[chain_id]
 
 def get_chains(struct):
-    '''Returns all chains of a Bio.PDB.Structure.Structure.'''
+    """Returns all chains of a Bio.PDB.Structure.Structure."""
     return struct.child_list[0].child_list;
 
 def read_pdb(
         read_path,
         pdb_name=None
 ):
-    '''
-    Reads a PDB file.
+    """Reads a PDB file and returns a BioPython structure.
 
     Args:
     - read_path - PDB string file path to read from.
@@ -50,7 +48,7 @@ def read_pdb(
     
     Returns:
     - structure - Bio.PDB.Structure.Structure.
-    '''
+    """
     if pdb_name == None:
         pdb_name = read_path.split('/')[-1].replace('.', '_')
     parser = Bio.PDB.PDBParser(PERMISSIVE=False)
@@ -58,14 +56,13 @@ def read_pdb(
     return structure
 
 def save_cif(**kwargs):
-    '''
-    Saves a Bio.PDB.Structure.Structure as a CIF file. Does not automatically
+    """Saves a Bio.PDB.Structure.Structure as a CIF file. Does not automatically
     append .cif extension.
 
     Args:
     - struct - Bio.PDB.Structure.Structure to be saved.
     - save_path - CIF string file path.
-    '''
+    """
     struct = kwargs.pop('struct')
     save_path = kwargs.pop('save_path')
 
@@ -80,13 +77,12 @@ def save_cif(**kwargs):
         file.writelines('_citation.title  "Elfin"')
 
 def save_pdb(**kwargs):
-    '''
-    Saves a Bio.PDB.Structure.Structure as a PDB file.
+    """Saves a Bio.PDB.Structure.Structure as a PDB file.
 
     Args:
     - struct - Bio.PDB.Structure.Structure to be saved.
     - save_path - string file path.
-    '''
+    """
     struct = kwargs.pop('struct')
     save_path = kwargs.pop('save_path')
 
@@ -95,6 +91,7 @@ def save_pdb(**kwargs):
     io.save(save_path)
 
 def main():
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 

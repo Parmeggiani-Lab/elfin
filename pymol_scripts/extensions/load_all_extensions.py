@@ -2,10 +2,11 @@
 
 #
 # This is a PyMol extension script to load all PyMol extensions in the same
-# directory
+# directory.
 #
 
 def main():
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
