@@ -1,6 +1,6 @@
-'''
+"""
 Elfin data processing utilities module
-'''
+"""
 import inspect
 import os
 import sys
@@ -16,9 +16,8 @@ RADII_TYPES = ['average_all', 'max_ca_dist', 'max_heavy_dist']
 INF = float('inf')
 
 def get_rotation(angle_x=0, angle_y=0, angle_z=0):
-    '''
-    https://en.wikipedia.org/wiki/Rotation_matrix
-    '''
+    """https://en.wikipedia.org/wiki/Rotation_matrix
+    """
     radian_x = np.radians(angle_x)
     radian_y = np.radians(angle_y)
     radian_z = np.radians(angle_z)
@@ -41,9 +40,7 @@ def get_rotation(angle_x=0, angle_y=0, angle_z=0):
     return np.matmul(a=np.matmul(a=rot_x, b=rot_y), b=rot_z)
 
 def gen_pymol_txm(rot, tran):
-    '''
-    Deprecated.
-    Converts BioPython-style rotation and translation into pymol's
+    """Converts BioPython-style rotation and translation into pymol's
     transformation matrix string.
 
     Args:
@@ -52,25 +49,24 @@ def gen_pymol_txm(rot, tran):
 
     Returns:
     - _ - string of pymol's transformation matrix.
-    '''
+    """
     rot_tp = np.transpose(rot)
     rot_tp_tran = np.append(rot_tp, np.transpose([tran]), axis=1)
     pymol_rot_mat = np.append(rot_tp_tran, [[0, 0, 0, 1]], axis=0)
     return '[' + ', '.join(map(str, pymol_rot_mat.ravel())) + ']'
 
 def int_ceil(float_num):
-    '''Ceil a float then turn it into an int.'''
+    """Ceil a float then turn it into an int."""
     return int(np.ceil(float_num))
 
 def int_floor(float_num):
-    '''Floor a float then turn it into an int.'''
+    """Floor a float then turn it into an int."""
     return int(np.floor(float_num))
 
 def upsample(spec, pts):
-    '''
-    Upsamples points to be the same number of points in specification. This
+    """Upsamples points to be the same number of points in specification. This
     is code translated from Elfin core's C++ code.
-    '''
+    """
     n_spec_points = len(spec)
 
     more_points, fewer_points = (np.copy(spec), np.copy(pts))
@@ -128,12 +124,11 @@ def upsample(spec, pts):
     return upsampled
 
 def float_approximates(float_a, float_b, error=1e-6):
-    '''Returns whether float a is approximately b within error tolerance'''
+    """Returns whether float a is approximately b within error tolerance"""
     return abs(float_a-float_b) < error
 
 def check_collision(**kwargs):
-    '''
-    Tests whether a to-be-added node is too close to any node in partially or
+    """Tests whether a to-be-added node is too close to any node in partially or
     completely formed shape.
 
     Args:
@@ -147,7 +142,7 @@ def check_collision(**kwargs):
     Returns:
     - bool - whether or not the new node, when added to the shape, causes
         collision.
-    '''
+    """
     xdb = kwargs.pop('xdb')
     collision_measure = kwargs.pop('collision_measure')
     nodes = kwargs.pop('nodes')
@@ -171,8 +166,7 @@ def check_collision(**kwargs):
     return False
 
 def com_dist_info(xdb):
-    '''
-    Computes centre-of-mass distance information.
+    """Computes centre-of-mass distance information.
 
     Args:
     - xdb - a dict containing the xdb data. Should have originated from
@@ -181,7 +175,7 @@ def com_dist_info(xdb):
     Returns:
     - (_, _, _) - tuple containing average, min and max values for centre-of-mass
         distances.
-    '''
+    """
     doubles_data = xdb['doubles_data']
     dists = []
     for single_a_name in doubles_data.keys():
@@ -196,7 +190,7 @@ def com_dist_info(xdb):
     return np.average(dists), min(dists), max(dists)
 
 def read_csv_points(csv_file):
-    '''A wrapper of read_csv() but returns as list of numpy array points.'''
+    """A wrapper of read_csv() but returns as list of numpy array points."""
     pts = []
 
     with open(csv_file, 'r') as file:
@@ -207,8 +201,7 @@ def read_csv_points(csv_file):
     return pts
 
 def read_csv(read_path, delim=', '):
-    '''
-    Reads a generic CSV file.
+    """Reads a generic CSV file.
 
     Args:
     - read_path - string path to read from.
@@ -216,7 +209,7 @@ def read_csv(read_path, delim=', '):
 
     Returns:
     - rows - list of rows where each row is a string list of cell values.
-    '''
+    """
     rows = []
     with open(read_path) as csv_file:
         sreader = csv.reader(csv_file, delimiter=delim)
@@ -226,14 +219,13 @@ def read_csv(read_path, delim=', '):
     return rows
 
 def save_points_as_csv(**kwargs):
-    '''
-    Saves a list of points into a CSV file.
+    """Saves a list of points into a CSV file.
 
     Args:
     - points - Nx(3x1 numpy array) list to be saved.
     - save_path - string path to save to.
     - delim - delimiter to use for the CSV format.
-    '''
+    """
     points = kwargs.pop('points')
     save_path = kwargs.pop('save_path')
     delim = kwargs.pop('delim', ' ')
@@ -244,34 +236,23 @@ def save_points_as_csv(**kwargs):
             writer.writerow(row)
 
 def read_json(read_path):
-    '''
-    Reads a JSON file.
-
-    Args:
-    - read_path - JSON string file path.
-
-    Returns:
-    - _ - dict containing data from the JSON file.
-    '''
+    """Reads a JSON file adn returns a dict."""
     with open(read_path, 'r') as file:
         return json.load(file)
 
 def make_dir(directory):
-    '''
-    Create directory if does not exist.
-    '''
+    """Creates directory if does not exist."""
     if not os.path.exists(directory):
         os.makedirs(directory)
 
 def pause_code(frame=None):
-    '''
-    Pause execution and drop into interactive mode for debugging. This is
+    """Pause execution and drop into interactive mode for debugging. This is
     intended to be manually inserted into area of code where debugging is
     needed.
 
     Args:
     - frame - specify frame in which the globals and locals are to be debugged.
-    '''
+    """
     print('\n------------------pause_code()------------------')
     if frame is None:
         # Use current frame (one above the exception wrapper)
@@ -282,14 +263,13 @@ def pause_code(frame=None):
     code.interact(local=name_space)
 
 def safe_exec(func, *args):
-    '''
-    Execute func and drops into interactive mode for debugging if an exception
+    """Execute func and drops into interactive mode for debugging if an exception
     is raised.
 
     Args:
     - func - the function handle to be called.
     - *args - args to be expanded for func.
-    '''
+    """
     try:
         func(*args)
     except Exception as ex:
@@ -307,7 +287,7 @@ def safe_exec(func, *args):
         pause_code(frame)
 
 def main():
-    '''main'''
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ == '__main__':
