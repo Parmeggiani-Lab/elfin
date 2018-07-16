@@ -73,13 +73,13 @@ class XDBGenerator:
 
         # The current process does not allow hub to hub connections. Maybe this
         # need to be changed?
-        for chain_id in data['component_info']:
-            comp_info = data['component_info'][chain_id]
-            comp_name = comp_info['single_name']
+        for chain_id in data['component_data']:
+            chain_data = data['component_data'][chain_id]
+            comp_name = chain_data['single_name']
 
-            comp_info['c_connections'] = {}
-            comp_info['n_connections'] = {}
-            if comp_info['c_free']:
+            chain_data['c_connections'] = {}
+            chain_data['n_connections'] = {}
+            if chain_data['c_free']:
                 for single_b_name in self.double_data[comp_name]:
                     # Get the transformation for this hub to align this component onto
                     # the position of the single A of the current double.
@@ -104,10 +104,10 @@ class XDBGenerator:
                     # ----IMPORTANT----
                     # Breaking change: pre-transpose rotation so that it becomes
                     # left-multiplication (the standard way)
-                    comp_info['c_connections'][single_b_name] = \
+                    chain_data['c_connections'][single_b_name] = \
                         { 'rot': np.transpose(rot).tolist(), 'tran': tran.tolist()}
 
-            if comp_info['n_free']:
+            if chain_data['n_free']:
                 for single_a_name in [a_name for a_name in self.double_data if comp_name in self.double_data[a_name]]:
                     # Same as c_free except comp acts as single b
                     rc_a = get_pdb_residue_count(self.single_pdbs[single_a_name])
@@ -127,7 +127,7 @@ class XDBGenerator:
                     # ----IMPORTANT----
                     # Breaking change: pre-transpose rotation so that it becomes
                     # left-multiplication (the standard way)
-                    comp_info['n_connections'][single_a_name] = \
+                    chain_data['n_connections'][single_a_name] = \
                         { 'rot': np.transpose(rot).tolist(), 'tran': tran.tolist()}
 
         save_pdb(
