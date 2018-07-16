@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 #
-# A PyMol extension script 
+# A PyMol extension script template
 #
 
 def main():
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
