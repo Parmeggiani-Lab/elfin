@@ -1,4 +1,4 @@
-'''
+"""
 See more here: http://www.pymolwiki.org/index.php/center_of_mass
 
 DESCRIPTION
@@ -12,7 +12,7 @@ DESCRIPTION
 SEE ALSO
 
      pseudoatom, get_com
-'''
+"""
 
 from __future__ import print_function
 from pymol import cmd

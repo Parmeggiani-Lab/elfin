@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 #
-# A PyMol extension script 
+# A PyMol extension script to test extrusion of a single module from a single
+# module's n-term
 #
 
 def main():
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
@@ -25,13 +27,12 @@ if in_pymol:
 
     @cmd.extend
     def extrude_single_at_single_n(single_name=None, ext_single_name=None):
-        '''
-        Extrudes a single at the n-terminus of a single module.
+        """Extrudes a single at the n-terminus of a single module.
 
         Args:
         - single_name - string name of the fixed single
         - ext_single_name - string name of the extension single
-        '''
+        """
         if single_name is None or \
             ext_single_name is None:
             print(extrude_single_at_single_n.__doc__)
