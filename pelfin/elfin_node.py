@@ -1,10 +1,10 @@
 import numpy as np
 import warnings
 
-class ElfinNode():
-    '''
+class ElfinNode(object):
+    """
     A single module instance and stores info about connectivity
-    '''
+    """
     def __init__(
         self, 
         **kwargs
@@ -43,6 +43,7 @@ class ElfinNode():
             self.tran = (np.dot(self.tran, rot) + tran).tolist()
 
 def main():
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 

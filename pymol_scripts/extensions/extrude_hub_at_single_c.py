@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 #
-# A PyMol extension script 
+# A PyMol extension script to test extrusion of a hub from a single module's
+# c-term
 #
 
 def main():
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
@@ -24,15 +26,14 @@ if in_pymol:
 
     @cmd.extend
     def extrude_hub_at_single_c(single_name=None, hub_name=None, component_id=None):
-        '''
-        Extrudes a hub at the c-terminus of a single module.
+        """Extrudes a hub at the c-terminus of a single module.
 
         Args:
         - single_name - string
         - hub_name - string
         - component_id - string, indicating which module component inside the hub
             to extend into
-        '''
+        """
         if single_name is None or \
             hub_name is None or \
             component_id is None:

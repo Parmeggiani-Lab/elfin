@@ -6,6 +6,7 @@
 #
 
 def main():
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
@@ -28,15 +29,14 @@ if in_pymol:
 
     @cmd.extend
     def batch_convert_modules(src_dir=None, dst_dir=None, ext='obj'):
-        '''
-        Batch convert Elfin protein module PDBs.
+        """Batch convert Elfin protein module PDBs.
 
         Args:
         - src_dir - input PDB directory (one that contains sub_dirs like singles,
             doubles, hubs)
         - dst_dir - output PDB directory
         - ext - file extension supported by PyMol
-        '''
+        """
 
         if src_dir is None or dst_dir is None:
             print(batch_convert.__doc__)

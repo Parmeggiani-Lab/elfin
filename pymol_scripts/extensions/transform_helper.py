@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
 #
-# A PyMol extension script to shorten the transform_selection() command
+# A PyMol extension script to shorten the transform_selection() command and
+# accept python lists as argument.
 #
 
 def main():
+    """main"""
     raise RuntimeError('This module should not be executed as a script')
 
 if __name__ =='__main__': 
@@ -29,15 +31,14 @@ if in_pymol:
             rot=[[1,0,0],[0,1,0],[0,0,1]], 
             tran_after=[0,0,0]
         ):
-        '''
-        Transforms an object.
+        """Transforms an object.
 
         Args:
         - obj_name - string
         - tran_before - a 3x1 translation vector applied before rotation
         - rot - a 3x3 rotation matrix
         - tran_after - a 3x1 translation vector applied after rotation
-        '''
+        """
         if obj_name is None:
             print(tx.__doc__)
         else:
@@ -49,13 +50,12 @@ if in_pymol:
 
     @cmd.extend
     def multi_tx(obj_name=None, rottran_list=[]):
-        '''
-        Transforms an object over a list of rot, tran tuples.
+        """Transforms an object over a list of rot, tran tuples.
 
         Args:
         - obj_name - string
         - rottran_list - a list of (rot, tran) lists or tuples
-        '''
+        """
         if obj_name is None:
             print(multi_tx.__doc__)
         else:
