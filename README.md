@@ -176,8 +176,9 @@ Notes:
 
 ## 8. Protein Design UI
 
-<img src="resources/images/belfin.png" width="100%">
-
+<p align="center">
+<img src="resources/images/simultaneous_extrusion.gif" width="60%">
+</p>
 Figure 2: Screenshot of Elfin Front (Blender Addon) in its current state.
 
 First, decompress the Blender protein model library:
