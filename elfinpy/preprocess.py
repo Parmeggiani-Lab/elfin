@@ -145,8 +145,8 @@ def preprocess_double(double_file):
 def parse_args(args):
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(description='Preprocess all raw single and double PDBs');
-    parser.add_argument('--input_dir', default='./resources/pdb_raw/')
-    parser.add_argument('--output_dir', default='./resources/pdb_prepped/')
+    parser.add_argument('--input_dir', default='./pdb_raw/')
+    parser.add_argument('--output_dir', default='./pdb_prepped/')
     parser.add_argument('--dry_run', action='store_true')
     return parser.parse_args(args)
 

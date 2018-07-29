@@ -9,5 +9,5 @@ elfinpy_path="$PWD/elfinpy/"
 PYTHONPATH=$elfinpy_path:$PYTHONPATH
 
 # Add scripts folder
-script_dirs="$PWD/misc/"
-PATH=$pelfin_path:$script_dirs:$PATH
+misc_dir="$PWD/misc/"
+PATH=$elfinpy_path:$misc_dir:$PATH

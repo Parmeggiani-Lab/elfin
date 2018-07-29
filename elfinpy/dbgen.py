@@ -15,10 +15,10 @@ def parse_args(args):
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description='Generates the xDB database from preprocessed single and double modules.');
-    parser.add_argument('--relaxed_pdbs_dir', default='./resources/pdb_relaxed/')
-    parser.add_argument('--metadata_dir', default='./resources/metadata/')
-    parser.add_argument('--output', default='./resources/xdb.json')
-    parser.add_argument('--aligned_pdb_dir', default='./resources/pdb_aligned/')
+    parser.add_argument('--relaxed_pdbs_dir', default='./pdb_relaxed/')
+    parser.add_argument('--metadata_dir', default='./metadata/')
+    parser.add_argument('--output', default='./xdb.json')
+    parser.add_argument('--aligned_pdb_dir', default='./pdb_aligned/')
     return parser.parse_args(args)
 
 def main(test_args=None):
