@@ -14,21 +14,6 @@ matrix:
         - pip install -r requirements.txt
       script:
         - pytest
-    - language: cpp
-      dist: trusty
-      before_script:
-        - cd celfin
-      before_install:
-        - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-        - sudo apt-get update -qq 
-      install:
-        - sudo apt-get install -qq g++-6 --allow-unauthenticated
-        - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 90
-      compiler: 
-        - gcc
-        # - clang
-      env: 
-        - OMP_NUM_THREADS=4
 
 branches:
   only:
