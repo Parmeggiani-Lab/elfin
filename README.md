@@ -223,66 +223,7 @@ To be updated with more implementation progress.
 
 ## 9. Database Preparation
 
-**Obtain and decompress elfin-db.zip**
-```
-# cd to repo root
-. ./activate
-cd resources
-git clone https://github.com/joy13975/elfin-db.git 
-```
-
-Read [here](#access-to-elfin-db) about elfin-db access permission.
-
-Obtain 7z. For Ubuntu:
-```
-sudo apt-get install p7zip-full
-```
-And then decompress:
-
-```
-# cd to elfin-db inside resources
-7z x elfin-db/db.7z
-```
-
-
-**Preprocess and relax module PDBs**
-```
-# cd to repo root
-preprocess.py
-create_relax_list > relax_list.temp
-
-```
-
-Now, if you're on a Linux cluster **that has MPI-enabled Rosetta installed** and you have the ```sbatch``` command for your job queuing system, you can simply invoke:
-
-```
-sh relax_list.temp
-```
-
-If you are on your own computer or some other different environment, you need to modify the environment variables that specify what flavour of Rosetta and queuing system you use. For instance, on my Macbook Pro (without MPI Rosetta and no queuing system) I use:
-```
-local=yes variant= release=macosclangrelease sh relax_list.temp
-```
-
- - The ```local``` variable tells the ```./scripts/Shell/relax.sh``` script whether or not to use ```sbatch```.
- - The ```variant``` variable tells which build variant (e.g. ```mpi``` or ```none``` if default) of Rosetta to use. 
- - The ```release``` variable tells which release version to use. This depends on your OS, and which build version you want to use (e.g. could be the debug version).
-
-This relaxation can take quite a while simply because the process is computationally intensive. It is therefore strongly recommended that you do this on a compute cluster that lets you spread workload across many machines. 
-
-**Generating xdb**
-
-After relaxation, you should see a new PDB suffixed with ```_0001.pdb``` for each PDB in ```./resources/pdb_prepped/```. These are the relaxed versions of the original preprocessed PDBs. Now copy these into a separate folder for the next step:
-```
-cp_relaxed_pdbs
-```
-
-Lastly, generate the xdb by invoking: 
-```
-dbgen.py
-```
-
-This script aligns each pair's reference frames to the reference frame of their first single module (e.g. ```D4-D4_j1_D64``` would be superimposed onto ```D4```), producing the ```./resources/pdb_aligned/``` folder. This folder contains aligned singles and pairs that will be used to reconstruct Elfin's output structures in the final stage of design. Geometric relationships will also be calculated to produce a ```./resources/xdb.json``` "pair relationship database".
+Refer to [elfin-data](https://github.com/joy13975/elfin-data).
 
 ## 10. Design Verification
 After running a shape design through Elfin Core, you should find output solutions in ```./celfin/output/```. Recall that smaller hexadecimal values in the file name corresponds to better solutions (they're just memory address of a sorted array). Here we shall use the default input as example.
