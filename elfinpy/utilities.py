@@ -254,6 +254,10 @@ def pause_code(frame=None):
     - frame - specify frame in which the globals and locals are to be debugged.
     """
     print('\n------------------pause_code()------------------')
+
+    fi = inspect.getframeinfo(frame)
+    print('Where: {loc}:{line}'.format(loc=fi.filename, line=fi.lineno))
+    print('What: \n{code}'.format(code=fi.code_context[0]))
     if frame is None:
         # Use current frame (one above the exception wrapper)
         frame = inspect.currentframe().f_back

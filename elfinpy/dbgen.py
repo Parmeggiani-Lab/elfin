@@ -14,7 +14,7 @@ from pdb_utilities import *
 def parse_args(args):
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description='Generates the xDB database from preprocessed single and double modules.');
+        description='Generates the xDB database from preprocessed single and double modules.')
     parser.add_argument('--relaxed_pdbs_dir', default='./pdb_relaxed/')
     parser.add_argument('--metadata_dir', default='./metadata/')
     parser.add_argument('--output', default='./xdb.json')
