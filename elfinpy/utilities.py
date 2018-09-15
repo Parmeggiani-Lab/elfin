@@ -288,7 +288,7 @@ def pause_code(frame=None):
     name_space.update(frame.f_locals)
     code.interact(local=name_space)
 
-def safe_exec(func, *args):
+def safe_exec(func, *args, **kwargs):
     """Execute func and drops into interactive mode for debugging if an exception
     is raised.
 
@@ -297,7 +297,7 @@ def safe_exec(func, *args):
     - *args - args to be expanded for func.
     """
     try:
-        func(*args)
+        func(*args, **kwargs)
     except Exception as ex:
         print('\n------------------safe_exec() caught exception------------------')
         print(ex)
@@ -305,12 +305,12 @@ def safe_exec(func, *args):
         # Find last (failed) inner frame
         _, _, traceback = sys.exc_info()
         last_frame = \
-            traceback.traceback_next \
-            if traceback.traceback_next \
+            traceback.tb_next.tb_next \
+            if traceback and traceback.tb_next and traceback.tb_next \
             else traceback
-        frame = last_frame().tb_frame
+        frame = last_frame.tb_frame
         traceback_module.print_exc()
-        pause_code(frame)
+        pause_code(frame, extra_vars={'__traceback': traceback})
 
 def main():
     """main"""
