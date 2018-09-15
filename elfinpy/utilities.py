@@ -255,6 +255,28 @@ def pause_code(frame=None):
     """
     print('\n------------------pause_code()------------------')
 
+    if frame is None:
+        # Use current frame (one above the exception wrapper)
+        frame = inspect.currentframe().f_back
+
+    fi = inspect.getframeinfo(frame)
+    print('Where: {loc}:{line}'.format(loc=fi.filename, line=fi.lineno))
+    print('What: \n{code}'.format(code=fi.code_context[0]))
+    
+    name_space = dict(frame.f_globals)
+    name_space.update(frame.f_locals)
+    code.interact(local=name_space)
+
+def pause_code(frame=None):
+    """Pause execution and drop into interactive mode for debugging. This is
+    intended to be manually inserted into area of code where debugging is
+    needed.
+
+    Args:
+    - frame - specify frame in which the globals and locals are to be debugged.
+    """
+    print('\n------------------pause_code()------------------')
+
     fi = inspect.getframeinfo(frame)
     print('Where: {loc}:{line}'.format(loc=fi.filename, line=fi.lineno))
     print('What: \n{code}'.format(code=fi.code_context[0]))
