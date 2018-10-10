@@ -8,7 +8,7 @@ Elfin has been split into the following repositories:
 
 This repository hosts the v1 branch and data processing code for v2.
 
-Development is currently most active in elfin-ui.
+Development is currently most active in elfin-ui. Implementation is based on the theories and assumptions stated [here](theories_and_assumptions.md).
 
 # What is elfin
 
