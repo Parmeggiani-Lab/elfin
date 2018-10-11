@@ -8,7 +8,7 @@
 
 [S] is a speculation
 
-## Module chaacteristics
+## Protein Database
  - [D] A "module" is a protein that has two or more uncapped termini (interfaces)
  - [T] Modules are slightly flexible
  - [A] Each module "pose" can be treated as a rigid snapshot
@@ -23,7 +23,7 @@
  - [D] An "asymmetric" hub is a hub without the symmetric hub restriction
 
 
-## Algorithm characteristics
+## Algorithm
  - [T] Module interface connectivity can be modelled as an incomplete directed cyclic graph with an uneven distribution of node degrees
  - [D] A "module sequence" is a valid walk in the connectivity graph
  - [D] A "network" is a collection of module sequences joined by hubs
@@ -43,13 +43,17 @@
  - [S] Elfin is not a 0-1 Knapsack problem because each solution might visit a node multiple times, and the order of visits matter. These seem to be a hint that dynamic programming cannot help elfin solve its problem
 
 ## Beyond the general guiding graph
-On top of the using a guiding graph (in elfin-ui terms, this would be a pure path guide network) as input, we want to allow the user to manually specify parts of the solution. This comes in the following forms:
+On top of the using a guiding graph as input, we want to allow the user to manually specify parts of the solution. This comes in the following forms:
  1. Placing specific modules in 3D space
  2. Connecting specific modules to path guides
- 3. Specify whether/how much a specific module can translate/rotate in case a more optimal solution can be generated
+ 3. Specify spatial tolerance between a module and a path guide
 
-Numbers 1 and 2 help reduce the search space by reducing the solution size and also by restricting interface choices. However, number 3 <em>adds</em> complexity. If user-specified modules can move/rotate around, I can think of two ways that elfin can effectively use this information:
- 1. During candidate evaluation, take into account the spatial tolerance by Kabsch'ing only on nodes that have no spatial tolerance (tolerance needs to be "floored" in preprocessing). Because elfin's scoring function doesn't care about rotation, we need to add rotation tolerance check in this case
- 2. Elfin generates a discrete set of possible poses for each spatially tolerant module and tries to solve each case and find the optimal between the poses
+ - [D] A "path guide" is a pure guiding graph that may or may not connect to user-defined modules (in a possibly hybrid elfin problem statement)
 
- Method 1 seems more straightforward, but might need to violate user-defined tolerances. Method 2 gurantees that user-defined tolerances are observed, but is compute intensive and feels ugly.
+Numbers 1 and 2 help reduce the search space by reducing the solution size and also by restricting interface choices. However, number 3 is a bit less obvious. At first look, it seems that spatial tolerances create a volume in which hinges may reside and angle "fans" in which hinges could face, thus requiring infinite(!) more pose checks.
+
+ - [D] A "hinge" is a user-specified module that connects to a path guide
+
+Since we simply can't afford to search infinitely more poses, we could try to discretize the tolerance volume/angle fans. However, that requires a granularity parameter, and still increases the search space by at least an order of magnitude.
+
+A better way is to simply evaluate a candidate based on the hinge node emitting zero score if it satisfies the spatial tolerance. If there is no spatial tolerance, the tolerant volume is just a single point and the tolerant angle fan a single vector. This adds constant amount of work in evaluation, but doesn't require any increase in search space.
