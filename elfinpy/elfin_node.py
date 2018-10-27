@@ -39,8 +39,8 @@ class ElfinNode(object):
                     .format(i, self.name, self.id))
 
     def transform(self, rot, tran):
-            self.rot = (np.dot(self.rot, rot)).tolist()
-            self.tran = (np.dot(self.tran, rot) + tran).tolist()
+            self.rot = (np.dot(self.rot, np.transpose(rot))).tolist()
+            self.tran = (np.dot(self.tran, np.transpose(rot)) + tran).tolist()
 
 def main():
     """main"""
