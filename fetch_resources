@@ -3,6 +3,7 @@
 cd resources
 
 # Get metadata
+rm -rf metadata
 svn export https://github.com/joy13975/elfin-library/trunk/metadata
 
 # Get xdb
