@@ -33,7 +33,7 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 
 2. [Prerequisites](#2-prerequisites)
 
-3. [Python VirtualEnv Setup](#3-python-virtualenv-setup)
+3. [Setup](#3-setup)
 
 4. [Protein Design UI](#4-protein-design-ui)
 
@@ -90,13 +90,11 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 1. [PyMOL](https://www.pymol.org) for protein visualisation
 2. [Rosetta](https://www.rosettacommons.org/software/license-and-download) for protein relaxation.
 
-## 3. Python VirtualEnv Setup
+## 3. Setup
 
+Run the following:
 ```
-# cd to repo root
-virtualenv -p python3 .venv
-. ./activate
-pip install -r requirements.txt
+bash <(curl -s https://raw.githubusercontent.com/joy13975/elfin/master/setup_elfin)
 ```
 
 ## 4. Protein Design UI
@@ -104,13 +102,6 @@ pip install -r requirements.txt
 See [elfin-ui](https://github.com/joy13975/elfin-ui)
 
 ## 5. Core Solver
-
-Get the v1 solver by:
-```
-git clone --single-branch -b v1 --depth 1 git@github.com:joy13975/elfin-solver.git
-cd elfin-solver
-make -j4 # compile
-```
 
 Example run:
 ```
@@ -120,11 +111,6 @@ Example run:
 See [elfin-solver](https://github.com/joy13975/elfin-solver)
 
 ## 6. Synthesis Resources
-
-Run at elfin root:
-```
-./fetch_resources
-```
 
 Note that you will be prompted to enter your Github username and password so as to authenticate for permission to the [elfin-data](https://github.com/joy13975/elfin-data) repo.
 
