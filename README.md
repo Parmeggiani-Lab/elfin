@@ -97,6 +97,8 @@ Run the following:
 bash <(curl -s https://raw.githubusercontent.com/joy13975/elfin/master/setup_elfin)
 ```
 
+Note that you will be prompted to enter your Github username and password so as to authenticate for permission to the [elfin-data](https://github.com/joy13975/elfin-data) repo.
+
 ## 4. Protein Design UI
 
 See [elfin-ui](https://github.com/joy13975/elfin-ui)
@@ -111,8 +113,6 @@ Example run:
 See [elfin-solver](https://github.com/joy13975/elfin-solver)
 
 ## 6. Synthesis Resources
-
-Note that you will be prompted to enter your Github username and password so as to authenticate for permission to the [elfin-data](https://github.com/joy13975/elfin-data) repo.
 
 See [elfin-data](https://github.com/joy13975/elfin-data).
 
