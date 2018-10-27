@@ -24,7 +24,7 @@ if in_pymol:
     import sys, os, glob
 
     curr_dir = os.getcwd()
-    sys.path.append(os.path.join(curr_dir, os.pardir, os.pardir)) # for pelfin
+    sys.path.append(os.path.join(curr_dir, os.pardir, os.pardir)) # for elfinpy
 
     import importlib
     ext_exclusion = ['__init__.py', 'load_all_extensions.py']

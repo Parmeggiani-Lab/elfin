@@ -21,7 +21,7 @@ except ImportError as ie:
 
 if in_pymol:
     from pymol import cmd
-    from pelfin import utilities
+    from elfinpy import utilities
     import os
 
     @cmd.extend

@@ -10,7 +10,7 @@ from pymol import cmd
 
 import numpy as np
 
-import pelfin
+import elfinpy
 
 def compare_solutions(spec_file=None, sol_csv_file=None):
     """
@@ -25,14 +25,14 @@ def compare_solutions(spec_file=None, sol_csv_file=None):
         print(compare_solutions.__doc__)
     else:
         if spec_file.rfind('.csv') != -1:
-            spec_pts = pelfin.read_csv_points(spec_file)
+            spec_pts = elfinpy.read_csv_points(spec_file)
         elif spec_file.rfind('.json') != -1:
             with open(spec_file, 'r') as file:
                 spec_pts = np.asarray(json.load(file)['coms'])
         else:
             print 'Unknown spec file format'
 
-        sol_pts = pelfin.read_csv_points(sol_csv_file)
+        sol_pts = elfinpy.read_csv_points(sol_csv_file)
 
         # Centre both pts
         centred_spec = spec_pts - np.mean(spec_pts, axis=0)
@@ -42,7 +42,7 @@ def compare_solutions(spec_file=None, sol_csv_file=None):
         draw_pts(centred_spec, color=[0.7,0,0])
 
         # Equalise sample points
-        specUpPts = pelfin.upsample(centred_spec, centred_sol)
+        specUpPts = elfinpy.upsample(centred_spec, centred_sol)
 
         draw_pts(specUpPts, color=[0.5,0.5,0])
 

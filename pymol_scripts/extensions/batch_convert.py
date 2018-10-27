@@ -25,7 +25,7 @@ if in_pymol:
 
     import glob
 
-    from pelfin.utilities import make_dir
+    from elfinpy.utilities import make_dir
 
     @cmd.extend
     def batch_convert_modules(src_dir=None, dst_dir=None, ext='obj'):
