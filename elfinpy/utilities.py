@@ -200,7 +200,7 @@ def read_csv_points(csv_file):
 
     return pts
 
-def read_csv(read_path, delim=', '):
+def read_csv(read_path, delim=','):
     """Reads a generic CSV file.
 
     Args:
