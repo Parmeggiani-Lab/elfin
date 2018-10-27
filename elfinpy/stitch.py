@@ -17,6 +17,7 @@ import Bio.PDB
 import Bio.SubsMat.MatrixInfo
 import Bio.PDB.StructureBuilder
 from utilities import *
+from pdb_utilities import *
 
 class Synthesiser:
     def __init__(
@@ -38,7 +39,7 @@ class Synthesiser:
 
         # Parse and convert capping repeat indicies into a dictionary
         self.capping_repeat_r_id_dict = {}
-        for row in readCsv(metadata_dir + '/repeat_indicies.csv', delim=' '):
+        for row in read_csv(metadata_dir + '/repeat_indicies.csv', delim=' '):
             self.capping_repeat_r_id_dict[row[0].split('.')[0].replace('DHR', 'D')] = [int(idx) for idx in row[1:]]
 
     def reset_residue_id(self):
@@ -126,7 +127,7 @@ class Synthesiser:
             # there's only one single node in the entire chain
             print('Warning: \n'
                     '   Single-node chains still use transformation '
-                    '   matricies calculated with double fusion in mind. '
+                    '   matricies calculated with double fusion. '
                     '   This might cause some inaccuracy when applied '
                     '   not on a trimmed double but a single module.')
             chain_id = graph['name'] + '_' + str(node_a['id'])
@@ -224,8 +225,17 @@ class Synthesiser:
 
         self.reset_residue_id()
         for graph_idx in range(len(self.spec)):
-            print('Processing graph: idx={}, name={}'.format(graph_idx, self.spec[graph_idx]['name']))
-            map(lambda c: model.add(c), self.make_chains(self.spec[graph_idx]))
+            try:
+                print('Processing graph: idx={}, name={}'.format(graph_idx, self.spec[graph_idx]['name']))
+            except KeyError:
+                print('Error!')
+                print('Input file seems to be v1 format.')
+                print('Use v1_design_convert.py to convert a v1 format file to v2 format.')
+                exit(1)
+
+            chains = self.make_chains(self.spec[graph_idx])
+            for c in chains:
+                model.add(c)
 
         sb = Bio.PDB.StructureBuilder.StructureBuilder()
         sb.init_structure('0')
@@ -250,7 +260,7 @@ def main(test_args=None):
     spec_ext = args.spec_file[args.spec_file.rfind('.'):]
 
     if spec_ext == '.json':
-        spec = readJSON(args.spec_file)
+        spec = read_json(args.spec_file)
     else:
         print('Unknown spec file type: {}'.format(spec_ext))
         exit()
@@ -258,7 +268,7 @@ def main(test_args=None):
     if len(spec) > 1:
         print('Warning: multi-chain feature is not well tested yet')
 
-    model = Synthesiser(
+    struct = Synthesiser(
         spec, 
         args.pdb_dir,
         args.cappings_dir,
@@ -269,16 +279,16 @@ def main(test_args=None):
 
     if args.out_file == '':
         args.out_file = args.spec_file
-    args.out_file = '.'.join(args.out_file.split('.')[:-1])
+    args.out_file = '.'.join(args.out_file.split('.')[:-1] + ['cif'])
 
-    print('Saving...')
-    save_cif(model, file)
+    print('Saving to:', args.out_file)
+    save_cif(struct=struct, path=args.out_file)
 
     # Todo: output coms for multiple chains
     #   Need to change csv format such that points
     # aren't connected between chains
     
-    # coms = [map(lambda el: el['tran'], spec[0]['nodes'])]
+    # coms = [node['tran'] for node in spec[0]['nodes']]
     # saveCsv(coms, args.out_file + '.csv')
 
 if __name__ == '__main__':

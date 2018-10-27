@@ -9,7 +9,7 @@ def parse_args(args):
 
 def main(test_args=None):
         args = parse_args(sys.argv[1:] if test_args is None else test_args)
-        (avg_d, min_d, max_d) = com_dist_info(read_json('resources/xDB.json'))
+        (avg_d, min_d, max_d) = com_dist_info(read_json('resources/xdb.json'))
         print('Distances avg: {}, min: {}, max: {}'.format(avgD, minD, maxD))
 
 if __name__ =='__main__': 

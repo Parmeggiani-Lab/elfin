@@ -8,11 +8,11 @@ from utilities import *
 
 def compute_old_graph_txm(xdb, graph):
     nodes = graph.nodes
-    doubles_data = xdb['doubles_data']
+    double_data = xdb['double_data']
     for i in range(len(nodes)-1):
         node_a = nodes[i] 
         node_b = nodes[i+1]
-        rel = doubles_data[node_a.name][node_b.name]
+        rel = double_data[node_a.name][node_b.name]
         for j in range(i+1):
             nodes[j].transform(rel['rot'], rel['tran'])
 
@@ -21,7 +21,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description='Converts old Elfin core intermediate output into new format');
     parser.add_argument('input') # No dash means mandatory
     parser.add_argument('--output')
-    parser.add_argument('--xdb_path', default='resources/xDB.json')
+    parser.add_argument('--xdb_path', default='resources/xdb.json')
     parser.add_argument('--multichain_test', action='store_true')
     return parser.parse_args(args)
 
@@ -34,14 +34,15 @@ def main(test_args=None):
     # Make sure we're working with the old format
     keys = ec_out.keys()
     if not 'nodes' in keys:
+        print('Error!')
         print('Input file does not look like the old Elfin core output file')
-        return 1
+        exit(1)
 
     n_nodes = len(ec_out['nodes'])
     nodes = [ 
                 ElfinNode(
-                i, 
-                el, 
+                id=i, 
+                name=el, 
                 trim=[(False if i == 0 else True), (False if i == n_nodes - 1 else True)],
                 cterm_node_id=((i+1) if i < n_nodes - 1 else -1)
                 ) for (i, el) in enumerate(ec_out['nodes'])
@@ -53,7 +54,9 @@ def main(test_args=None):
     assert(len(graphs) == 1)
 
     xdb = read_json(args.xdb_path)
-    map(lambda i, el: compute_old_graph_txm(xdb, el), enumerate(graphs))
+
+    for g in graphs:
+        compute_old_graph_txm(xdb, g)
 
     if args.multichain_test:
         graphs.append(copy.deepcopy(graph))
@@ -66,9 +69,9 @@ def main(test_args=None):
 
     output_file = args.output
     if output_file == None:
-        output_file = args.input.replace('.json', '.new.json')
+        output_file = args.input.replace('.json', '.v2.json')
 
-    with open(output_file, 'wb') as ofp:
+    with open(output_file, 'w') as ofp:
         json.dump(graphs, ofp, default=lambda o: o.__dict__)
         print('Saved to: ' + output_file)
 

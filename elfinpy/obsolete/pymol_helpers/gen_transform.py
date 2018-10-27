@@ -7,7 +7,7 @@ from utilities import *
 def main():
 	ap = argparse.ArgumentParser(description='Generate Pymol Transform');
 	ap.add_argument('double_name')
-	ap.add_argument('--xdb_path', default='./resources/xDB.json')
+	ap.add_argument('--xdb_path', default='./resources/xdb.json')
 	ap.add_argument('--double_dir', default='./resources/pdb_aligned/doubles/')
 
 	args = ap.parse_args()

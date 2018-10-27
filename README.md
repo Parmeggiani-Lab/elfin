@@ -41,6 +41,8 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 
 6. [Database Preparation](#6-database-preparation)
 
+7. [Stitching Example (v1)](#7-stitching-example-v1)
+
 ## 1. Project Status (v2)
 - [x] Integrate new hub data
     - [x] Clean, align, extract transformations
@@ -50,20 +52,20 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
     - [x] Handle capping
     - [x] Handle multiple networks (1 network = 1 chain)
     - [ ] Handle hub-induced multi-chain network (1 network = N chains)
-- [ ] UI (Blender addon)
+- [x] UI (Blender addon)
     - [x] Process Pymol .obj files into a Blender library
     - [x] Handle module placement & extrusion
         - [x] Singles
         - [x] Hubs
-    - [ ] Feasibility validation
+    - [x] Feasibility validation
         - [x] Collision detection
             - [x] When placing and extruding modules
             - [x After object transform
         - [x] Symmetric hub arm symmetry enforcement
-- [ ] Handle mixing of module objects with path guides and Key Points
-- [ ] Handle leeway specification on networks and Key Points
+- [x] Handle mixing of module objects with path guides and Key Points
+- [x] Handle leeway specification on networks and Key Points
 - [ ] Export to stitch.py-readable format
-- [ ] Create a valid H-shaped design 
+- [x] Create a valid H-shaped design 
 - [ ] Elfin Core
 - [ ] Solve cyclic multi-chain design
 - [ ] Handover
@@ -75,11 +77,11 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
         - [ ] Automate python setup
         - [x] Automate installation of Blender addon (install_belfin)
 - [ ] Extras
-    - [ ] Efficiency optimisation; use GPU if it helps
+    - [ ] Efficiency optimisation; GPU
     - [ ] Call Elfin Core from Blender - live design?
 
 ## 2. Prerequisites
-1. [Python 2.7+](https://www.python.org/downloads/release/python-279/)
+1. [Python 3+](https://www.python.org/downloads/)
 2. [VirtualEnv](https://virtualenv.pypa.io/en/stable/)
 3. [Blender](https://www.blender.org/)
 4. [gcc-5+](https://gcc.gnu.org/)
@@ -92,7 +94,7 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 
 ```
 # cd to repo root
-virtualenv .venv
+virtualenv -p python3 .venv
 . ./activate
 pip install -r requirements.txt
 ```
@@ -103,8 +105,40 @@ See [elfin-ui](https://github.com/joy13975/elfin-ui)
 
 ## 5. Core Solver
 
+Get the v1 solver by:
+```
+git clone --single-branch -b v1 --depth 1 git@github.com:joy13975/elfin-solver.git
+cd elfin-solver
+make -j4 # compile
+```
+
+Example run:
+```
+./bin/elfin -i ../resources/examples/horns_input.csv -msg 10
+```
+
 See [elfin-solver](https://github.com/joy13975/elfin-solver)
 
-## 6. Database Preparation
+## 6. Synthesis Resources
+
+Run at elfin root:
+```
+./fetch_resources
+```
+
+Note that you will be prompted to enter your Github username and password so as to authenticate for permission to the [elfin-data](https://github.com/joy13975/elfin-data) repo.
 
 See [elfin-data](https://github.com/joy13975/elfin-data).
+
+## 7. Stitching Example (v1)
+
+If you want to invoke `stitch.py` on a v1 elfin output json file, first convert it to a `stitch.py` readable format. Taking `resources/examples/horns_output.json` as an example. Run at elfin root:
+```
+. ./activate
+./elfinpy/v1_design_convert.py resources/examples/horns_output.json
+```
+
+And then you will be able to stitch the v2 output:
+```
+./elfinpy/stitch.py resources/examples/horns_output.v2.json
+```

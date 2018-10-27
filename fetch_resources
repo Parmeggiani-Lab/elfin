@@ -3,7 +3,7 @@
 cd resources
 
 # Get metadata
-svn checkout https://github.com/joy13975/elfin-library/trunk/metadata
+svn export https://github.com/joy13975/elfin-library/trunk/metadata
 
 # Get xdb
 bz2_file="xdb.json.tar.bz2"

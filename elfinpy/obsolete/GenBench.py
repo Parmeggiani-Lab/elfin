@@ -28,7 +28,7 @@ def main():
     ap.add_argument('num', type=int)
     ap.add_argument('--length', type=int, default=10)
     ap.add_argument('--maxRetries', type=int, default=-1)
-    ap.add_argument('--dbFile', default=elfinDir + 'resources/xDB.json')
+    ap.add_argument('--dbFile', default=elfinDir + 'resources/xdb.json')
     ap.add_argument('--singlesDir', default='./resources/pdb_aligned/singles/')
     ap.add_argument('--doublesDir', default='./resources/pdb_aligned/doubles/')
     ap.add_argument('--radiusType', default='maxHeavy')

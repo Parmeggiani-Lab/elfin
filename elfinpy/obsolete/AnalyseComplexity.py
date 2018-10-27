@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 def main():
 	ap = argparse.ArgumentParser(description='Compute the number of combinations for a given MMC protein length');
-	ap.add_argument('--xdbFile', default='./resources/xDB.json')
+	ap.add_argument('--xdbFile', default='./resources/xdb.json')
 	ap.add_argument('--length', type=int, default=21)
 
 	globals().update(vars(ap.parse_args()))

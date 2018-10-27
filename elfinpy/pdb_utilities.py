@@ -61,12 +61,12 @@ def save_cif(**kwargs):
 
     Args:
     - struct - Bio.PDB.Structure.Structure to be saved.
-    - save_path - CIF string file path.
+    - path - CIF string file path.
     """
     struct = kwargs.pop('struct')
-    save_path = kwargs.pop('save_path')
+    path = kwargs.pop('path')
 
-    with open(save_path, 'w') as file:
+    with open(path, 'w') as file:
         io = Bio.PDB.mmcifio.MMCIFIO()
         io.set_structure(struct)
         io.save(file)

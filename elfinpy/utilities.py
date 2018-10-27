@@ -149,15 +149,15 @@ def check_collision(**kwargs):
     new_node = kwargs.pop('new_node')
     shape = kwargs.pop('shape')
 
-    new_com = xdb['doubles_data'][nodes[-1]][new_node]['com_b']
+    new_com = xdb['double_data'][nodes[-1]][new_node]['com_b']
 
     # previous node PAIR (not just single node!) is inherently non-colliding
     for i in range(0, len(nodes) - 2):
         com_dist = np.linalg.norm(shape[i] - new_com)
         collision_dist = \
-            xdb['singles_data'] \
+            xdb['single_data'] \
             [new_node]['radii'][collision_measure] + \
-            xdb['singles_data'] \
+            xdb['single_data'] \
             [nodes[i]]['radii'][collision_measure]
 
         if com_dist < collision_dist:
@@ -176,13 +176,13 @@ def com_dist_info(xdb):
     - (_, _, _) - tuple containing average, min and max values for centre-of-mass
         distances.
     """
-    doubles_data = xdb['doubles_data']
+    double_data = xdb['double_data']
     dists = []
-    for single_a_name in doubles_data.keys():
-        for single_b_name in doubles_data[single_a_name].keys():
+    for single_a_name in double_data.keys():
+        for single_b_name in double_data[single_a_name].keys():
             dists.append(
                 np.linalg.norm(
-                    doubles_data[single_a_name][single_b_name]\
+                    double_data[single_a_name][single_b_name]\
                         ['com_b']
                     )
                 )
@@ -267,27 +267,6 @@ def pause_code(frame=None):
     name_space.update(frame.f_locals)
     code.interact(local=name_space)
 
-def pause_code(frame=None):
-    """Pause execution and drop into interactive mode for debugging. This is
-    intended to be manually inserted into area of code where debugging is
-    needed.
-
-    Args:
-    - frame - specify frame in which the globals and locals are to be debugged.
-    """
-    print('\n------------------pause_code()------------------')
-
-    fi = inspect.getframeinfo(frame)
-    print('Where: {loc}:{line}'.format(loc=fi.filename, line=fi.lineno))
-    print('What: \n{code}'.format(code=fi.code_context[0]))
-    if frame is None:
-        # Use current frame (one above the exception wrapper)
-        frame = inspect.currentframe().f_back
-
-    name_space = dict(frame.f_globals)
-    name_space.update(frame.f_locals)
-    code.interact(local=name_space)
-
 def safe_exec(func, *args, **kwargs):
     """Execute func and drops into interactive mode for debugging if an exception
     is raised.
@@ -310,7 +289,7 @@ def safe_exec(func, *args, **kwargs):
             else traceback
         frame = last_frame.tb_frame
         traceback_module.print_exc()
-        pause_code(frame, extra_vars={'__traceback': traceback})
+        pause_code(frame)
 
 def main():
     """main"""
