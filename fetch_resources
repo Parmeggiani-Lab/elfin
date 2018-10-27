@@ -1,0 +1,40 @@
+#!/bin/bash
+
+cd resources
+
+# Get metadata
+svn checkout https://github.com/joy13975/elfin-library/trunk/metadata
+
+# Get xdb
+bz2_file="xdb.json.tar.bz2"
+curl 'https://raw.githubusercontent.com/joy13975/elfin-library/master/'$bz2_file > "$bz2_file"
+tar xjf "$bz2_file"
+rm -f "$bz2_file"
+
+# Get aligned and relaxed pdbs
+echo
+echo
+echo '------------------------------------------------------------'
+echo 'Attempting acccess to private repo.'
+echo "Enter your Github username:"
+read github_user
+echo "Enter your Github password:"
+read -s github_pwd
+
+bz2_file="pdb_aligned.tar.bz2"
+curl -u $github_user:$github_pwd 'https://raw.githubusercontent.com/joy13975/elfin-data/master/'$bz2_file -o $bz2_file; ((ret = ret || $?))
+tar xjf "$bz2_file"; ((ret = ret || $?))
+rm -f "$bz2_file"; ((ret = ret || $?))
+
+bz2_file="pdb_relaxed.tar.bz2"
+curl -u $github_user:$github_pwd 'https://raw.githubusercontent.com/joy13975/elfin-data/master/'$bz2_file -o $bz2_file; ((ret = ret || $?))
+tar xjf "$bz2_file"; ((ret = ret || $?))
+rm -f "$bz2_file"; ((ret = ret || $?))
+
+echo
+echo    
+if [ $ret -eq 0 ]; then
+    echo 'Resources fetched'
+else
+    echo 'Could not fetch some resources'
+fi

@@ -4,11 +4,12 @@
 **/*.zip
 **/*.pyc
 **/*.tmp
+resources/xdb.json
+resources/metadata
 resources/**/*.blend*
 **/.DS_Store
 **/.pytest_cache
 
-resources/elfin-db
 resources/pdb_*
 
 celfin/output
