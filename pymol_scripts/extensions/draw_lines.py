@@ -89,8 +89,7 @@ if in_pymol:
         r,g,b = color
 
         for (p1, p2) in zip(points, np.roll(points, -1, axis=0))[0:-1]:
-            draw_line(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2], width=width,
-                r=r,g=g,b=b)
+            draw_line(p1, p2, width=width, color=(r,g,b))
 
     @cmd.extend
     def draw_csv(spec_file=None, scale=1.0, width=2.0, centered=False, shift=None):
