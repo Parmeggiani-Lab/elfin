@@ -12,4 +12,4 @@ fi
 
 echo 'trap "exit" INT'
 
-ls ${input_pdbs} | xargs -I{} echo ${envs}' ./scripts/Shell/relax.sh {}'
+ls ${input_pdbs} | xargs -I{} echo ${envs}' ./misc/relax.sh {}'
