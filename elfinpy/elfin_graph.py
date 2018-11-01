@@ -6,10 +6,15 @@ class ElfinGraph(object):
     def __init__(self, name='', nodes=[]):
         self.name = name
         self.nodes = nodes
+
+    def __repr__(self):
+        return 'ElfinGraph: {{\n{}\n}}\n'.format(
+            '\n'.join((repr(n) for n in self.nodes)))    
         
     def transform(self, rot, tran):
         for n in self.nodes:
             n.transform(rot, tran)
+
 
 def main():
     """main"""

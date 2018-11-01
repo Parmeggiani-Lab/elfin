@@ -38,6 +38,9 @@ class ElfinNode(object):
                 raise ValueError('Cannot cap a trimmed end[{}]: name={}, id={}'
                     .format(i, self.name, self.id))
 
+    def __repr__(self):
+        return 'ElfinNode: ID={}, Name={}'.format(self.id, self.name)
+
     def transform(self, rot, tran):
             self.rot = (np.dot(self.rot, np.transpose(rot))).tolist()
             self.tran = (np.dot(self.tran, np.transpose(rot)) + tran).tolist()
