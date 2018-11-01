@@ -2,9 +2,15 @@
 
 import argparse, sys
 import copy
-from elfin_graph import ElfinGraph
-from elfin_node import ElfinNode
-from utilities import *
+
+try:
+    from elfin_graph import ElfinGraph
+    from elfin_node import ElfinNode
+    from utilities import *
+except ImportError as e:
+    from .elfin_graph import ElfinGraph
+    from .elfin_node import ElfinNode
+    from .utilities import *
 
 def compute_old_graph_txm(xdb, graph):
     nodes = graph.nodes
@@ -25,27 +31,22 @@ def parse_args(args):
     parser.add_argument('--multichain_test', action='store_true')
     return parser.parse_args(args)
 
-def main(test_args=None):
-    args = parse_args(sys.argv[1:] if test_args is None else test_args)
-
-    # Elfin core output
-    ec_out = read_json(args.input)
-
+def v1_to_v2(input_json, xdb_path, multichain_test=False):# Elfin core output
     # Make sure we're working with the old format
-    keys = ec_out.keys()
+    keys = input_json.keys()
     if not 'nodes' in keys:
         print('Error!')
         print('Input file does not look like the old Elfin core output file')
         exit(1)
 
-    n_nodes = len(ec_out['nodes'])
+    n_nodes = len(input_json['nodes'])
     nodes = [ 
                 ElfinNode(
                 id=i, 
                 name=el, 
                 trim=[(False if i == 0 else True), (False if i == n_nodes - 1 else True)],
                 cterm_node_id=((i+1) if i < n_nodes - 1 else -1)
-                ) for (i, el) in enumerate(ec_out['nodes'])
+                ) for (i, el) in enumerate(input_json['nodes'])
             ]
 
     graph = ElfinGraph('c1', nodes) # c1 for chain number 1
@@ -53,12 +54,12 @@ def main(test_args=None):
 
     assert(len(graphs) == 1)
 
-    xdb = read_json(args.xdb_path)
+    xdb = read_json(xdb_path)
 
     for g in graphs:
         compute_old_graph_txm(xdb, g)
 
-    if args.multichain_test:
+    if multichain_test:
         graphs.append(copy.deepcopy(graph))
 
         # Note: flipping z direction can cause problems in PyMol 
@@ -66,6 +67,16 @@ def main(test_args=None):
         graphs[0].transform([[-1,0,0],[0,-1,0],[0,0,1]],[100,100,0])
         graphs[1].transform([[1,0,0],[0,1,0],[0,0,1]],[-100,-100,0])
         graphs[1].name = 'c2'
+
+    return graphs
+
+def main(test_args=None):
+    args = parse_args(sys.argv[1:] if test_args is None else test_args)
+
+    graphs = v1_to_v2(
+        read_json(args.input),
+        args.xdb_path,
+        args.multichain_test)
 
     output_file = args.output
     if output_file == None:

@@ -84,11 +84,11 @@ def save_pdb(**kwargs):
     - save_path - string file path.
     """
     struct = kwargs.pop('struct')
-    save_path = kwargs.pop('save_path')
+    path = kwargs.pop('path')
 
     io = Bio.PDB.PDBIO()
     io.set_structure(struct)
-    io.save(save_path)
+    io.save(path)
 
 def main():
     """main"""

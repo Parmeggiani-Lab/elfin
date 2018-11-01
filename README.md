@@ -93,7 +93,7 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 ## 3. Setup
 
 Run the following:
-```
+```Bash
 bash <(curl -s https://raw.githubusercontent.com/joy13975/elfin/master/setup_elfin)
 ```
 
@@ -106,7 +106,7 @@ See [elfin-ui](https://github.com/joy13975/elfin-ui)
 ## 5. Core Solver
 
 Example run:
-```
+```Bash
 ./bin/elfin -i ../resources/examples/horns_input.csv -msg 10
 ```
 
@@ -119,12 +119,55 @@ See [elfin-data](https://github.com/joy13975/elfin-data).
 ## 7. Stitching Example (v1)
 
 If you want to invoke `stitch.py` on a v1 elfin output json file, first convert it to a `stitch.py` readable format. Taking `resources/examples/horns_output.json` as an example. Run at elfin root:
-```
+```Bash
 . ./activate
 ./elfinpy/v1_design_convert.py resources/examples/horns_output.json
 ```
 
 And then you will be able to stitch the v2 output:
-```
+```Bash
 ./elfinpy/stitch.py resources/examples/horns_output.v2.json
+```
+
+If you want to process solver output entirely in code, below is an example:
+
+
+```Bash
+. ./activate # make sure you're in elfin root and in virtual env
+```
+
+Then either in a script or an interactive shell:
+
+```Python
+import elfinpy.v1_design_convert as converter
+import elfinpy.utilities as utils
+import elfinpy.pdb_utilities as pdb_utils
+import elfinpy.stitch as stitch
+
+# Normally, you'd need to read a JSON file for the output data from solver.
+# Alternatively, create the solver output in Python.
+
+input_json = utils.read_json('resources/examples/horns_output.json')
+graphs = converter.v1_to_v2(input_json, 'resources/xdb.json')
+
+# Convert List[graph] to dictionary
+graphs_dict = utils.to_dict(graphs)
+
+# Run stitch synth
+syn = stitch.Synthesiser(graphs_dict, 
+    pdb_dir='./resources/pdb_aligned/',
+    cappings_dir='./resources/pdb_relaxed/cappings',
+    metadata_dir='./resources/metadata/',
+    show_fusion=False,
+    disable_capping=False)
+struct = syn.run()
+
+pdb_utils.save_cif(struct=struct, path='test.cif')
+
+# Currently PDB is not support both because it's outdated and
+# because of the new chain naming convention that accomodates
+# more than 26 chains. Old convention requires a single char 
+# as chain name.
+
+# pdb_utils.save_pdb(struct=struct, path='test.pdb')
 ```

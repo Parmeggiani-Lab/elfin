@@ -16,8 +16,14 @@ import argparse
 import Bio.PDB
 import Bio.SubsMat.MatrixInfo
 import Bio.PDB.StructureBuilder
-from utilities import *
-from pdb_utilities import *
+
+try:
+    from utilities import *
+    from pdb_utilities import *
+except ImportError as e:
+    from .utilities import *
+    from .pdb_utilities import *
+
 
 class Synthesiser:
     def __init__(
