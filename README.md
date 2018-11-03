@@ -162,12 +162,16 @@ syn = stitch.Synthesiser(graphs_dict,
     disable_capping=False)
 struct = syn.run()
 
-pdb_utils.save_cif(struct=struct, path='test.cif')
+as_cif = True
 
-# Currently PDB is not support both because it's outdated and
-# because of the new chain naming convention that accomodates
-# more than 26 chains. Old convention requires a single char 
-# as chain name.
-
-# pdb_utils.save_pdb(struct=struct, path='test.pdb')
+if as_cif:
+    pdb_utils.save_cif(struct=struct, path='test.cif')
+else:
+    # To save as PDB, the chain ID needs to be changed to
+    # one that PDB format accepts i.e. a single character.
+    # The following line assumes there's only 1 chain. By
+    # right in a v1 format there should only be 1 chain 
+    # anyway.
+    [c for c in struct[0].get_chains()][0].id = 'a'
+    pdb_utils.save_pdb(struct=struct, path='test.pdb')
 ```
