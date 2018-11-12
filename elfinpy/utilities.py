@@ -307,7 +307,7 @@ def safe_exec(func, *args, **kwargs):
         _, _, traceback = sys.exc_info()
         last_frame = \
             traceback.tb_next.tb_next \
-            if traceback and traceback.tb_next and traceback.tb_next \
+            if traceback and traceback.tb_next and traceback.tb_next.tb_next \
             else traceback
         frame = last_frame.tb_frame
         traceback_module.print_exc()
