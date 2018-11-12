@@ -15,6 +15,14 @@ import numpy as np
 RADII_TYPES = ['average_all', 'max_ca_dist', 'max_heavy_dist']
 INF = float('inf')
 
+def dict_diff(A, B):
+    if type(A) == list:
+        return !all(diff(a, b) for a, b in zip(A, B))
+    elif type(A) == dict:
+        return !all(diff(A[x], B[x]) for x in A if x in B)
+    else:
+        return A != B
+
 # https://stackoverflow.com/questions/1036409/recursively-convert-python-object-graph-to-dictionary
 def to_dict(obj, classkey=None):
     if isinstance(obj, dict):
