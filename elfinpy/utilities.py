@@ -17,9 +17,9 @@ INF = float('inf')
 
 def dict_diff(A, B):
     if type(A) == list:
-        return !all(diff(a, b) for a, b in zip(A, B))
+        return not all(diff(a, b) for a, b in zip(A, B))
     elif type(A) == dict:
-        return !all(diff(A[x], B[x]) for x in A if x in B)
+        return not all(diff(A[x], B[x]) for x in A if x in B)
     else:
         return A != B
 

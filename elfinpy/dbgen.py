@@ -15,10 +15,10 @@ def parse_args(args):
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description='Generates the xdb database from preprocessed single and double modules.')
-    parser.add_argument('--relaxed_pdbs_dir', default='./pdb_relaxed/')
-    parser.add_argument('--metadata_dir', default='./metadata/')
-    parser.add_argument('--output', default='./xdb.json')
-    parser.add_argument('--aligned_pdb_dir', default='./pdb_aligned/')
+    parser.add_argument('--relaxed_pdbs_dir', default='./resources/pdb_relaxed/')
+    parser.add_argument('--metadata_dir', default='./resources/metadata/')
+    parser.add_argument('--output', default='./resources/xdb.json')
+    parser.add_argument('--aligned_pdb_dir', default='./resources/pdb_aligned/')
     return parser.parse_args(args)
 
 def main(test_args=None):
@@ -51,7 +51,6 @@ class XDBGenerator:
         self.out_file         = out_file
         self.si               = Bio.PDB.Superimposer()
         self.double_data      = {}
-        self.single_data      = {}
         self.hub_data         = {}
 
         # Cache in memory as disk I/O is really heavy here
@@ -70,19 +69,21 @@ class XDBGenerator:
         self.move_to_origin(hub)
 
         hub_name = os.path.basename(file_name).replace('.pdb', '')
-        data = self.hub_info.get(hub_name, None)
-        assert(data != None)
+        hub_entry = self.hub_info.get(hub_name, None)
+        assert(hub_entry != None)
 
         # The current process does not allow hub to hub connections. Maybe this
         # need to be changed?
-        for chain_id in data['component_data']:
-            chain_data = data['component_data'][chain_id]
+        for chain_id in hub_entry['component_data']:
+            chain_data = hub_entry['component_data'][chain_id]
             comp_name = chain_data['single_name']
 
             chain_data['c_connections'] = {}
             chain_data['n_connections'] = {}
             if chain_data['c_free']:
-                for single_b_name in self.double_data[comp_name]:
+                double_entry = self.double_data[comp_name]['component_data']['A'] \
+                    ['c_connections']
+                for single_b_name in double_entry:
                     # Get the transformation for this hub to align this component onto
                     # the position of the single A of the current double.
                     # 
@@ -134,10 +135,13 @@ class XDBGenerator:
 
         save_pdb(
             struct=hub, 
-            save_path=self.aligned_pdb_dir + '/hubs/' + hub_name + '.pdb'
+            path=self.aligned_pdb_dir + '/hubs/' + hub_name + '.pdb'
         )
 
-        self.hub_data[hub_name] = data
+        # Get hub radii
+        hub_entry['radii'] = self.get_radii(hub)
+
+        self.hub_data[hub_name] = hub_entry
 
     def process_double(self, file_name):
         """Aligns a double module to its A component and then computes the transform
@@ -159,7 +163,7 @@ class XDBGenerator:
         rc_a_half = int_floor(float(rc_a)/2)
         rc_b_half = int_ceil(float(rc_b)/2)
 
-        # -- About the "fusion count" varible --
+        # -- About the "fusion count" variable --
         # 
         #   The fusion_count is the number of residues we use to align double to
         # single_a. The higher this number is, the more global the alignment will
@@ -209,13 +213,7 @@ class XDBGenerator:
             match_count=fusion_count_b
         )
 
-        # Step 4: Get radius for collision checks later:
-        #           1. Avg dist to com (gyradius aka RG)
-        #           2. Max dist from CA to com
-        #           3. Max dist from any heavy stom (not H) to COM
-        radii_a = self.get_radii(single_a)
-
-        # Step 5: Get transformation of double to the second single.
+        # Step 4: Get transformation of double to the second single.
         #
         #   Double is already aligned to first single so there is no need for
         # the first transformation.
@@ -237,38 +235,42 @@ class XDBGenerator:
             match_count=fusion_count_b
         )
 
-        # Step 6: Save the aligned molecules.
+        # Step 5: Save the aligned molecules.
         #
         # Here the PDB format adds some slight floating point error. PDB is
         # already phased out so and we should really consider using mmCIF for
         # all modules.
         save_pdb(
             struct=double, 
-            save_path=self.aligned_pdb_dir + '/doubles/' + double_name + '.pdb'
+            path=self.aligned_pdb_dir + '/doubles/' + double_name + '.pdb'
         )
 
         # ----IMPORTANT----
         # Breaking change: pre-transpose rotation so that it becomes
         # left-multiplication (the standard way)
-        data = OrderedDict([
+        single_transform_b = OrderedDict([
             ('com_b',  com_b.tolist()),
             ('rot',   np.transpose(rot).tolist()),
             ('tran',  tran.tolist())
         ])
 
-        entry = self.double_data.get(single_name_a, {})
-        entry[single_name_b] = data
-        self.double_data[single_name_a] = entry;
-
-        single_data_a = self.single_data.get(
+        double_entry = self.double_data.get(
             single_name_a,
-            OrderedDict([
-                ('link_count', 0),
-                ('radii', radii_a)
-            ])
-        );
-        single_data_a['link_count'] = single_data_a['link_count'] + 1;
-        self.single_data[single_name_a] = single_data_a;
+            {
+                'component_data': {
+                    'A': {
+                        'c_connections': {},
+                        'n_connections': {}
+                    }
+                },
+                'radii': self.get_radii(single_a)
+            })
+
+        double_entry['component_data']['A'] \
+            ['c_connections'][single_name_b] = \
+            single_transform_b
+
+        self.double_data[single_name_a] = double_entry;
 
         # Cache structure in memory
         if single_name_a not in self.double_pdbs:
@@ -282,7 +284,7 @@ class XDBGenerator:
         self.move_to_origin(single)
         save_pdb(
             struct=single, 
-            save_path=self.aligned_pdb_dir + '/singles/' + single_name + '.pdb'
+            path=self.aligned_pdb_dir + '/singles/' + single_name + '.pdb'
         )
 
         # Cache structure in memory
@@ -291,7 +293,6 @@ class XDBGenerator:
     def dump_xdb(self):
         """Writes alignment data to a json file."""
         to_dump = OrderedDict([
-            ('single_data', self.single_data),
             ('double_data', self.double_data),
             ('hub_data', self.hub_data)
             ])
@@ -361,7 +362,7 @@ class XDBGenerator:
             raise ValueError('get_radii() must be called with centered modules.')
 
         natoms = 0;
-        rgSum = 0;
+        rg_sum = 0;
         max_ca_dist = 0;
 
         nHeavy = 0;
@@ -370,7 +371,7 @@ class XDBGenerator:
             dist = np.linalg.norm(
                 a.get_coord().astype('float64'));
 
-            rgSum += dist;
+            rg_sum += dist;
 
             if(a.name =='CA'):
                 max_ca_dist = max(max_ca_dist, dist);
@@ -381,7 +382,7 @@ class XDBGenerator:
 
             natoms = natoms + 1;
 
-        average_all = rgSum / natoms;
+        average_all = rg_sum / natoms;
         return OrderedDict([
             ('average_all', average_all),
             ('max_ca_dist', max_ca_dist),
