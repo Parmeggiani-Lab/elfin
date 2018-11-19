@@ -12,6 +12,8 @@ import Bio.PDB
 from utilities import *
 from pdb_utilities import *
 
+nested_dict = lambda: defaultdict(nested_dict)
+
 def parse_args(args):
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
@@ -51,7 +53,7 @@ class XDBGenerator:
         self.aligned_pdb_dir  = aligned_pdb_dir
         self.out_file         = out_file
         self.si               = Bio.PDB.Superimposer()
-        self.modules          = defaultdict(dict)
+        self.modules          = nested_dict()
         self.n_to_c_tx        = []
         self.hub_tx           = []
 
@@ -92,8 +94,9 @@ class XDBGenerator:
         del hub_meta['component_data']
         hub_meta['chains'] = {
                 c.id: { 
-                        'n': {}, 
-                        'c': {}
+                        'single_name': comp_data[c.id]['single_name'],
+                        'n': nested_dict(), 
+                        'c': nested_dict()
                     }  for c in hub.get_chains()
             }
         hub_meta['radii'] = self.get_radii(hub)
@@ -140,9 +143,9 @@ class XDBGenerator:
                     tx_id = len(self.n_to_c_tx) + len(self.hub_tx)
 
                     self.modules['hubs'][hub_name]['chains'] \
-                        [hub_chain_id]['c'].update({ single_b_name: tx_id })
+                        [hub_chain_id]['c'][single_b_name][single_b_chain_id] = tx_id
                     self.modules['singles'][single_b_name]['chains'] \
-                        [single_b_chain_id]['n'].update({ hub_name: tx_id })
+                        [single_b_chain_id]['n'][hub_name][hub_chain_id] = tx_id
 
             if chain_data['n_free']:
                 a_name_gen = (tx['mod_a'] for tx in self.n_to_c_tx if tx['mod_b'] == comp_name)
@@ -301,9 +304,9 @@ class XDBGenerator:
         tx_id = len(self.n_to_c_tx)
 
         self.modules['singles'][single_a_name]['chains'] \
-            [single_a_chain_id]['c'].update({ single_b_name: tx_id })
+            [single_a_chain_id]['c'][single_b_name][single_b_chain_id] = tx_id
         self.modules['singles'][single_b_name]['chains'] \
-            [single_b_chain_id]['n'].update({ single_a_name: tx_id })
+            [single_b_chain_id]['n'][single_a_name][single_a_chain_id] = tx_id
         self.n_to_c_tx.append(tx)
 
         # Cache structure in memory
@@ -328,8 +331,8 @@ class XDBGenerator:
         self.modules['singles'][single_name] = {
                 'chains': {
                     chain_list[0].id: {
-                        'n': {},
-                        'c': {}
+                        'n': nested_dict(),
+                        'c': nested_dict()
                     }
                 },
                 'radii': self.get_radii(single)
