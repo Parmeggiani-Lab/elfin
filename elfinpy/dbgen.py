@@ -92,8 +92,8 @@ class XDBGenerator:
         del hub_meta['component_data']
         hub_meta['chains'] = {
                 c.id: { 
-                        'n_free': comp_data[c.id]['n_free'], 
-                        'c_free': comp_data[c.id]['c_free']
+                        'n': {}, 
+                        'c': {}
                     }  for c in hub.get_chains()
             }
         hub_meta['radii'] = self.get_radii(hub)
@@ -137,6 +137,12 @@ class XDBGenerator:
                         single_b_chain_id,
                         rot,
                         tran)
+                    tx_id = len(self.n_to_c_tx) + len(self.hub_tx)
+
+                    self.modules['hubs'][hub_name]['chains'] \
+                        [hub_chain_id]['c'].update({ single_b_name: tx_id })
+                    self.modules['singles'][single_b_name]['chains'] \
+                        [single_b_chain_id]['n'].update({ hub_name: tx_id })
 
             if chain_data['n_free']:
                 a_name_gen = (tx['mod_a'] for tx in self.n_to_c_tx if tx['mod_b'] == comp_name)
@@ -165,6 +171,12 @@ class XDBGenerator:
                         hub_chain_id,
                         rot,
                         tran)
+                    tx_id = len(self.n_to_c_tx) + len(self.hub_tx)
+
+                    self.modules['singles'][single_a_name]['chains'] \
+                        [single_a_chain_id]['c'].update({ hub_name: tx_id })
+                    self.modules['hubs'][hub_name]['chains'] \
+                        [hub_chain_id]['n'].update({ single_a_name: tx_id })
 
                 self.hub_tx.append(tx)
 
@@ -286,6 +298,12 @@ class XDBGenerator:
             single_b_chain_id,
             rot,
             tran)
+        tx_id = len(self.n_to_c_tx)
+
+        self.modules['singles'][single_a_name]['chains'] \
+            [single_a_chain_id]['c'].update({ single_b_name: tx_id })
+        self.modules['singles'][single_b_name]['chains'] \
+            [single_b_chain_id]['n'].update({ single_a_name: tx_id })
         self.n_to_c_tx.append(tx)
 
         # Cache structure in memory
@@ -310,8 +328,8 @@ class XDBGenerator:
         self.modules['singles'][single_name] = {
                 'chains': {
                     chain_list[0].id: {
-                        'n_free': True,
-                        'c_free': True
+                        'n': {},
+                        'c': {}
                     }
                 },
                 'radii': self.get_radii(single)
