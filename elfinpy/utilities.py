@@ -15,6 +15,12 @@ import numpy as np
 RADII_TYPES = ['average_all', 'max_ca_dist', 'max_heavy_dist']
 INF = float('inf')
 
+def to_4x4_tx(rot, tran):
+    # pause_code()
+    tx_3x4 = np.concatenate((rot, np.reshape(tran, (3,1))), axis=1)
+    tx_4x4 = np.concatenate((tx_3x4, [[0, 0, 0, 1]]), axis=0)
+    return tx_4x4
+
 def dict_diff(A, B):
     if type(A) == list:
         return not all(diff(a, b) for a, b in zip(A, B))
@@ -314,7 +320,7 @@ def safe_exec(func, *args, **kwargs):
         # Find last (failed) inner frame
         _, _, traceback = sys.exc_info()
         last_frame = \
-            traceback.tb_next.tb_next \
+            traceback.tb_next.tb_next.tb_next \
             if traceback and traceback.tb_next and traceback.tb_next.tb_next \
             else traceback
         frame = last_frame.tb_frame
