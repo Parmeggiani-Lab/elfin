@@ -4,6 +4,7 @@ import numpy as np
 import codecs
 import json
 import argparse
+from collections import defaultdict
 from collections import OrderedDict
 
 import Bio.PDB
@@ -50,12 +51,23 @@ class XDBGenerator:
         self.aligned_pdb_dir  = aligned_pdb_dir
         self.out_file         = out_file
         self.si               = Bio.PDB.Superimposer()
-        self.double_data      = {}
-        self.hub_data         = {}
+        self.modules          = defaultdict(dict)
+        self.n_to_c_tx        = []
 
         # Cache in memory as disk I/O is really heavy here
-        self.single_pdbs      = {}
-        self.double_pdbs      = {}
+        self.single_pdbs      = defaultdict(dict)
+        self.double_pdbs      = defaultdict(dict)
+
+    def create_tx(self, mod_a, a_chain, mod_b, b_chain, rot, tran):
+        tx_entry = \
+            OrderedDict([
+                ('mod_a', mod_a),
+                ('mod_a_chain', a_chain),
+                ('mod_b', mod_b),
+                ('mod_b_chain', b_chain),
+                ('tx', to_4x4_tx(np.transpose(rot), tran).tolist())
+            ])
+        self.n_to_c_tx.append(tx_entry)
 
     def process_hub(self, file_name):
         """Aligns a hub module to its A component (chain A), then computes the
@@ -69,49 +81,53 @@ class XDBGenerator:
         self.move_to_origin(hub)
 
         hub_name = os.path.basename(file_name).replace('.pdb', '')
-        hub_entry = self.hub_info.get(hub_name, None)
-        assert(hub_entry != None)
+        hub_meta = self.hub_info.get(hub_name, None)
+        assert(hub_meta != None)
+        if hub_meta is None:
+            raise ValueError('Could not get hub metadata for hub {}\n'.format(hub_name))
 
         # The current process does not allow hub to hub connections. Maybe this
         # need to be changed?
-        for chain_id in hub_entry['component_data']:
-            chain_data = hub_entry['component_data'][chain_id]
+        for hub_chain_id in hub_meta['component_data']:
+            chain_data = hub_meta['component_data'][hub_chain_id]
             comp_name = chain_data['single_name']
 
-            chain_data['c_connections'] = {}
-            chain_data['n_connections'] = {}
             if chain_data['c_free']:
-                double_entry = self.double_data[comp_name]['component_data']['A'] \
-                    ['c_connections']
-                for single_b_name in double_entry:
+                b_name_gen = (tx['mod_b'] for tx in self.n_to_c_tx if tx['mod_a'] == hub_name)
+                for single_b_name in b_name_gen:
                     # Get the transformation for this hub to align this component onto
                     # the position of the single A of the current double.
                     # 
                     # Here we do not use the second quadrant method, because during
                     # stitching none of the hubs' residues get changed. The stitching
                     # will take place at the end of the hub's component's terminal.
+                    rc_hub_a = get_chain_residue_count(hub, hub_chain_id)
                     rc_dbl_a = get_pdb_residue_count(self.single_pdbs[comp_name])
-                    rc_hub_a = get_chain_residue_count(get_chain(hub, chain_id))
                     fusion_count = int_ceil(float(rc_dbl_a)/8)
                     double = self.double_pdbs[comp_name][single_b_name]
 
                     rot, tran = self.get_rot_trans(
                         moving=hub,
-                        moving_chain_id=chain_id,
+                        moving_chain_id=hub_chain_id,
                         fixed=double, 
                         moving_resi_offset=rc_hub_a - fusion_count,
                         fixed_resi_offset=rc_dbl_a - fusion_count,
                         match_count=fusion_count
                     )
 
-                    # ----IMPORTANT----
-                    # Breaking change: pre-transpose rotation so that it becomes
-                    # left-multiplication (the standard way)
-                    chain_data['c_connections'][single_b_name] = \
-                        { 'rot': np.transpose(rot).tolist(), 'tran': tran.tolist()}
+                    single_b_chain_id = \
+                        list(self.single_pdbs[single_b_name].get_chains())[0].id
+                    self.create_tx(
+                        hub_name,
+                        hub_chain_id,
+                        single_b_name,
+                        single_b_chain_id,
+                        rot,
+                        tran)
 
             if chain_data['n_free']:
-                for single_a_name in [a_name for a_name in self.double_data if comp_name in self.double_data[a_name]]:
+                a_name_gen = (tx['mod_a'] for tx in self.n_to_c_tx if tx['mod_b'] == hub_name)
+                for single_a_name in a_name_gen:
                     # Same as c_free except comp acts as single b
                     rc_a = get_pdb_residue_count(self.single_pdbs[single_a_name])
                     rc_b = get_pdb_residue_count(self.single_pdbs[comp_name])
@@ -120,28 +136,32 @@ class XDBGenerator:
 
                     rot, tran = self.get_rot_trans(
                         moving=hub,
-                        moving_chain_id=chain_id,
+                        moving_chain_id=hub_chain_id,
                         fixed=double, 
                         moving_resi_offset=0,         # start matching from the n-term of hub component, which is index 0
-                        fixed_resi_offset=rc_a,       # start mching at the beginning of single b in the double
+                        fixed_resi_offset=rc_a,       # start matching at the beginning of single b in the double
                         match_count=fusion_count
                     )
 
-                    # ----IMPORTANT----
-                    # Breaking change: pre-transpose rotation so that it becomes
-                    # left-multiplication (the standard way)
-                    chain_data['n_connections'][single_a_name] = \
-                        { 'rot': np.transpose(rot).tolist(), 'tran': tran.tolist()}
+                    single_a_chain_id = \
+                        list(self.single_pdbs[single_a_name].get_chains())[0].id
+                    self.create_tx(
+                        single_a_name,
+                        single_a_chain_id,
+                        hub_name,
+                        hub_chain_id,
+                        rot,
+                        tran)
 
         save_pdb(
             struct=hub, 
             path=self.aligned_pdb_dir + '/hubs/' + hub_name + '.pdb'
         )
 
-        # Get hub radii
-        hub_entry['radii'] = self.get_radii(hub)
-
-        self.hub_data[hub_name] = hub_entry
+        # Delete component_data (redundant data) and get hub radii
+        del hub_meta['component_data']
+        hub_meta['radii'] = self.get_radii(hub)
+        self.modules['hubs'][hub_name] = hub_meta
 
     def process_double(self, file_name):
         """Aligns a double module to its A component and then computes the transform
@@ -151,10 +171,10 @@ class XDBGenerator:
         double = read_pdb(file_name)
 
         double_name = file_name.split('/')[-1].replace('.pdb', '')
-        single_name_a, single_name_b = double_name.split('-')
+        single_a_name, single_b_name = double_name.split('-')
 
-        single_a = self.single_pdbs[single_name_a]
-        single_b = self.single_pdbs[single_name_b]
+        single_a = self.single_pdbs[single_a_name]
+        single_b = self.single_pdbs[single_b_name]
 
         rc_a = get_pdb_residue_count(single_a)
         rc_b = get_pdb_residue_count(single_b)
@@ -245,56 +265,50 @@ class XDBGenerator:
             path=self.aligned_pdb_dir + '/doubles/' + double_name + '.pdb'
         )
 
-        # ----IMPORTANT----
-        # Breaking change: pre-transpose rotation so that it becomes
-        # left-multiplication (the standard way)
-        single_transform_b = OrderedDict([
-            ('com_b',  com_b.tolist()),
-            ('rot',   np.transpose(rot).tolist()),
-            ('tran',  tran.tolist())
-        ])
-
-        double_entry = self.double_data.get(
-            single_name_a,
-            {
-                'component_data': {
-                    'A': {
-                        'c_connections': {},
-                        'n_connections': {}
-                    }
-                },
-                'radii': self.get_radii(single_a)
-            })
-
-        double_entry['component_data']['A'] \
-            ['c_connections'][single_name_b] = \
-            single_transform_b
-
-        self.double_data[single_name_a] = double_entry;
+        # ----IMPORTANT---- Pre-transpose rotation so that downstream codes
+        # can use the standard left-multiplication
+        self.create_tx(
+            single_a_name,
+            list(single_a.get_chains())[0].id,
+            single_b_name,
+            list(single_b.get_chains())[0].id,
+            rot,
+            tran)
 
         # Cache structure in memory
-        if single_name_a not in self.double_pdbs:
-            self.double_pdbs[single_name_a] = {}
-        self.double_pdbs[single_name_a][single_name_b] = double
+        self.double_pdbs[single_a_name][single_b_name] = double
 
     def process_single(self, file_name):
         """Centres a single module and saves to output folder."""
         single_name = file_name.split('/')[-1].replace('.pdb', '')
         single = read_pdb(file_name)
+
+        # Check that there is only one chain
+        chain_list = list(single.get_chains())
+        if len(chain_list) != 1:
+            raise ValueError('Single PDB contains {} chains!\n'.format(len(chain_list)))
+
         self.move_to_origin(single)
         save_pdb(
             struct=single, 
             path=self.aligned_pdb_dir + '/singles/' + single_name + '.pdb'
         )
 
+        self.modules['singles'][single_name] = \
+            {
+                'chains': [chain_list[0].id],
+                'radii': self.get_radii(single)
+            }
+
         # Cache structure in memory
         self.single_pdbs[single_name] = single
 
     def dump_xdb(self):
         """Writes alignment data to a json file."""
-        to_dump = OrderedDict([
-            ('double_data', self.double_data),
-            ('hub_data', self.hub_data)
+        to_dump = \
+            OrderedDict([
+                ('modules', self.modules),
+                ('n_to_c_tx', self.n_to_c_tx)
             ])
 
         json.dump(to_dump,
@@ -354,7 +368,7 @@ class XDBGenerator:
         - pose - Bio.PDB.Structure.Structure 
 
         Returns:
-        - _ - an OrderedDict containing: average of all atoms distances, max
+        - _ - an dict containing: average of all atoms distances, max
             carbon alpha distance, and max heavy atom distance, each calculated
             against the centre-of-mass.
         """
@@ -383,11 +397,12 @@ class XDBGenerator:
             natoms = natoms + 1;
 
         average_all = rg_sum / natoms;
-        return OrderedDict([
-            ('average_all', average_all),
-            ('max_ca_dist', max_ca_dist),
-            ('max_heavy_dist', max_heavy_dist)
-        ]);
+        return \
+            {
+                'average_all': average_all,
+                'max_ca_dist': max_ca_dist,
+                'max_heavy_dist': max_heavy_dist
+            }
 
     def move_to_origin(self, pdb):
         """Centres a Bio.PDB.Structure.Structure to the global origin."""
