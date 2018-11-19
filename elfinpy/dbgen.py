@@ -177,9 +177,9 @@ class XDBGenerator:
                     tx_id = len(self.n_to_c_tx) + len(self.hub_tx)
 
                     self.modules['singles'][single_a_name]['chains'] \
-                        [single_a_chain_id]['c'].update({ hub_name: tx_id })
+                        [single_a_chain_id]['c'][hub_name][hub_chain_id] = tx_id
                     self.modules['hubs'][hub_name]['chains'] \
-                        [hub_chain_id]['n'].update({ single_a_name: tx_id })
+                        [hub_chain_id]['n'][single_a_name][single_a_chain_id] = tx_id
 
                 self.hub_tx.append(tx)
 
