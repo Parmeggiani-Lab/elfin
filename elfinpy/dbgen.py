@@ -90,7 +90,12 @@ class XDBGenerator:
         # Create module entry first
         comp_data = hub_meta['component_data']
         del hub_meta['component_data']
-        hub_meta['chains'] = {c.id: { 'n_free': 0, 'c_free': 0 } for c in hub.get_chains()}
+        hub_meta['chains'] = {
+                c.id: { 
+                        'n_free': comp_data[c.id]['n_free'], 
+                        'c_free': comp_data[c.id]['c_free']
+                    }  for c in hub.get_chains()
+            }
         hub_meta['radii'] = self.get_radii(hub)
         self.modules['hubs'][hub_name] = hub_meta
 
@@ -132,10 +137,6 @@ class XDBGenerator:
                         single_b_chain_id,
                         rot,
                         tran)
-                    self.modules['hubs'][hub_name] \
-                        ['chains'][hub_chain_id]['c_free'] += 1
-                    self.modules['singles'][single_b_name] \
-                        ['chains'][single_b_chain_id]['n_free'] += 1
 
             if chain_data['n_free']:
                 a_name_gen = (tx['mod_a'] for tx in self.n_to_c_tx if tx['mod_b'] == comp_name)
@@ -164,10 +165,6 @@ class XDBGenerator:
                         hub_chain_id,
                         rot,
                         tran)
-                    self.modules['singles'][single_a_name] \
-                        ['chains'][single_a_chain_id]['c_free'] += 1
-                    self.modules['hubs'][hub_name] \
-                        ['chains'][hub_chain_id]['n_free'] += 1
 
                 self.hub_tx.append(tx)
 
@@ -290,8 +287,6 @@ class XDBGenerator:
             rot,
             tran)
         self.n_to_c_tx.append(tx)
-        self.modules['singles'][single_a_name]['chains'][single_a_chain_id]['c_free'] += 1
-        self.modules['singles'][single_b_name]['chains'][single_b_chain_id]['n_free'] += 1
 
         # Cache structure in memory
         self.double_pdbs[single_a_name][single_b_name] = double
@@ -312,12 +307,11 @@ class XDBGenerator:
             path=self.aligned_pdb_dir + '/singles/' + single_name + '.pdb'
         )
 
-        self.modules['singles'][single_name] = \
-            {
+        self.modules['singles'][single_name] = {
                 'chains': {
                     chain_list[0].id: {
-                        'n_free': 0,
-                        'c_free': 0
+                        'n_free': True,
+                        'c_free': True
                     }
                 },
                 'radii': self.get_radii(single)
@@ -422,8 +416,7 @@ class XDBGenerator:
             natoms = natoms + 1;
 
         average_all = rg_sum / natoms;
-        return \
-            {
+        return {
                 'average_all': average_all,
                 'max_ca_dist': max_ca_dist,
                 'max_heavy_dist': max_heavy_dist
