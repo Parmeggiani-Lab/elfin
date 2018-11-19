@@ -53,6 +53,7 @@ class XDBGenerator:
         self.si               = Bio.PDB.Superimposer()
         self.modules          = defaultdict(dict)
         self.n_to_c_tx        = []
+        self.hub_tx           = []
 
         # Cache in memory as disk I/O is really heavy here
         self.single_pdbs      = defaultdict(dict)
@@ -67,7 +68,7 @@ class XDBGenerator:
                 ('mod_b_chain', b_chain),
                 ('tx', to_4x4_tx(np.transpose(rot), tran).tolist())
             ])
-        self.n_to_c_tx.append(tx_entry)
+        return tx_entry
 
     def process_hub(self, file_name):
         """Aligns a hub module to its A component (chain A), then computes the
@@ -86,14 +87,21 @@ class XDBGenerator:
         if hub_meta is None:
             raise ValueError('Could not get hub metadata for hub {}\n'.format(hub_name))
 
+        # Create module entry first
+        comp_data = hub_meta['component_data']
+        del hub_meta['component_data']
+        hub_meta['chains'] = {c.id: { 'n_free': 0, 'c_free': 0 } for c in hub.get_chains()}
+        hub_meta['radii'] = self.get_radii(hub)
+        self.modules['hubs'][hub_name] = hub_meta
+
         # The current process does not allow hub to hub connections. Maybe this
         # need to be changed?
-        for hub_chain_id in hub_meta['component_data']:
-            chain_data = hub_meta['component_data'][hub_chain_id]
+        for hub_chain_id in comp_data:
+            chain_data = comp_data[hub_chain_id]
             comp_name = chain_data['single_name']
 
             if chain_data['c_free']:
-                b_name_gen = (tx['mod_b'] for tx in self.n_to_c_tx if tx['mod_a'] == hub_name)
+                b_name_gen = (tx['mod_b'] for tx in self.n_to_c_tx if tx['mod_a'] == comp_name)
                 for single_b_name in b_name_gen:
                     # Get the transformation for this hub to align this component onto
                     # the position of the single A of the current double.
@@ -117,16 +125,20 @@ class XDBGenerator:
 
                     single_b_chain_id = \
                         list(self.single_pdbs[single_b_name].get_chains())[0].id
-                    self.create_tx(
+                    tx = self.create_tx(
                         hub_name,
                         hub_chain_id,
                         single_b_name,
                         single_b_chain_id,
                         rot,
                         tran)
+                    self.modules['hubs'][hub_name] \
+                        ['chains'][hub_chain_id]['c_free'] += 1
+                    self.modules['singles'][single_b_name] \
+                        ['chains'][single_b_chain_id]['n_free'] += 1
 
             if chain_data['n_free']:
-                a_name_gen = (tx['mod_a'] for tx in self.n_to_c_tx if tx['mod_b'] == hub_name)
+                a_name_gen = (tx['mod_a'] for tx in self.n_to_c_tx if tx['mod_b'] == comp_name)
                 for single_a_name in a_name_gen:
                     # Same as c_free except comp acts as single b
                     rc_a = get_pdb_residue_count(self.single_pdbs[single_a_name])
@@ -145,23 +157,24 @@ class XDBGenerator:
 
                     single_a_chain_id = \
                         list(self.single_pdbs[single_a_name].get_chains())[0].id
-                    self.create_tx(
+                    tx = self.create_tx(
                         single_a_name,
                         single_a_chain_id,
                         hub_name,
                         hub_chain_id,
                         rot,
                         tran)
+                    self.modules['singles'][single_a_name] \
+                        ['chains'][single_a_chain_id]['c_free'] += 1
+                    self.modules['hubs'][hub_name] \
+                        ['chains'][hub_chain_id]['n_free'] += 1
+
+                self.hub_tx.append(tx)
 
         save_pdb(
             struct=hub, 
             path=self.aligned_pdb_dir + '/hubs/' + hub_name + '.pdb'
         )
-
-        # Delete component_data (redundant data) and get hub radii
-        del hub_meta['component_data']
-        hub_meta['radii'] = self.get_radii(hub)
-        self.modules['hubs'][hub_name] = hub_meta
 
     def process_double(self, file_name):
         """Aligns a double module to its A component and then computes the transform
@@ -267,13 +280,18 @@ class XDBGenerator:
 
         # ----IMPORTANT---- Pre-transpose rotation so that downstream codes
         # can use the standard left-multiplication
-        self.create_tx(
+        single_a_chain_id = list(single_a.get_chains())[0].id
+        single_b_chain_id = list(single_b.get_chains())[0].id
+        tx = self.create_tx(
             single_a_name,
-            list(single_a.get_chains())[0].id,
+            single_a_chain_id,
             single_b_name,
-            list(single_b.get_chains())[0].id,
+            single_b_chain_id,
             rot,
             tran)
+        self.n_to_c_tx.append(tx)
+        self.modules['singles'][single_a_name]['chains'][single_a_chain_id]['c_free'] += 1
+        self.modules['singles'][single_b_name]['chains'][single_b_chain_id]['n_free'] += 1
 
         # Cache structure in memory
         self.double_pdbs[single_a_name][single_b_name] = double
@@ -296,7 +314,12 @@ class XDBGenerator:
 
         self.modules['singles'][single_name] = \
             {
-                'chains': [chain_list[0].id],
+                'chains': {
+                    chain_list[0].id: {
+                        'n_free': 0,
+                        'c_free': 0
+                    }
+                },
                 'radii': self.get_radii(single)
             }
 
@@ -305,6 +328,8 @@ class XDBGenerator:
 
     def dump_xdb(self):
         """Writes alignment data to a json file."""
+        self.n_to_c_tx += self.hub_tx
+
         to_dump = \
             OrderedDict([
                 ('modules', self.modules),
