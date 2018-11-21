@@ -146,6 +146,7 @@ class XDBGenerator:
                         [hub_chain_id]['c'][single_b_name][single_b_chain_id] = tx_id
                     self.modules['singles'][single_b_name]['chains'] \
                         [single_b_chain_id]['n'][hub_name][hub_chain_id] = tx_id
+                    self.hub_tx.append(tx)
 
             if chain_data['n_free']:
                 a_name_gen = (tx['mod_a'] for tx in self.n_to_c_tx if tx['mod_b'] == comp_name)
@@ -180,8 +181,7 @@ class XDBGenerator:
                         [single_a_chain_id]['c'][hub_name][hub_chain_id] = tx_id
                     self.modules['hubs'][hub_name]['chains'] \
                         [hub_chain_id]['n'][single_a_name][single_a_chain_id] = tx_id
-
-                self.hub_tx.append(tx)
+                    self.hub_tx.append(tx)
 
         save_pdb(
             struct=hub, 
