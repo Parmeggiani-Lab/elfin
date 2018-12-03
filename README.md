@@ -1,6 +1,6 @@
 # elfin v2 [![Build Status](https://travis-ci.com/joy13975/elfin.svg?branch=master)](https://travis-ci.com/joy13975/elfin)
 
-Elfin has been split into the following repositories:
+Elfin is split into the following repositories:
  1. [elfin-ui](https://github.com/joy13975/elfin-ui)
  2. [elfin-library](https://github.com/joy13975/elfin-library)
  3. [elfin-data](https://github.com/joy13975/elfin-data) (private)
