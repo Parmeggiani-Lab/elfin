@@ -1,4 +1,4 @@
-# Elfin
+# Elfin (v1: End of Master's Project Snapshot)
 Elfin is a computational protein design tool based on repeat protein module construction. A journal paper in Structural Biology describing this work has been submitted for review. A more detailed explanation of how Elfin works can be found [here](https://github.com/joy13975/elfin-thesis). 
 
 ![alt tag](res/diagrams/ProteinBristol.png)
