@@ -68,7 +68,8 @@ class XDBGenerator:
                 ('mod_a_chain', a_chain),
                 ('mod_b', mod_b),
                 ('mod_b_chain', b_chain),
-                ('tx', to_4x4_tx(np.transpose(rot), tran).tolist())
+                ('rot', np.transpose(rot).tolist()),
+                ('tran', np.asarray(tran).tolist())
             ])
         return tx_entry
 
