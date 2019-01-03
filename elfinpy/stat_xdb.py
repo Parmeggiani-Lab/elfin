@@ -28,7 +28,7 @@ def show_graph_with_labels(adjacency_matrix, labels):
     labels_dict = {i: v for i, v in enumerate(labels)}
     adjacency_matrix = np.asarray(adjacency_matrix)
 
-    G = nx.from_numpy_matrix(adjacency_matrix)
+    G = nx.from_numpy_matrix(adjacency_matrix, create_using=nx.MultiDiGraph())
     D = nx.degree(G)
     D = [(D[node]+1) * 20 for node in G.nodes()]
 
@@ -37,7 +37,7 @@ def show_graph_with_labels(adjacency_matrix, labels):
 
     pos = nx.spring_layout(G, k=1.9)
 
-    node_sizes = [5 * v for v in D]
+    node_sizes = [1.3 * v for v in D]
     nx.draw_networkx_nodes(G,
         pos,
         node_size=node_sizes,
@@ -54,11 +54,12 @@ def show_graph_with_labels(adjacency_matrix, labels):
         pos, 
         edge_color='gray',
         arrowstyle='->',
-        arrowsize=10,
-        width=2)
+        arrowsize=30,
+        width=1)
 
+    plt.axis('off')
     plt.show(block=False)
-    plt.savefig('xdb_adj_mat.png')
+    plt.savefig('xdb_adj_mat.png', bbox_inches='tight')
 
 def main(test_args=None):
     args = parse_args(sys.argv[1:] if test_args is None else test_args)
