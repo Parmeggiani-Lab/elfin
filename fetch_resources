@@ -4,6 +4,7 @@ cd resources
 
 # Get metadata
 rm -rf metadata
+echo "Downloading metadata using svn..."
 svn export https://github.com/joy13975/elfin-library/trunk/metadata
 
 # Get xdb
@@ -32,10 +33,4 @@ curl -u $github_user:$github_pwd 'https://raw.githubusercontent.com/joy13975/elf
 tar xjf "$bz2_file"; ((ret = ret || $?))
 rm -f "$bz2_file"; ((ret = ret || $?))
 
-echo
-echo    
-if [ $ret -eq 0 ]; then
-    echo 'Resources fetched'
-else
-    echo 'Could not fetch some resources'
-fi
+echo "Done."
