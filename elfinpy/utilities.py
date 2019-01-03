@@ -206,17 +206,8 @@ def com_dist_info(xdb):
     - (_, _, _) - tuple containing average, min and max values for centre-of-mass
         distances.
     """
-    double_data = xdb['double_data']
-    dists = []
-    for single_a_name in double_data.keys():
-        for single_b_name in double_data[single_a_name].keys():
-            dists.append(
-                np.linalg.norm(
-                    double_data[single_a_name][single_b_name]\
-                        ['com_b']
-                    )
-                )
-
+    all_tx = xdb['n_to_c_tx']
+    dists = [np.linalg.norm(tx['tran']) for tx in all_tx]
     return np.average(dists), min(dists), max(dists)
 
 def read_csv_points(csv_file):
