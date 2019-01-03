@@ -18,6 +18,12 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description='Prints module radii stat from xdb')
     return parser.parse_args(args)
 
+def convert_to_hex(rgba_color) :
+    red = int(rgba_color[0]*255)
+    green = int(rgba_color[1]*255)
+    blue = int(rgba_color[2]*255)
+    return '#%02x%02x%02x' % (red, green, blue)
+
 def show_graph_with_labels(adjacency_matrix, labels):
     labels_dict = {i: v for i, v in enumerate(labels)}
     adjacency_matrix = np.asarray(adjacency_matrix)
@@ -26,17 +32,30 @@ def show_graph_with_labels(adjacency_matrix, labels):
     D = nx.degree(G)
     D = [(D[node]+1) * 20 for node in G.nodes()]
 
-    fig_size = 13
+    fig_size = 15
     plt.figure(figsize=(fig_size, fig_size))
 
-    pos = nx.spring_layout(G, k=2)
+    pos = nx.spring_layout(G, k=1.9)
 
-    nx.draw(G,
+    node_sizes = [5 * v for v in D]
+    nx.draw_networkx_nodes(G,
         pos,
-        node_size=[5 * v for v in D],
-        labels=labels_dict,
-        font_size=16)
-    plt.axis('equal')
+        node_size=node_sizes,
+        node_color='pink')
+
+    nx.draw_networkx_labels(G,
+        pos,
+        labels_dict,
+        font_size=13,
+        font_color='black',
+        font_weight='bold')
+
+    nx.draw_networkx_edges(G,
+        pos, 
+        edge_color='gray',
+        arrowstyle='->',
+        arrowsize=10,
+        width=2)
 
     plt.show(block=False)
     plt.savefig('xdb_adj_mat.png')
@@ -69,7 +88,6 @@ def main(test_args=None):
         mod_a, mod_b = tx['mod_a'], tx['mod_b']
         id_a, id_b = name_to_idx[mod_a], name_to_idx[mod_b]
         adjmat[id_a][id_b] = 1.0
-        adjmat[id_b][id_a] = 1.0
         # print(','.join((mod_a, mod_b)))
 
     show_graph_with_labels(adjmat, all_names)
