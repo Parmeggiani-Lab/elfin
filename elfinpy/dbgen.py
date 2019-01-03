@@ -68,7 +68,7 @@ class XDBGenerator:
                 ('mod_a_chain', a_chain),
                 ('mod_b', mod_b),
                 ('mod_b_chain', b_chain),
-                ('rot', np.transpose(rot).tolist()),
+                ('rot', rot.tolist()),
                 ('tran', np.asarray(tran).tolist())
             ])
         return tx_entry
@@ -123,6 +123,28 @@ class XDBGenerator:
                     fusion_count = int_ceil(float(rc_dbl_a)/8)
                     double = self.double_pdbs[comp_name][single_b_name]
 
+
+                    # Compute transformation matrix.
+                    
+                    # Find transform between component single and single b.
+                    hub_single_chain_id = \
+                        list(self.single_pdbs[comp_name].get_chains())[0].id
+                    single_b_chain_id = \
+                        list(self.single_pdbs[single_b_name].get_chains())[0].id
+
+                    dbl_tx_id = self.modules['singles'][comp_name]['chains'] \
+                        [hub_single_chain_id]['c'] \
+                        [single_b_name][single_b_chain_id]
+
+                    assert(dbl_tx_id is not None)
+                    dbl_n_to_c = self.n_to_c_tx[dbl_tx_id]
+
+                    dbl_tx = np.vstack(
+                        (np.hstack((dbl_n_to_c['rot'], np.transpose([dbl_n_to_c['tran']]))),
+                         [0,0,0,1])
+                    )
+
+                    # Find transform between hub and single b.
                     rot, tran = self.get_rot_trans(
                         moving=hub,
                         moving_chain_id=hub_chain_id,
@@ -132,8 +154,22 @@ class XDBGenerator:
                         match_count=fusion_count
                     )
 
-                    single_b_chain_id = \
-                        list(self.single_pdbs[single_b_name].get_chains())[0].id
+                    # Rotation in BioPython is inversed.
+                    rot = np.transpose(rot)
+
+                    hub_tx = np.vstack(
+                        (np.hstack((rot, np.transpose([tran]))),
+                        [0,0,0,1])
+                    )
+
+                    # 1. Shift (normal transform) to double B frame.
+                    # 2. Shift (inverse transform) to hub's component frame.
+                    dbl_raised_tx = np.matmul(np.linalg.inv(hub_tx), dbl_tx);
+
+                    # Decompose transform.
+                    rot = dbl_raised_tx[:3, :3]
+                    tran = dbl_raised_tx[:3, 3]
+
                     tx = self.create_tx(
                         hub_name,
                         hub_chain_id,
@@ -144,9 +180,13 @@ class XDBGenerator:
                     tx_id = len(self.n_to_c_tx) + len(self.hub_tx)
 
                     self.modules['hubs'][hub_name]['chains'] \
-                        [hub_chain_id]['c'][single_b_name][single_b_chain_id] = tx_id
+                        [hub_chain_id]['c'] \
+                        [single_b_name][single_b_chain_id] = tx_id
+
                     self.modules['singles'][single_b_name]['chains'] \
-                        [single_b_chain_id]['n'][hub_name][hub_chain_id] = tx_id
+                        [single_b_chain_id]['n'] \
+                        [hub_name][hub_chain_id] = tx_id
+
                     self.hub_tx.append(tx)
 
             if chain_data['n_free']:
@@ -158,6 +198,10 @@ class XDBGenerator:
                     fusion_count = int_ceil(float(rc_b)/8)
                     double = self.double_pdbs[single_a_name][comp_name]
 
+
+                    # Compute transformation matrix.
+
+                    # Find transform between hub and single b.
                     rot, tran = self.get_rot_trans(
                         moving=hub,
                         moving_chain_id=hub_chain_id,
@@ -167,8 +211,24 @@ class XDBGenerator:
                         match_count=fusion_count
                     )
 
+                    # Rotation in BioPython is inversed.
+                    rot = np.transpose(rot)
+
+                    hub_tx = np.vstack(
+                        (np.hstack((rot, np.transpose([tran]))),
+                        [0,0,0,1])
+                    )
+
+                    # 1. Raise (inverse transform) to hub frame.
+                    raised_tx = np.linalg.inv(hub_tx);
+
+                    # Decompose transform.
+                    rot = raised_tx[:3, :3]
+                    tran = raised_tx[:3, 3]
+
                     single_a_chain_id = \
                         list(self.single_pdbs[single_a_name].get_chains())[0].id
+
                     tx = self.create_tx(
                         single_a_name,
                         single_a_chain_id,
@@ -179,9 +239,13 @@ class XDBGenerator:
                     tx_id = len(self.n_to_c_tx) + len(self.hub_tx)
 
                     self.modules['singles'][single_a_name]['chains'] \
-                        [single_a_chain_id]['c'][hub_name][hub_chain_id] = tx_id
+                        [single_a_chain_id]['c'] \
+                        [hub_name][hub_chain_id] = tx_id
+
                     self.modules['hubs'][hub_name]['chains'] \
-                        [hub_chain_id]['n'][single_a_name][single_a_chain_id] = tx_id
+                        [hub_chain_id]['n'] \
+                        [single_a_name][single_a_chain_id] = tx_id
+
                     self.hub_tx.append(tx)
 
         save_pdb(
@@ -195,6 +259,9 @@ class XDBGenerator:
         """
         # Step 1: Load structures
         double = read_pdb(file_name)
+
+        # Preprocessed pdbs have only 1 chain
+        assert(len(list(double.get_chains())) == 1)
 
         double_name = file_name.split('/')[-1].replace('.pdb', '')
         single_a_name, single_b_name = double_name.split('-')
@@ -281,6 +348,21 @@ class XDBGenerator:
             match_count=fusion_count_b
         )
 
+        # Rotation in BioPython is inversed.
+        rot = np.transpose(rot)
+
+        # Inverse result transform.
+        tmp_tx = np.vstack(
+            (np.hstack((rot, np.transpose([tran]))),
+            [0,0,0,1])
+        )
+
+        inv_tx = np.linalg.inv(tmp_tx);
+
+        # Decompose transform.
+        rot = inv_tx[:3, :3]
+        tran = inv_tx[:3, 3]
+
         # Step 5: Save the aligned molecules.
         #
         # Here the PDB format adds some slight floating point error. PDB is
@@ -291,8 +373,6 @@ class XDBGenerator:
             path=self.aligned_pdb_dir + '/doubles/' + double_name + '.pdb'
         )
 
-        # ----IMPORTANT---- Pre-transpose rotation so that downstream codes
-        # can use the standard left-multiplication
         single_a_chain_id = list(single_a.get_chains())[0].id
         single_b_chain_id = list(single_b.get_chains())[0].id
         tx = self.create_tx(
@@ -317,6 +397,9 @@ class XDBGenerator:
         """Centres a single module and saves to output folder."""
         single_name = file_name.split('/')[-1].replace('.pdb', '')
         single = read_pdb(file_name)
+
+        # Preprocessed pdbs have only 1 chain
+        assert(len(list(single.get_chains())) == 1)
 
         # Check that there is only one chain
         chain_list = list(single.get_chains())
@@ -344,8 +427,6 @@ class XDBGenerator:
 
     def dump_xdb(self):
         """Writes alignment data to a json file."""
-        self.n_to_c_tx += self.hub_tx
-
         to_dump = \
             OrderedDict([
                 ('modules', self.modules),
@@ -474,6 +555,9 @@ class XDBGenerator:
             fixed_resi_offset=fixed_resi_offset,
             match_count=match_count
         )
+
+        # BioPython's own transform() deals with the inversed rotation
+        # correctly.
         moving.transform(rot, tran)
 
     def get_rot_trans(
@@ -525,15 +609,15 @@ class XDBGenerator:
 
         moving_chain = get_chain(moving, chain_id=moving_chain_id)
         ma = [
-                    al[0] for al in [[a for a in r.child_list if a.name == 'CA'] 
-                    for r in moving_chain.child_list[moving_resi_offset:(moving_resi_offset+match_count)]]
-                ]
+            al[0] for al in [[a for a in r.child_list if a.name == 'CA'] 
+            for r in moving_chain.child_list[moving_resi_offset:(moving_resi_offset+match_count)]]
+        ]
 
         fixed_chain = get_chain(fixed, chain_id=fixed_chain_id)
         fa = [
-                    al[0] for al in [[a for a in r.child_list if a.name == 'CA'] 
-                    for r in fixed_chain.child_list[fixed_resi_offset:(fixed_resi_offset+match_count)]]
-                ]
+            al[0] for al in [[a for a in r.child_list if a.name == 'CA'] 
+            for r in fixed_chain.child_list[fixed_resi_offset:(fixed_resi_offset+match_count)]]
+        ]
 
         self.si.set_atoms(fa, ma)
         return self.si.rotran
@@ -566,6 +650,8 @@ class XDBGenerator:
             print('Aligning hub [{}/{}] {}' \
                 .format(i+1, nHubs, hub_files[i]))
             self.process_hub(hub_files[i])
+
+        self.n_to_c_tx += self.hub_tx
 
         print('Total: {} singles, {} doubles, {} hubs'.format(n_singles, nDoubles, nHubs))
 
