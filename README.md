@@ -8,7 +8,9 @@ Elfin is split into the following repositories:
  3. [elfin-data](https://github.com/joy13975/elfin-data) - the private data.
  4. [elfin-solver](https://github.com/joy13975/elfin-solver) - the core.
 
-This main repository hosts data processing scripts for v2. Code for v1 is preserved in the v1 branch.
+This main repository hosts data processing scripts for v2. 
+
+There is a v1 branch, which hosts the v1 version of elfin, updated only to be compatible with *some* new scripts. The code there is no longer supported.
 
 Implementation is based on the theories and assumptions stated [here](theories_and_assumptions.md).
 
