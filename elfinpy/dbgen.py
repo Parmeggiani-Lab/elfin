@@ -67,7 +67,7 @@ class XDBGenerator:
         chain = get_chain(struct, chain_id=chain_id)
         residues = chain.child_list
         n = len(residues)
-        divider = 8  # The smaller the divider, the closer to terminus.
+        divider = 6  # The smaller the divider, the closer to terminus.
 
         assert(n > 0)
         if term == 'n':
