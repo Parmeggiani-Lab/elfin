@@ -107,6 +107,8 @@ class XDBGenerator:
         # Centre the hub
         self.move_to_origin(hub)
 
+        hub_fusion_factor = 4
+
         hub_name = os.path.basename(file_name).replace('.pdb', '')
         hub_meta = self.hub_info.get(hub_name, None)
         assert(hub_meta != None)
@@ -146,7 +148,7 @@ class XDBGenerator:
                     # will take place at the end of the hub's component's terminal.
                     rc_hub_a = get_chain_residue_count(hub, hub_chain_id)
                     rc_dbl_a = get_pdb_residue_count(self.single_pdbs[comp_name])
-                    fusion_count = int_ceil(float(rc_dbl_a)/8)
+                    fusion_count = int_ceil(float(rc_dbl_a) / hub_fusion_factor)
                     double = self.double_pdbs[comp_name][single_b_name]
 
 
@@ -225,7 +227,7 @@ class XDBGenerator:
                     # Same as c_free except comp acts as single b
                     rc_a = get_pdb_residue_count(self.single_pdbs[single_a_name])
                     rc_b = get_pdb_residue_count(self.single_pdbs[comp_name])
-                    fusion_count = int_ceil(float(rc_b)/8)
+                    fusion_count = int_ceil(float(rc_b) / hub_fusion_factor)
                     double = self.double_pdbs[single_a_name][comp_name]
 
 
@@ -333,8 +335,9 @@ class XDBGenerator:
         #   Through some experients I found that using 1/8 of the length of the
         # alignment target (single a or b) is a good balance between not causing
         # discontinuities and also not creating atom overlaps.
-        fusion_count_a = int_ceil(float(rc_a)/8)
-        fusion_count_b = int_ceil(float(rc_b)/8)
+        dbl_fusion_factor = 8
+        fusion_count_a = int_ceil(float(rc_a) / dbl_fusion_factor)
+        fusion_count_b = int_ceil(float(rc_b) / dbl_fusion_factor)
 
         # Step 2: Move double to align with the first single.
         #
