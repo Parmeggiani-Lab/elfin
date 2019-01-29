@@ -14,6 +14,10 @@ import numpy as np
 
 RADII_TYPES = ['average_all', 'max_ca_dist', 'max_heavy_dist']
 INF = float('inf')
+TERM_TYPES = {'n', 'c'}
+
+def opposite_term(term):
+    return {'n':'c', 'c':'n'}.get(term.lower(), None)
 
 def dict_diff(A, B):
     if type(A) == list:
