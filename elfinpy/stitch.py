@@ -2,13 +2,10 @@
 
 #
 # This script creates the atom model of an Elfin design solution
-#   Input: a JSON file that describes the connectivity of a sol-
-#       lution. 
-#   Output: a CIF file define the positions of each atom of the 
-#       input solution
-#
-# Version: v2
-#
+# - Input: a JSON file describing the connectivity of a collection of module
+#   networks. This file is exported by elfin-solver or elfin-ui.
+# - Output: one or more CIF files defining the atom positions of each of the
+#   module networks found in the input JSON file.
 #
 
 import glob
@@ -45,8 +42,11 @@ class Synthesiser:
 
         # Parse and convert capping repeat indicies into a dictionary
         self.capping_repeat_r_id_dict = {}
-        for row in read_csv(metadata_dir + '/repeat_indicies.csv', delim=' '):
-            self.capping_repeat_r_id_dict[row[0].split('.')[0].replace('DHR', 'D')] = [int(idx) for idx in row[1:]]
+        meta_csv = read_csv(metadata_dir + '/repeat_indicies.csv', delim=' ')
+        for row in meta_csv:
+            mod_name = row[0].split('.')[0].replace('DHR', 'D')
+            self.capping_repeat_r_id_dict[mod_name] = \
+                [int(idx) for idx in row[1:]]
 
     def reset_residue_id(self):
         self.residue_id = 1
@@ -79,7 +79,7 @@ class Synthesiser:
             cap_align_res = cap_res[match_start_idx:match_start_idx+max_align_len]
             real_cap_res = cap_res[:match_start_idx]
 
-            print('N-Terminus capping align len: {}'.format(max_align_len))
+            print('DEBUG: N-Terminus capping align len: {}'.format(max_align_len))
         else:
             match_end_idx = [i for (i,el) in enumerate(cap_res) if el.id[1] == cr_r_ids[3]][0]
             for cri in reversed(range(match_end_idx + 1)):
@@ -93,13 +93,13 @@ class Synthesiser:
             cap_align_res = cap_res[match_end_idx-max_align_len+1:match_end_idx+1]
             real_cap_res = cap_res[match_end_idx+1:]
 
-            print('C-Terminus capping align len: {}'.format(max_align_len))
+            print('DEBUG: C-Terminus capping align len: {}'.format(max_align_len))
 
         for i in range(len(prim_align_res)):
             assert(prim_align_res[i].resname == cap_align_res[i].resname)
 
-        prim_atoms       = [al[0] for al in [[a for a in r.child_list if a.name == 'CA'] for r in prim_align_res]]
-        cap_atoms        = [al[0] for al in [[a for a in r.child_list if a.name == 'CA'] for r in cap_align_res]]
+        prim_atoms       = [r['CA'] for r in prim_align_res]
+        cap_atoms        = [r['CA'] for r in cap_align_res]
         
         self.si.set_atoms(prim_atoms, cap_atoms)
         rot, tran = self.si.rotran
@@ -117,7 +117,7 @@ class Synthesiser:
     ):
         print('Processing node: id={}, name={}'.format(node_a['id'], node_a['name']))
 
-        if not node_a['trim'][1]:
+        if not node_a['trim']['c']:
             # This is an end-node and end-node atoms are already covered by
             # their preceeding non-end node
             return chains
@@ -155,7 +155,7 @@ class Synthesiser:
             # atom position caused by double interfaces
             prefix_residues = []
             suffix_residues = []
-            if node_a['trim'][0]:
+            if node_a['trim']['n']:
                 start_resi = int_floor(float(resi_count_a)/2)
             else:
                 start_resi = 0
@@ -173,7 +173,7 @@ class Synthesiser:
                 else:
                     print('Warning: untrimmed N-Terminus is not capped')
             
-            if node_b['trim'][1]:
+            if node_b['trim']['c']:
                 end_resi = resi_count_double - int_ceil(float(resi_count_b)/2)
             else:
                 end_resi = resi_count_double
@@ -223,13 +223,12 @@ class Synthesiser:
         return chains
 
     def run(self):
+        self.reset_residue_id()
         model = Bio.PDB.Model.Model(0)
-        si = Bio.PDB.Superimposer()
 
         if self.show_fusion:
             print('Note: show_fusion is on')
 
-        self.reset_residue_id()
         for graph_idx in range(len(self.spec)):
             try:
                 print('Processing graph: idx={}, name={}'.format(graph_idx, self.spec[graph_idx]['name']))
@@ -250,8 +249,9 @@ class Synthesiser:
         return structure
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(description='Generate atom model in CIF format using output from Elfin core');
-    parser.add_argument('spec_file')
+    desc = 'Generate CIF atom model using output from elfin-ui or elfin-solver.'
+    parser = argparse.ArgumentParser(description=desc);
+    parser.add_argument('input_file')
     parser.add_argument('--out_file', default='')
     parser.add_argument('--pdb_dir', default='./resources/pdb_aligned/')
     parser.add_argument('--cappings_dir', default='./resources/pdb_relaxed/cappings')
@@ -263,16 +263,16 @@ def parse_args(args):
 def main(test_args=None):
     args = parse_args(sys.argv[1:] if test_args is None else test_args)
 
-    spec_ext = args.spec_file[args.spec_file.rfind('.'):]
+    input_ext = args.input_file[args.input_file.rfind('.'):]
 
-    if spec_ext == '.json':
-        spec = read_json(args.spec_file)
+    if input_ext.lower() == '.json':
+        spec = read_json(args.input_file)
     else:
-        print('Unknown spec file type: {}'.format(spec_ext))
+        print('Unknown input file type: {}'.format(input_ext))
         exit()
 
     if len(spec) > 1:
-        print('Warning: multi-chain feature is not well tested yet')
+        print('TODO: export to multiple files')
 
     struct = Synthesiser(
         spec, 
@@ -284,7 +284,7 @@ def main(test_args=None):
     ).run()
 
     if args.out_file == '':
-        args.out_file = args.spec_file
+        args.out_file = args.input_file
     args.out_file = '.'.join(args.out_file.split('.')[:-1] + ['cif'])
 
     print('Saving to:', args.out_file)

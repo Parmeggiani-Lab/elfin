@@ -35,17 +35,16 @@ def v1_to_v2(input_json, xdb_path, multichain_test=False):# Elfin core output
     # Make sure we're working with the old format
     keys = input_json.keys()
     if not 'nodes' in keys:
-        print('Error!')
-        print('Input file does not look like the old Elfin core output file')
+        print('Error: input file is not a v1 elfin solution file.')
         exit(1)
 
     n_nodes = len(input_json['nodes'])
     nodes = [ 
                 ElfinNode(
-                id=i, 
-                name=el, 
-                trim=[(False if i == 0 else True), (False if i == n_nodes - 1 else True)],
-                cterm_node_id=((i+1) if i < n_nodes - 1 else -1)
+                    id=i, 
+                    name=el, 
+                    trim=[(False if i == 0 else True), (False if i == n_nodes - 1 else True)],
+                    cterm_node_id=((i+1) if i < n_nodes - 1 else -1)
                 ) for (i, el) in enumerate(input_json['nodes'])
             ]
 
@@ -71,6 +70,9 @@ def v1_to_v2(input_json, xdb_path, multichain_test=False):# Elfin core output
     return graphs
 
 def main(test_args=None):
+    print('Deprecated. For code reference only.')
+    exit()
+    
     args = parse_args(sys.argv[1:] if test_args is None else test_args)
 
     graphs = v1_to_v2(
