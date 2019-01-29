@@ -32,6 +32,7 @@ def parse_args(args):
     parser.add_argument('--metadata_dir', default='./resources/metadata/')
     parser.add_argument('--show_fusion', action='store_true')
     parser.add_argument('--disable_capping', action='store_true')
+    parser.add_argument('--skip_unused', action='store_true')
     return parser.parse_args(args)
 
 def main(test_args=None):
@@ -50,7 +51,8 @@ def main(test_args=None):
             args.cappings_dir,
             args.metadata_dir,
             args.show_fusion,
-            args.disable_capping
+            args.disable_capping,
+            args.skip_unused
         ).run()
 
         if args.out_file == '':
@@ -113,7 +115,8 @@ class Depositor:
         cappings_dir,
         metadata_dir, 
         show_fusion=False,
-        disable_capping=False
+        disable_capping=False,
+        skip_unused=False,
     ):
         spec_complaint = validate_spec(spec)
         if spec_complaint:
@@ -126,6 +129,7 @@ class Depositor:
         self.cr_dir           = cappings_dir
         self.show_fusion      = show_fusion
         self.disable_capping  = disable_capping
+        self.skip_unused      = skip_unused
         self.si               = Bio.PDB.Superimposer()
         self.chain_id         = 0
 
@@ -310,15 +314,16 @@ class Depositor:
 
                 # Advance until either a hub or a single with dangling terminus is
                 # encountered.
-                next_linkage = [l for l in node[term + '_linkage'] if l['source_chain_id'] == chain_id]
+                next_linkage = [l for l in node[term + '_linkage'] \
+                    if l['source_chain_id'] == chain_id]
                 if not next_linkage:
                     break
 
                 mod_type = node['module_type']
                 if mod_type == 'hub':
                     # This is a bypass hub. Check for unused chains, which
-                    # would not be placed since they aren't leaves nor do they
-                    # connect to any leaf nodes.
+                    # might not need to be placed since they aren't leaves nor
+                    # do they connect to any leaf nodes.
                     hub = self.xdb['modules']['hubs'][node['module_name']]
                     for hub_chain_id in hub['chains']:
                         if hub_chain_id == chain_id: continue
@@ -328,7 +333,11 @@ class Depositor:
                             if l['source_chain_id'] == hub_chain_id])
 
                         if c_links == n_links == 0:
-                            print('Won\'t place unused chain:', ui_name, chain_id)
+                            if self.skip_unused:
+                                print('Skipping unused chain:', ui_name, hub_chain_id)
+                            else:
+                                res.append(((ui_name, hub_chain_id, 'c'),
+                                    (ui_name, hub_chain_id, 'n')))
 
                 assert(len(next_linkage) == 1)
                 ui_name, chain_id = \
