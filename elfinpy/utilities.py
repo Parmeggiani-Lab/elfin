@@ -308,9 +308,13 @@ def safe_exec(func, *args, **kwargs):
             traceback.tb_next.tb_next.tb_next \
             if traceback and traceback.tb_next and traceback.tb_next.tb_next \
             else traceback
-        frame = last_frame.tb_frame
-        traceback_module.print_exc()
-        pause_code(frame)
+
+        if last_frame:
+            frame = last_frame.tb_frame
+            traceback_module.print_exc()
+            pause_code(frame)
+        else:
+            print('No frame to pause at...')
 
 def main():
     """main"""
