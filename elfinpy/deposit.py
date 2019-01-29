@@ -26,6 +26,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description=desc);
     parser.add_argument('input_file')
     parser.add_argument('--out_file', default='')
+    parser.add_argument('--xdb', default='./resources/xdb.json')
     parser.add_argument('--pdb_dir', default='./resources/pdb_aligned/')
     parser.add_argument('--cappings_dir', default='./resources/pdb_relaxed/cappings')
     parser.add_argument('--metadata_dir', default='./resources/metadata/')
@@ -40,8 +41,11 @@ def main(test_args=None):
 
     if input_ext == '.json':
         spec = read_json(args.input_file)
+        xdb = read_json(args.xdb)
+
         struct = Depositor(
             spec, 
+            xdb,
             args.pdb_dir,
             args.cappings_dir,
             args.metadata_dir,
@@ -63,7 +67,7 @@ def validate_spec(spec):
     if 'networks' not in spec:
         return 'No networks object in spec.'
     else:
-        if len(spec['networks']) == 0:
+        if not spec['networks']:
             return 'Spec file has no module networks.'
 
         if 'pg_networks' in spec:
@@ -73,13 +77,38 @@ def validate_spec(spec):
                     'Spec file has {} path guide networks. It should have zero.'\
                     .format(n_pgn)
 
-def extract_linkage(linkage):
-    return [(l['source_chain_id'], l['terminus'].lower()) for l in linkage]
+def find_leaves(network):
+    # Find all leaf terminus identifier. A leaf node is one that has only one
+    # occupied terminus.
+
+    try:
+        res = []
+
+        for ui_name in network:
+            uimod = network[ui_name]
+            mod_type = uimod['module_type']
+
+            cl = uimod['c_linkage']
+            nl = uimod['n_linkage']
+
+            # A single can be an entry if it only has one busy terminus.
+            # When entry is found, return the outward terminus identifier.
+            if len(cl) == 1 and not nl:
+                res.append((ui_name, cl[0]['source_chain_id'], 'c'))
+            elif len(nl) == 1 and not cl:
+                res.append((ui_name, nl[0]['source_chain_id'], 'n'))
+            
+        return res
+    except KeyError as ke:
+        print('KeyError:', ke)
+        print('Probably bad input format.')
+        exit()
 
 class Depositor:
     def __init__(
         self, 
-        spec, 
+        spec,
+        xdb,
         pdb_dir, 
         cappings_dir,
         metadata_dir, 
@@ -92,6 +121,7 @@ class Depositor:
             exit()
 
         self.spec             = spec
+        self.xdb              = xdb
         self.pdb_dir          = pdb_dir
         self.cr_dir           = cappings_dir
         self.show_fusion      = show_fusion
@@ -108,6 +138,30 @@ class Depositor:
                 [int(idx) for idx in row[1:]]
 
     def place_module(self, chain, module, chain_info):
+        if not chain:
+            if module['module_type'] == 'single':
+                # Cap on the unoccupied terminus.
+                ...
+
+            # Trim on occupied teriminus.
+            ...
+
+            # If module is a hub, then?
+        else:
+            # Trim on incoming terminus (chain_info).
+            ...
+
+            if module['module_type'] == 'single':
+                if not module['c_linkage']:
+                    # Cap on c terminus.
+                    ...
+                elif not module['n_linkage']:
+                    # Cap on n terminus.
+                    ...
+
+            # If module is a hub, then?
+
+
         print('Processing node: id={}, name={}'.format(node_a['id'], node_a['name']))
 
         if not node_a['trim']['c']:
@@ -200,83 +254,104 @@ class Depositor:
             r.transform(np.asarray(node_a['rot']), node_a['tran'])
             curr_chain.add(r)
 
-    def deposit_chain(self, network, src_name, src_chain_info):
+    def deposit_chain(self, network, src, dst):
+        # n -src-> c ... n -dst-> c
+        assert(src and src[2] == 'c')
+        assert(dst and dst[2] == 'n')
+
+        print('Deposit:', src, dst)
         start_rid = self.residue_id
+        chain = self.new_chain()
 
-        chain = new_chain()
-
-        # Chain info is (Chain Name, Terminus, Trim)
-        next_mod = src_name, src_chain_info
-
-        while True:
-            next_name, next_chain_info = next_mod
-            next_mod = self.place_module(chain, network[next_name], next_chain_info)
-
-            if not next_mod:
-                raise ValueError('TODO: find chain info to return')
-                # If next next_name is a hub, inactive components need to be
-                # placed and capped.
-                break
-
-        _, _, src_cap = src_chain_info
-        if src_term == 'c':
-            # Need to reverse residue ids because N-to-C residue ids should be
-            # in ascending order.
-            raise ValueError('TODO: reverse reside ids')
 
         self.model.add(chain)
 
-    def find_entry(self, network):
-        # Find an arbitrary entry node and return the terminus direction
-        # leading to subsequent nodes.
-
-        try:
-            for ui_name in network:
-                uimod = network[ui_name]
-                mod_type = uimod['module_type']
-                    
-                cl = uimod['c_linkage']
-                nl = uimod['n_linkage']
-
-                if mod_type == 'single':
-                    # A single can be an entry if it only has one busy interface.
-                    if len(cl) == 0 and len(nl) == 0:
-                        raise ValueError('Orphant module: \"{}\"'.format(ui_name))
-
-                    if len(cl) == 0:
-                        assert(len(nl) == 1)
-                        return ui_name, (nl[0]['source_chain_id'], nl[0]['terminus'].lower())
-                    elif len(nl) == 0:
-                        assert(len(cl) == 1)
-                        return ui_name, (cl[0]['source_chain_id'], cl[0]['terminus'].lower())
-
-        except KeyError as ke:
-            print('KeyError:', ke)
-            print('Probably bad input format.')
-            exit()
-
     def deposit_chains(self, network):
+        for chain_iden in self.decompose_network(network):
+            self.deposit_chain(network, *chain_iden)
+
+    def decompose_network(self, network):
+        # Walks the network and returns a list of chain identifiers (src, dst),
+        # where src and dst are outgoing and incoming terminus identifiers
+        # respectively (ui_name, chain_id, term_type). This method guarantees that
+        # src->dst is in the direction of N->C.
+        #
+        # A special case arises with unoccupied hub components or single modules.
+        # These will have either src and dst being the same.
+
         src_q = deque()
         visited = set()
 
         # Find entry node to begin walking the network with.
-        entry = self.find_entry(network)
-        if not entry:
-            return 'Could not find entry node for network.'
+        leaves = find_leaves(network)
+        if not leaves:
+            raise ValueError('No leave nodes for network.')
 
-        src_q.append(*entry)
+        src_q.extend(leaves)
+
+        for src in src_q:
+            print('Leaves:', src)
 
         # Work until queue is empty.
-        while not len(src_q) == 0:
+        res = []
+        while src_q:
             src = src_q.popleft()
+            if src in visited:
+                # This could happen when termini identifiers on hubs are added
+                # before the termini on the other end of those chains are
+                # popped out of the queue.
+                continue
             visited.add(src)
 
-            dst_name, dst_chain_info = self.deposit_chain(network, *src)
+            ui_name, chain_id, term = src
 
-            # Add unvisited branch as sources.
-            for dt in dst_chain_info:
-                if (dst_name, dst_chain_info) not in visited:
-                    src_q.append((dst_name, dt))
+            while True:
+                node = network[ui_name]
+
+                # Advance until either a hub or a single with dangling terminus is
+                # encountered.
+                next_linkage = [l for l in node[term + '_linkage'] if l['source_chain_id'] == chain_id]
+                if not next_linkage:
+                    break
+
+                mod_type = node['module_type']
+                if mod_type == 'hub':
+                    # This is a bypass hub. Check for unused chains, which
+                    # would not be placed since they aren't leaves nor do they
+                    # connect to any leaf nodes.
+                    hub = self.xdb['modules']['hubs'][node['module_name']]
+                    for hub_chain_id in hub['chains']:
+                        if hub_chain_id == chain_id: continue
+                        c_links = len([l for l in node['c_linkage'] \
+                            if l['source_chain_id'] == hub_chain_id])
+                        n_links = len([l for l in node['n_linkage'] \
+                            if l['source_chain_id'] == hub_chain_id])
+
+                        if c_links == n_links == 0:
+                            print('Won\'t place unused chain:', ui_name, chain_id)
+
+                assert(len(next_linkage) == 1)
+                ui_name, chain_id = \
+                    next_linkage[0]['target_mod'], \
+                    next_linkage[0]['target_chain_id']
+
+            dst = (ui_name, chain_id, opposite_term(term))
+            if dst not in visited:
+                visited.add(dst)
+                res.append((src, dst) if term == 'c' else (dst, src))
+
+                if mod_type == 'hub':            
+                    # Add unvisited components as new chain sources.
+                    hub = self.xdb['modules']['hubs'][node['module_name']]
+                    for hub_chain_id in hub['chains']:
+                        hub_chain = hub['chains'][hub_chain_id]
+                        for term in TERM_TYPES:
+                            if hub_chain[term]: # If not dormant.
+                                iden = (ui_name, hub_chain_id, term)
+                                if iden not in visited:
+                                    src_q.append(iden)
+
+        return res
 
     def new_chain(self):
         return Bio.PDB.Chain.Chain(self.next_chain_id())
