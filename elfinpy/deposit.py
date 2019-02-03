@@ -93,18 +93,102 @@ def find_leaves(network):
             cl = uimod['c_linkage']
             nl = uimod['n_linkage']
 
-            # A single can be an entry if it only has one busy terminus.
-            # When entry is found, return the outward terminus identifier.
+            # A single can be an entry if it only has one busy terminus. When
+            # entry is found, return the free (far end) terminus identifier.
             if len(cl) == 1 and not nl:
-                res.append((ui_name, cl[0]['source_chain_id'], 'c'))
+                res.append((ui_name, cl[0]['source_chain_id'], 'n'))
             elif len(nl) == 1 and not cl:
-                res.append((ui_name, nl[0]['source_chain_id'], 'n'))
+                res.append((ui_name, nl[0]['source_chain_id'], 'c'))
             
         return res
     except KeyError as ke:
         print('KeyError:', ke)
         print('Probably bad input format.')
         exit()
+
+# Walks the network and returns a generator of chain identifiers (src, dst),
+# where src and dst are the terminus identifiers for the far ends of the chain
+# in question.
+# 
+# A terminus identifier is (ui_name, chain_id, term_type).
+# 
+# This method guarantees that src->dst is in the direction of N->C.
+def decompose_network(network, xdb, skip_unused=False):
+    src_q = deque()
+    visited = set()
+
+    # Find entry node to begin walking the network with.
+    leaves = find_leaves(network)
+    if not leaves:
+        raise ValueError('No leave nodes for network.')
+
+    src_q.extend(leaves)
+
+    for src in src_q:
+        print('Leaves:', src)
+
+    # Work until queue is empty.
+    while src_q:
+        src = src_q.popleft()
+        if src in visited:
+            # This could happen when termini identifiers on hubs are added
+            # before the termini on the other end of those chains are
+            # popped out of the queue.
+            continue
+        visited.add(src)
+
+        ui_name, chain_id, term = src
+        mod_type = None
+
+        while True:
+            node = network[ui_name]
+
+            # Advance until either a hub or a single with dangling terminus is
+            # encountered.
+            next_linkage = [l for l in node[term + '_linkage'] \
+                if l['source_chain_id'] == chain_id]
+            if not next_linkage:
+                dst = (ui_name, chain_id, opposite_term(term))
+                if dst not in visited:
+                    visited.add(dst)
+                    yield (src, dst) if term == 'n' else (dst, src)
+
+                    if mod_type == 'hub':            
+                        # Add unvisited components as new chain sources.
+                        hub = xdb['modules']['hubs'][node['module_name']]
+                        for hub_chain_id in hub['chains']:
+                            hub_chain = hub['chains'][hub_chain_id]
+                            for term in TERM_TYPES:
+                                if hub_chain[term]: # If not dormant.
+                                    iden = (ui_name, hub_chain_id, term)
+                                    if iden not in visited:
+                                        src_q.append(iden)
+                break
+
+            mod_type = node['module_type']
+            if mod_type == 'hub':
+                # This is a bypass hub. Check for unused chains, which
+                # might not need to be placed since they aren't leaves nor
+                # do they connect to any leaf nodes.
+                hub = xdb['modules']['hubs'][node['module_name']]
+                for hub_chain_id in hub['chains']:
+                    if hub_chain_id == chain_id: continue
+                    c_links = len([l for l in node['c_linkage'] \
+                        if l['source_chain_id'] == hub_chain_id])
+                    n_links = len([l for l in node['n_linkage'] \
+                        if l['source_chain_id'] == hub_chain_id])
+
+                    if c_links == n_links == 0:
+                        if skip_unused:
+                            print('Skipping unused chain:', ui_name, hub_chain_id)
+                        else:
+                            yield ((ui_name, hub_chain_id, 'n'),
+                                (ui_name, hub_chain_id, 'c'))
+
+            assert(len(next_linkage) == 1)
+            ui_name, chain_id = \
+                next_linkage[0]['target_mod'], \
+                next_linkage[0]['target_chain_id']
 
 class Depositor:
     def __init__(
@@ -260,10 +344,10 @@ class Depositor:
 
     def deposit_chain(self, network, src, dst):
         # n -src-> c ... n -dst-> c
-        assert(src and src[2] == 'c')
-        assert(dst and dst[2] == 'n')
-
         print('Deposit:', src, dst)
+        assert(src and src[2] == 'n')
+        assert(dst and dst[2] == 'c')
+
         start_rid = self.residue_id
         chain = self.new_chain()
 
@@ -271,96 +355,9 @@ class Depositor:
         self.model.add(chain)
 
     def deposit_chains(self, network):
-        for chain_iden in self.decompose_network(network):
+        chain_iden_gen = decompose_network(network, self.xdb, self.skip_unused)
+        for chain_iden in chain_iden_gen:
             self.deposit_chain(network, *chain_iden)
-
-    def decompose_network(self, network):
-        # Walks the network and returns a list of chain identifiers (src, dst),
-        # where src and dst are outgoing and incoming terminus identifiers
-        # respectively (ui_name, chain_id, term_type). This method guarantees that
-        # src->dst is in the direction of N->C.
-        #
-        # A special case arises with unoccupied hub components or single modules.
-        # These will have either src and dst being the same.
-
-        src_q = deque()
-        visited = set()
-
-        # Find entry node to begin walking the network with.
-        leaves = find_leaves(network)
-        if not leaves:
-            raise ValueError('No leave nodes for network.')
-
-        src_q.extend(leaves)
-
-        for src in src_q:
-            print('Leaves:', src)
-
-        # Work until queue is empty.
-        res = []
-        while src_q:
-            src = src_q.popleft()
-            if src in visited:
-                # This could happen when termini identifiers on hubs are added
-                # before the termini on the other end of those chains are
-                # popped out of the queue.
-                continue
-            visited.add(src)
-
-            ui_name, chain_id, term = src
-
-            while True:
-                node = network[ui_name]
-
-                # Advance until either a hub or a single with dangling terminus is
-                # encountered.
-                next_linkage = [l for l in node[term + '_linkage'] \
-                    if l['source_chain_id'] == chain_id]
-                if not next_linkage:
-                    break
-
-                mod_type = node['module_type']
-                if mod_type == 'hub':
-                    # This is a bypass hub. Check for unused chains, which
-                    # might not need to be placed since they aren't leaves nor
-                    # do they connect to any leaf nodes.
-                    hub = self.xdb['modules']['hubs'][node['module_name']]
-                    for hub_chain_id in hub['chains']:
-                        if hub_chain_id == chain_id: continue
-                        c_links = len([l for l in node['c_linkage'] \
-                            if l['source_chain_id'] == hub_chain_id])
-                        n_links = len([l for l in node['n_linkage'] \
-                            if l['source_chain_id'] == hub_chain_id])
-
-                        if c_links == n_links == 0:
-                            if self.skip_unused:
-                                print('Skipping unused chain:', ui_name, hub_chain_id)
-                            else:
-                                res.append(((ui_name, hub_chain_id, 'c'),
-                                    (ui_name, hub_chain_id, 'n')))
-
-                assert(len(next_linkage) == 1)
-                ui_name, chain_id = \
-                    next_linkage[0]['target_mod'], \
-                    next_linkage[0]['target_chain_id']
-
-            dst = (ui_name, chain_id, opposite_term(term))
-            if dst not in visited:
-                visited.add(dst)
-                res.append((src, dst) if term == 'c' else (dst, src))
-
-                if mod_type == 'hub':            
-                    # Add unvisited components as new chain sources.
-                    hub = self.xdb['modules']['hubs'][node['module_name']]
-                    for hub_chain_id in hub['chains']:
-                        hub_chain = hub['chains'][hub_chain_id]
-                        for term in TERM_TYPES:
-                            if hub_chain[term]: # If not dormant.
-                                iden = (ui_name, hub_chain_id, term)
-                                if iden not in visited:
-                                    src_q.append(iden)
-
-        return res
 
     def new_chain(self):
         return Bio.PDB.Chain.Chain(self.next_chain_id())
