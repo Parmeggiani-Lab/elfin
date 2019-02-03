@@ -79,10 +79,10 @@ def validate_spec(spec):
                     'Spec file has {} path guide networks. It should have zero.'\
                     .format(n_pgn)
 
+# Returns a list of all leaf termini.
+#
+# A node is a leaf if it has only one occupied terminus.
 def find_leaves(network):
-    # Find all leaf terminus identifier. A leaf node is one that has only one
-    # occupied terminus.
-
     try:
         res = []
 
@@ -124,9 +124,6 @@ def decompose_network(network, xdb, skip_unused=False):
 
     src_q.extend(leaves)
 
-    for src in src_q:
-        print('Leaves:', src)
-
     # Work until queue is empty.
     while src_q:
         src = src_q.popleft()
@@ -137,16 +134,12 @@ def decompose_network(network, xdb, skip_unused=False):
             continue
         visited.add(src)
 
-        ui_name, chain_id, term = src
         mod_type = None
 
-        while True:
+        for node_info in node_gen(network, src):
+            ui_name, chain_id, term, next_linkage = node_info
             node = network[ui_name]
-
-            # Advance until either a hub or a single with dangling terminus is
-            # encountered.
-            next_linkage = [l for l in node[term + '_linkage'] \
-                if l['source_chain_id'] == chain_id]
+            
             if not next_linkage:
                 dst = (ui_name, chain_id, opposite_term(term))
                 if dst not in visited:
@@ -185,10 +178,26 @@ def decompose_network(network, xdb, skip_unused=False):
                             yield ((ui_name, hub_chain_id, 'n'),
                                 (ui_name, hub_chain_id, 'c'))
 
-            assert(len(next_linkage) == 1)
-            ui_name, chain_id = \
-                next_linkage[0]['target_mod'], \
-                next_linkage[0]['target_chain_id']
+def node_gen(network, src):
+    ui_name, chain_id, term = src
+
+    while True:
+        node = network[ui_name]
+
+        # Advance until either a hub or a single with dangling terminus is
+        # encountered.
+        next_linkage = [l for l in node[term + '_linkage'] \
+            if l['source_chain_id'] == chain_id]
+
+        yield ui_name, chain_id, term, next_linkage
+
+        if not next_linkage:
+            break
+
+        assert(len(next_linkage) == 1)
+        ui_name, chain_id = \
+            next_linkage[0]['target_mod'], \
+            next_linkage[0]['target_chain_id']
 
 class Depositor:
     def __init__(
@@ -350,6 +359,7 @@ class Depositor:
 
         start_rid = self.residue_id
         chain = self.new_chain()
+
 
 
         self.model.add(chain)
