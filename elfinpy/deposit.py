@@ -136,10 +136,10 @@ def decompose_network(network, xdb, skip_unused=False):
 
         mod_type = None
 
-        for node_info in node_gen(network, src):
-            ui_name, chain_id, term, next_linkage = node_info
+        for term_iden, next_linkage in walk_chain(network, src):
+            ui_name, chain_id, term = term_iden
             node = network[ui_name]
-            
+
             if not next_linkage:
                 dst = (ui_name, chain_id, opposite_term(term))
                 if dst not in visited:
@@ -178,7 +178,7 @@ def decompose_network(network, xdb, skip_unused=False):
                             yield ((ui_name, hub_chain_id, 'n'),
                                 (ui_name, hub_chain_id, 'c'))
 
-def node_gen(network, src):
+def walk_chain(network, src):
     ui_name, chain_id, term = src
 
     while True:
@@ -186,18 +186,52 @@ def node_gen(network, src):
 
         # Advance until either a hub or a single with dangling terminus is
         # encountered.
-        next_linkage = [l for l in node[term + '_linkage'] \
+        next_linkage = [l for l in node[opposite_term(term) + '_linkage'] \
             if l['source_chain_id'] == chain_id]
 
-        yield ui_name, chain_id, term, next_linkage
+        yield (ui_name, chain_id, term), next_linkage
 
         if not next_linkage:
             break
 
-        assert(len(next_linkage) == 1)
+        assert len(next_linkage) == 1, 'Expected only 1 next_linkage (since' \
+            'each node has max 2 linkages, one N and one C).'
         ui_name, chain_id = \
             next_linkage[0]['target_mod'], \
             next_linkage[0]['target_chain_id']
+
+def trim_terminus(residues, term):
+    assert(term in TERM_TYPES)
+
+    if term == 'n':
+        print('TODO: Trim term', term)
+    elif term == 'c':
+        print('TODO: Trim term', term)
+
+def cap_terminus(residues, term, node, chain_id, xdb):
+    assert(term in TERM_TYPES)
+
+    mod_type = node['module_type']
+    if mod_type == 'single':
+        if term == 'n':
+            print('TODO: Cap single term', term)
+        elif term == 'c':
+            print('TODO: Cap single term', term)
+    elif mod_type == 'hub':
+        # I'm not sure how to cap hubs yet, because they have
+        # different residue sequence vs. singles (and hence caps).
+        #
+        # If we were to cap hubs, we need to first check whether N
+        # term is an open terminus in this hub.
+
+        hub = xdb['modules']['hubs'][node['module_name']]
+        chain = hub['chains'][chain_id]
+        if chain[term]:
+            print('WARNING: No known method for capping open hub interface {}:{}:{}.'.format(
+                node['module_name'], chain_id, term))
+        else:
+            # No need to cap a hub component term that is a closed interface.
+            pass
 
 class Depositor:
     def __init__(
@@ -354,13 +388,36 @@ class Depositor:
     def deposit_chain(self, network, src, dst):
         # n -src-> c ... n -dst-> c
         print('Deposit:', src, dst)
-        assert(src and src[2] == 'n')
-        assert(dst and dst[2] == 'c')
+        assert src and src[2] == 'n'
+        assert dst and dst[2] == 'c'
 
         start_rid = self.residue_id
         chain = self.new_chain()
 
+        for term_iden, next_linkage in walk_chain(network, src):
+            print('Deposit node:', *term_iden)
 
+            ui_name, chain_id, term = term_iden
+            node = network[ui_name]
+            mod_type = node['module_type']
+
+            residues = []
+
+            # Cap or trim N term?
+            if chain:
+                # Midway through the chain - always trim N term.
+                trim_terminus(residues, 'n')
+            else:
+                # Start of chain on the N side - cap N term. 
+                cap_terminus(residues, 'n', node, chain_id, self.xdb)
+
+            # Cap or trim C term?
+            if next_linkage:
+                # There's a next node - always trim C term.
+                trim_terminus(residues, 'c')
+            else:
+                # There's no next node - cap C term.
+                cap_terminus(residues, 'c', node, chain_id, self.xdb)
 
         self.model.add(chain)
 
