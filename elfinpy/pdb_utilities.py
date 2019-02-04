@@ -8,8 +8,11 @@ def get_chain_residue_count(struct, chain_id):
     """Returns the residue count of a Bio.PDB.Structure.Structure."""
     return len(get_chain(struct, chain_id).child_list)
 
-def strip_residues(pdb, chain_ids=None):
-    """Returns returns residues removed from a PDB.
+def copy_residues(pdb, chain_ids=None):
+    return [r.copy() for r in get_residues(pdb, chain_ids)]
+
+def get_residues(pdb, chain_ids=None):
+    """Returns returns residues copied from a PDB.
 
     Args:
     - pdb - Bio.PDB.Structure.Structure.
@@ -22,10 +25,7 @@ def strip_residues(pdb, chain_ids=None):
     for model in pdb:
         for chain in model:
             if chain_ids == None or chain.id in chain_ids:
-                tmp = list(chain.child_list)
-                for r in tmp:
-                    chain.detach_child(r.id)
-                residues += tmp
+                residues.extend(chain.child_list)
     return residues
 
 def get_chain(struct, chain_id='A'):
@@ -34,7 +34,7 @@ def get_chain(struct, chain_id='A'):
 
 def get_chains(struct):
     """Returns all chains of a Bio.PDB.Structure.Structure."""
-    return struct.child_list[0].child_list;
+    return struct.child_list[0].child_list
 
 def read_pdb(
         read_path,

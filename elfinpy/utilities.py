@@ -15,6 +15,13 @@ import numpy as np
 RADII_TYPES = ['average_all', 'max_ca_dist', 'max_heavy_dist']
 INF = float('inf')
 TERM_TYPES = {'n', 'c'}
+MOD_TYPES = {'single', 'hub'}
+
+def check_mod_type(mod_type):
+    assert(mod_type.lower() in MOD_TYPES)
+
+def check_term_type(term):
+    assert(term.lower() in TERM_TYPES)
 
 def opposite_term(term):
     return {'n':'c', 'c':'n'}.get(term.lower(), None)
