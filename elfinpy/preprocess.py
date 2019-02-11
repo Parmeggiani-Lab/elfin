@@ -18,7 +18,7 @@ def merge_chains(pdb):
     """
     newChain = Bio.PDB.Chain.Chain('A')
     rid = 1
-    for r in strip_residues(pdb):
+    for r in copy_residues(pdb):
         r.id = (r.id[0], rid, r.id[2])
         newChain.add(r)
         rid += 1
@@ -133,7 +133,7 @@ def preprocess_double(double_file):
 
     # Replace double residues where it should be sdouble residues
     double_residues = get_chain(double).child_list
-    sdouble_residues = strip_residues(sdouble)
+    sdouble_residues = copy_residues(sdouble)
     for rIdx in range(sdouble_start_idx, sdouble_end_idx):
         offset_r_idx = rIdx + (0 if sdouble_first else double_chain_lens[0]-sdouble_chain_lens[0])
         old_r_id = double_residues[offset_r_idx].id
