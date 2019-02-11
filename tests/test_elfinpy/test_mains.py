@@ -15,13 +15,10 @@ def test_mains():
 
   non_executable_test('utilities')
   non_executable_test('pdb_utilities')
-  non_executable_test('elfin_graph')
-  non_executable_test('elfin_node')
   non_executable_test('kabsch')
 
   script_main_test('preprocess')
   script_main_test('hubinfo_convert')
-  script_main_test('v1_design_convert')
   script_main_test('dbgen')
   script_main_test('stitch')
 
