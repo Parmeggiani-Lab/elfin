@@ -133,7 +133,7 @@ def preprocess_double(double_file):
 
     # Replace double residues where it should be sdouble residues
     double_residues = get_chain(double).child_list
-    sdouble_residues = copy_residues(sdouble)
+    sdouble_residues = get_residues(sdouble)
     for rIdx in range(sdouble_start_idx, sdouble_end_idx):
         offset_r_idx = rIdx + (0 if sdouble_first else double_chain_lens[0]-sdouble_chain_lens[0])
         old_r_id = double_residues[offset_r_idx].id
