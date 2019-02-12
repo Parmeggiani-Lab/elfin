@@ -25,11 +25,11 @@ def merge_chains(pdb):
 
     # Remove old chains from model
     for model in pdb:
-        ocIds = []
+        oc_ids = []
         for chain in model:
-            ocIds.append(chain.id)
-        for ocId in ocIds:
-            model.detach_child(ocId)
+            oc_ids.append(chain.id)
+        for oc_id in oc_ids:
+            model.detach_child(oc_id)
 
     model.add(new_chain)
     return pdb # for chaining calls
@@ -46,12 +46,9 @@ def cleanse_atoms(pdb):
     """
     for c in get_chains(pdb):
         for r in c.child_list:
-            bad_atoms = []
-            for a in r:
-                if a.name in DIRTY_ATOMS:
-                    bad_atoms.append(a.name)
+            bad_atoms = [a for a in r if a.name in DIRTY_ATOMS]
             for ba in bad_atoms:
-                r.detach_child(ba)
+                r.detach_child(ba.name)
     return pdb
 
 def preprocess_double(double_file):
@@ -137,7 +134,7 @@ def preprocess_double(double_file):
     for rIdx in range(sdouble_start_idx, sdouble_end_idx):
         offset_r_idx = rIdx + (0 if sdouble_first else double_chain_lens[0]-sdouble_chain_lens[0])
         old_r_id = double_residues[offset_r_idx].id
-        double_residues[offset_r_idx] = sdouble_residues[rIdx]
+        double_residues[offset_r_idx] = sdouble_residues[rIdx].copy()
         double_residues[offset_r_idx].id = old_r_id
 
     return double
@@ -175,7 +172,7 @@ def main(test_args=None):
         print('Prepping double [{}/{}] {}'.format(i+1, N, double_file))
         double = preprocess_double(double_file)
         if not args.dry_run:
-            save_pdb(struct=double, save_path=double_output_dir + '/' + os.path.basename(double_file))
+            save_pdb(struct=double, path=double_output_dir + '/' + os.path.basename(double_file))
 
     # Singles
     singleFiles = glob.glob(args.input_dir + '/singles/*.pdb')
@@ -186,7 +183,7 @@ def main(test_args=None):
         # Singles need nothing other than cleansing
         single = cleanse_atoms(read_pdb(single_file))
         if not args.dry_run:
-            save_pdb(struct=single, save_path=single_output_dir + '/' + os.path.basename(single_file))
+            save_pdb(struct=single, path=single_output_dir + '/' + os.path.basename(single_file))
 
     # Hubs
     hubFiles = glob.glob(args.input_dir + '/hubs/*.pdb')
@@ -196,7 +193,7 @@ def main(test_args=None):
         print('Prepping hub [{}/{}] {}'.format(i+1, N, hub_file))
         hub = cleanse_atoms(read_pdb(hub_file))
         if not args.dry_run:
-            save_pdb(struct=hub, save_path=hub_output_dir + '/' + os.path.basename(hub_file))
+            save_pdb(struct=hub, path=hub_output_dir + '/' + os.path.basename(hub_file))
 
 if __name__ == '__main__':
-    safe_exec(main)
+    main()
