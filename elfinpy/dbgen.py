@@ -312,38 +312,12 @@ class XDBGenerator:
         rc_a_half = int_floor(float(rc_a)/2)
         rc_b_half = int_ceil(float(rc_b)/2)
 
-        # -- About the "fusion count" variable --
-        # 
-        #   The fusion_count is the number of residues we use to align double to
-        # single_a. The higher this number is, the more global the alignment will
-        # be, which causes loop jumps (disconnections) in the chain. This is
-        # because in Stitch we're stitching atoms from different doubles into the
-        # same chain. Different doubles have their single components stuck
-        # together using an interface, the participation of which causes atom
-        # positions in a double's single component to differ from that of the
-        # original single module.
-        #
-        #   When we fuse different doubles together, each double is cut at 25%
-        # and 75% of their sequence in order to be as far way to interfaces
-        # (0%, 50%, 100%) as possible.
-        #
-        #   The fusion alignment here is about aligning subsequent doubles using a
-        # few residues before the 25% mark. The lower the fusion_count is, the
-        # fewer residues we use to align, the more local the alignment will be.
-        # However, if this number is too low the alignment could cause subsequent
-        # modules to overlap (shortsighted).
-        #
-        #   Through some experients I found that using 1/8 of the length of the
-        # alignment target (single a or b) is a good balance between not causing
-        # discontinuities and also not creating atom overlaps.
+        # fusion_factor should be deprecated in favour of "core range".
         dbl_fusion_factor = 8
         fusion_count_a = int_ceil(float(rc_a) / dbl_fusion_factor)
         fusion_count_b = int_ceil(float(rc_b) / dbl_fusion_factor)
 
         # Step 2: Move double to align with the first single.
-        #
-        # This aligns double by superimposing double[0] with single_a. Only align
-        # double to the SECOND quardrant of single_a's atoms.
         self.align(
             moving=double, 
             fixed=single_a, 
@@ -353,8 +327,6 @@ class XDBGenerator:
         )
 
         # Step 3: Get COM of the single_b as seen in the double.
-        #
-        # Only align double to the SECOND quardrant of single_b.
         com_b = self.get_centre_of_mass(
             single_b, 
             mother=double, 
@@ -363,20 +335,13 @@ class XDBGenerator:
             match_count=fusion_count_b
         )
 
-        # Step 4: Get transformation of double to the second single.
+        # Step 4: Get transformation of single B to part B inside double.
         #
         #   Double is already aligned to first single so there is no need for
         # the first transformation.
         #
-        #   This can be varifyed by checking that self.get_rot_trans(double,
-        # single_a) has identity rotation and zero translation.
-        #
-        #   Only align the second quardrant of single_b in order to be
-        # consistent with the Stitch script, where doubles are fused together
-        # by chopping the first and last quardrant of a double. This means the
-        # second half of single_b is chopped off during fusion, while the first
-        # quardrant of single_b participates in interfacing. Therefore we align
-        # by uperimposing just the second quardrant.
+        #   Only align residues starting from the middle of single B because
+        #   the middle suffers the least from interfacing displacements.
         rot, tran = self.get_rot_trans(
             moving=double, 
             fixed=single_b, 
@@ -388,7 +353,8 @@ class XDBGenerator:
         # Rotation in BioPython is inversed.
         rot = np.transpose(rot)
 
-        # Inverse result transform.
+        # Inverse result transform because we want the tx that takes the
+        # single B module to part B inside double.
         tmp_tx = np.vstack(
             (np.hstack((rot, np.transpose([tran]))),
             [0,0,0,1])
