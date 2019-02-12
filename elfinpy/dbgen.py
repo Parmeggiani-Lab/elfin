@@ -124,7 +124,8 @@ class XDBGenerator:
                         'n': nested_dict(), 
                         'n_tip': nested_dict(), 
                         'c': nested_dict(),
-                        'c_tip': nested_dict()
+                        'c_tip': nested_dict(),
+                        'n_residues': len(c.child_list)
                     }  for c in hub.get_chains()
             }
         hub_meta['radii'] = self.get_radii(hub)
@@ -452,7 +453,8 @@ class XDBGenerator:
                 'chains': {
                     chain_list[0].id: {
                         'n': nested_dict(),
-                        'c': nested_dict()
+                        'c': nested_dict(),
+                        'n_residues': len(chain_list[0].child_list)
                     }
                 },
                 'radii': self.get_radii(single)
