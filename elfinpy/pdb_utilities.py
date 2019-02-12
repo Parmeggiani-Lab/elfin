@@ -1,5 +1,8 @@
 import Bio.PDB
 
+DIRTY_ATOMS = {'1H', '2H', '3H', 'OXT'}
+BACKBONE_NAMES = {'N', 'CA', 'C', 'O', 'H', 'HA'}
+
 def get_pdb_residue_count(pdb):
     """Returns the residue count of a Bio.PDB.Structure.Structure."""
     return sum([len(c.child_list) for c in pdb.child_list[0].child_list])

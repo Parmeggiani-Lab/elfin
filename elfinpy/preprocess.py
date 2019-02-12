@@ -16,11 +16,11 @@ def merge_chains(pdb):
     Bio.PDB.Structure.Structure - the modified PDB, used for chaining
     calls
     """
-    newChain = Bio.PDB.Chain.Chain('A')
+    new_chain = Bio.PDB.Chain.Chain('A')
     rid = 1
     for r in copy_residues(pdb):
         r.id = (r.id[0], rid, r.id[2])
-        newChain.add(r)
+        new_chain.add(r)
         rid += 1
 
     # Remove old chains from model
@@ -31,11 +31,11 @@ def merge_chains(pdb):
         for ocId in ocIds:
             model.detach_child(ocId)
 
-    model.add(newChain)
+    model.add(new_chain)
     return pdb # for chaining calls
 
 def cleanse_atoms(pdb):
-    """Delete 1H, 2H, 3H and OXT atoms from the PDB structure
+    """Delete dirty atoms from the PDB structure
 
     Args:
     - pdb - Bio.PDB.Structure.Structure
@@ -46,11 +46,11 @@ def cleanse_atoms(pdb):
     """
     for c in get_chains(pdb):
         for r in c.child_list:
-            badAtoms = []
+            bad_atoms = []
             for a in r:
-                if a.name == '1H' or a.name == '2H' or a.name == '3H' or a.name == 'OXT':
-                    badAtoms.append(a.name)
-            for ba in badAtoms:
+                if a.name in DIRTY_ATOMS:
+                    bad_atoms.append(a.name)
+            for ba in bad_atoms:
                 r.detach_child(ba)
     return pdb
 
