@@ -259,6 +259,41 @@ def transform_residues(res, rot, tran):
             # standard multiplication order.
             a.coord = rot.dot(a.coord) + tran
 
+# Blend residue lists M = (1-w)M + wF, where M is an atom coordinate in
+# moving_res, F is an atom coordinate in fixed_res, and w is the corresponding
+# weight in weights.
+#
+# Also removes dirty atoms. If residues are not the same (name), only backbone
+# atoms are blended.
+def blend_residues(moving_res, fixed_res, weights):
+    assert len(moving_res) == len(fixed_res)
+    assert len(moving_res) == len(weights)
+
+    for m, f, w in zip(moving_res, fixed_res, weights):
+        # Remove dirty atoms. They seem crop up in the process of
+        # optimizing PDBs even if preprocess.py already removed them once.
+        dirty_atoms = [a for a in m if a.name in DIRTY_ATOMS]
+        for da in dirty_atoms:
+            m.detach_child(da.name)
+
+        # sidechain_atoms = [a for a in m if a.name not in f]
+        # for sa in sidechain_atoms:
+        #     m.detach_child(sa.name)
+
+        # Compute new position based on combination of two positions.
+        compute_coord = lambda a, b : (1-w)*a.coord + w*b.coord
+
+        for ma in m:
+            if m.resname == f.resname:
+                if not ma.name in f:
+                    pause_code()
+                assert ma.name in f  # Identical residues should have the same atoms
+                ma.coord = compute_coord(ma, f[ma.name])
+            else:
+                # Only modify backbone atoms.
+                if ma.name in BACKBONE_NAMES:
+                    ma.coord = compute_coord(ma, f[ma.name])
+
 class Stitcher:
     def __init__(
         self, 
@@ -360,28 +395,24 @@ class Stitcher:
 
         # Unpack context.
         mod_info = deposit_context.mod_info
-        residues = deposit_context.mod_info.res
+        residues = deposit_context.main_res
         chain_id = deposit_context.term_iden.chain_id
 
         if mod_info.mod_type == 'single':
             if term == 'n':
-                print('TODO: Cap single term', term)
-
                 cap_name = mod_info.mod_name.split('_')[0]
                 cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_NI.pdb')
                 deposit_context.pref_res = self.get_capping(
-                    prim_res=residues, 
+                    prime_res=residues, 
                     cap_res=get_residues(cap_and_repeat), 
                     cr_r_ids=self.capping_repeat_idx[cap_name], 
                     term='n'
                 )
             elif term == 'c':
-                print('TODO: Cap single term', term)
-                
                 cap_name = mod_info.mod_name.split('_')[-1]
                 cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_IC.pdb')
                 deposit_context.suff_res = self.get_capping(
-                    prim_res=residues, 
+                    prime_res=residues, 
                     cap_res=get_residues(cap_and_repeat), 
                     cr_r_ids=self.capping_repeat_idx[cap_name], 
                     term='c'
@@ -397,70 +428,60 @@ class Stitcher:
                 # No need to cap a hub component term that is a closed interface.
                 pass
 
-    def get_capping(self, prim_res, cap_res, cr_r_ids, term):
+    # Computes the capping residues. Displaces primary residues (thus modifies
+    # the prime_res parameter).
+    def get_capping(self, prime_res, cap_res, cr_r_ids, term):
         if self.disable_capping:
             return []
 
         check_term_type(term)
 
         cap_res_n = len(cap_res)
-        prim_res_n = len(prim_res)
-        prim_align_res = []
+        prim_res_n = len(prime_res)
 
-        # if term == 'n':
-        #     # <Capping Residues> <Match Start ... End> <Rest of Primary...>
+        # Find residue index at which the residue id[1] matches capping
+        # start index. Residue id often does not start from 1 and is never
+        # 0-based.
+        rid_range = tuple(cr_r_ids[:2]) if term == 'n' else tuple(cr_r_ids[2:])
 
-        #     # Find residue index at which the residue id[1] matches capping
-        #     # start index. Residue id often does not start from 1 and is never
-        #     # 0-based.
-        #     min_match_idx = [i for (i,el) in enumerate(cap_res) \
-        #         if el.id[1] == cr_r_ids[0]][0]
+        for i, el in enumerate(cap_res):
+            if el.id[1] == rid_range[0]:
+                match_start = i
+                break
+        else:
+            raise ValueError('Could not find residue index {}'.format(
+                rid_range[0]))
 
-        #     # Find max match index, which is either the number of capping
-        #     # residues or the first index at which residue sequences diverge.
-        #     id_range = range(min_match_idx, cap_res_n)
-        #     for i in id_range:
-        #         prim_r = prim_res[i]
-        #         if prim_r.resname != cap_res[i].resname: 
-        #                 break
-        #         max_match_idx = i
-        #         prim_align_res.append(prim_r)
+        match_len = rid_range[1] - rid_range[0]
+        match_end = match_start + match_len
 
-        #     real_cap_res = cap_res[:min_match_idx]
+        # N: match left, C: match right
+        prime_align_res = prime_res[:match_len] if term =='n' else prime_res[-match_len:]
+        cap_align_res = cap_res[match_start:match_end]
 
-        # elif term == 'c':
-        #     # <Rest of Primary...> <Match Start ... End> <Capping Residues>
-        #     max_match_idx = [i for (i,el) in enumerate(cap_res) \
-        #         if el.id[1] == cr_r_ids[3]][0]
-
-        #     id_range = range(0, max_match_idx + 1)
-        #     for i in reversed(id_range):
-        #         prim_id = prim_res_n - 1 - (max_match_idx - i)
-        #         prim_r = prim_res[prim_id]
-        #         if prim_r.resname != cap_res[i].resname: 
-        #                 break
-        #         min_match_idx = i
-        #         prim_align_res.append(prim_r)
-
-        #     prim_align_res.reverse()
-        #     real_cap_res = cap_res[max_match_idx+1:]
-
-        # cap_align_res = cap_res[min_match_idx:max_match_idx+1]
-        # align_len = (max_match_idx - min_match_idx) // 4
-        # print('------DEBUG: {} term capping align len: {}'.format(term, align_len))
-
-        # prim_atoms = [r['CA'] for r in prim_align_res]
-        # cap_atoms = [r['CA'] for r in cap_align_res]
+        prim_atoms = [r['CA'] for r in prime_align_res]
+        cap_atoms = [r['CA'] for r in cap_align_res]
         
-        # self.si.set_atoms(prim_atoms, cap_atoms)
-        # rot, tran = self.si.rotran
+        self.si.set_atoms(prim_atoms, cap_atoms)
+        rot, tran = self.si.rotran
 
         result = []
-        # for r in real_cap_res:
-        #     rr = r.copy()
-        #     rr.transform(rot, tran)
-        #     result.append(rr)
-        
+        cap_protrude_res = cap_res[:match_start] + cap_res[match_end+1:]
+        for r in cap_protrude_res:
+            rr = r.copy()
+            rr.transform(rot, tran)
+            result.append(rr)
+
+        # Displace prime_res using linear weights, the same method as
+        # displace_termins().
+
+        # Linear weights (0, 1].
+        disp_w = [i/match_len for i in range(1, match_len + 1)]
+        if term == 'n':
+            disp_w.reverse()  # Want [1, 0) for N term.
+
+        blend_residues(prime_align_res, cap_align_res, disp_w)
+
         return result
 
     def displace_terminus(self, deposit_context, term):
@@ -572,36 +593,7 @@ class Stitcher:
             main_disp = main_res[-disp_n:]
             dbl_part = dbl_res[a_single_len-disp_n:a_single_len]
 
-        assert len(main_disp) == len(dbl_part)
-        assert len(main_disp) == len(disp_w)
-
-        for m, d, w in zip(main_disp, dbl_part, disp_w):
-            # Remove dirty atoms. They seem crop up in the process of
-            # optimizing PDBs even if preprocess.py already removed them once.
-            bad_atoms = [a for a in m if a.name in DIRTY_ATOMS]
-            for ba in bad_atoms:
-                m.detach_child(ba.name)
-
-            # sidechain_atoms = [a for a in m if a.name not in d]
-            # for sa in sidechain_atoms:
-            #     m.detach_child(sa.name)
-
-            # Compute new position based on combination of two positions.
-            compute_coord = lambda a, b : (1-w)*a.coord + w*b.coord
-
-            for ma in m:
-                if m.resname == d.resname:
-                    if ma.name in d:
-                        da = d[ma.name]
-                        ma.coord = compute_coord(ma, da)
-                    else:  # side chain atom
-                        # Transforming sidechains correctly is work for Rosetta.
-                        ...
-                else:
-                    # Only modify backbone atoms.
-                    if ma.name in BACKBONE_NAMES:
-                        da = d[ma.name]
-                        ma.coord = compute_coord(ma, da)
+        blend_residues(main_disp, dbl_part, disp_w)
 
     def get_drop_tx(self, a_single_name, b_single_name):
         a_chains = self.xdb['modules']['singles'][a_single_name]['chains']
