@@ -113,7 +113,7 @@ class ChainIdentifier(ChainIdentifierBase):
 
 # Returns a list of all leaf TermIdentifiers.
 #
-# A leaf is a node (whether single or hub) with only one occupied terminus.
+# A leaf is a terminus that is either unoccupied or on a hub node.
 def find_leaves(network, xdb):
     try:
         res = []
@@ -121,24 +121,25 @@ def find_leaves(network, xdb):
         for ui_name in network:
             node = get_node(network, ui_name)
 
+            mod_type = node['module_type']
+            mod_name = node['module_name']
+            chains = xdb['modules'][mod_type + 's'][mod_name]['chains']
             cl = node['c_linkage']
             nl = node['n_linkage']
 
-            # A single can be an entry if it only has one busy terminus. When
-            # entry is found, return the free (far end) terminus identifier.
-            if len(cl) == 1 and not nl:
-                res.append(TermIdentifier(ui_name, cl[0]['source_chain_id'], 'n'))
-            elif len(nl) == 1 and not cl:
-                res.append(TermIdentifier(ui_name, nl[0]['source_chain_id'], 'c'))
-            elif not nl and not cl:
-                mod_type = node['module_type']
-                mod_name = node['module_name']
-                chains = xdb['modules'][mod_type + 's'][mod_name]['chains']
+            if mod_type == 'hub':
                 for c in chains:
                     if chains[c]['n']:
-                        res.append(TermIdentifier(ui_name, c, 'n'))
-                    if chains[c]['c']:
                         res.append(TermIdentifier(ui_name, c, 'c'))
+                    if chains[c]['c']:
+                        res.append(TermIdentifier(ui_name, c, 'n'))
+            elif mod_type == 'single':
+                if not nl:
+                    res.append(TermIdentifier(ui_name, cl[0]['source_chain_id'], 'n'))
+                if not cl:
+                    res.append(TermIdentifier(ui_name, nl[0]['source_chain_id'], 'c'))
+            else:
+                raise ValueError('Unknown module type: ' + mod_type)
             
         return res
     except KeyError as ke:
@@ -253,6 +254,13 @@ def decompose_network(network, xdb, skip_unused=False):
 
 ModInfo = namedtuple('ModInfo', ['mod_type', 'mod_name', 'res', 'res_n'])
 
+def transform_residues(res, rot, tran):
+    for r in res:
+        for a in r:
+            # Do the transform manually because BioPython has non
+            # standard multiplication order.
+            a.coord = rot.dot(a.coord) + tran
+
 class Stitcher:
     def __init__(
         self, 
@@ -300,6 +308,7 @@ class Stitcher:
         context = lambda: 0
         context.atom_chain = atom_chain
         context.network = network
+        context.last_node = None
 
         chain_walker = walk_chain(network, src)
         for term_iden, next_linkage in chain_walker:
@@ -316,7 +325,7 @@ class Stitcher:
             context.main_res = [r.copy() for r in context.mod_info.res]
             context.suff_res = []
 
-            if atom_chain:
+            if context.last_node:
                 # Midway through the chain - always displace N term.
                 self.displace_terminus(context, 'n')
             else:
@@ -344,10 +353,6 @@ class Stitcher:
 
             context.last_node = context.node
             context.last_term_iden = term_iden
-
-            # Keep atom_chain consistent with context.last_*
-            if atom_chain:
-                assert context.last_node
 
         print('')
         self.model.add(atom_chain)
@@ -412,20 +417,10 @@ class Stitcher:
         disp_w = [i/disp_n for i in range(1, disp_n + 1)]
         
         if term == 'n':
-            # Need to shift double structure to align to B module.
-            tx_id = self.xdb['modules'][a_info.mod_type + 's'][a_info.mod_name] \
-                ['chains'][a_chain_id]['c'][b_info.mod_name][b_chain_id]
-            tx = self.xdb['n_to_c_tx'][tx_id]
-
-            # Inverse tx because dbgen.py computes the tx that takes the
-            # single B module to part B inside double.
-            rot = np.transpose(tx['rot'])
-            tran = rot.dot(-np.asarray(tx['tran']))
-
-            for r in dbl_res:
-                for a in r:
-                    a.coord = rot.dot(a.coord) + tran
-
+            # Drop double to B frame.
+            rot, tran = self.get_drop_tx(a_single_name, b_single_name)
+            transform_residues(dbl_res, rot, tran)
+            
             # Displace N term residues (first half of main_res) based on
             # linear weights. In the double, start from B module.
             #
@@ -443,6 +438,21 @@ class Stitcher:
             # main_res: [n ... | ... c]
             # disp_w:          [0....1]
             # dbl:      [n ... | ... c]  [n ... | ... c]
+            if a_info.mod_type == 'hub':
+                # Step 1: Drop double to B frame.
+                rot, tran = self.get_drop_tx(a_single_name, b_single_name)
+
+                # Step 2: Lift double (in B frame) to hub arm frame.
+                tx_id = self.xdb['modules']['hubs'][a_info.mod_name] \
+                    ['chains'][a_chain_id]['c'][b_single_name][b_chain_id]
+                tx = self.xdb['n_to_c_tx'][tx_id]
+                hub_rot = np.asarray(tx['rot'])
+                hub_tran = np.asarray(tx['tran'])
+
+                tran = hub_rot.dot(tran) + hub_tran
+                rot = hub_rot.dot(rot)
+                transform_residues(dbl_res, rot, tran)
+
             main_disp = main_res[-disp_n:]
             dbl_part = dbl_res[a_single_len-disp_n:a_single_len]
 
@@ -475,9 +485,28 @@ class Stitcher:
                         da = d[ma.name]
                         ma.coord = compute_coord(ma, da)
 
+    def get_drop_tx(self, a_single_name, b_single_name):
+        a_chains = self.xdb['modules']['singles'][a_single_name]['chains']
+
+        assert len(a_chains) == 1
+        a_chain_id = list(a_chains.keys())[0]
+        a_b_chains = a_chains[a_chain_id]['c'][b_single_name]
+
+        assert len(a_b_chains) == 1
+        b_chain_id = list(a_b_chains.keys())[0]
+        tx_id = a_b_chains[b_chain_id]
+       
+        tx = self.xdb['n_to_c_tx'][tx_id]
+
+        # Inverse tx because dbgen.py computes the tx that takes the
+        # single B module to part B inside double.
+        rot = np.transpose(tx['rot'])
+        tran = rot.dot(-np.asarray(tx['tran']))
+
+        return rot, tran
+
     # Returns the number of residues in a single module.
     def get_single_len(self, mod_name):
-
         chains = self.xdb['modules']['singles'][mod_name]['chains']
         assert len(chains) == 1
 
@@ -536,59 +565,59 @@ class Stitcher:
         prim_res_n = len(prim_res)
         prim_align_res = []
 
-        if term == 'n':
-            # <Capping Residues> <Match Start ... End> <Rest of Primary...>
+        # if term == 'n':
+        #     # <Capping Residues> <Match Start ... End> <Rest of Primary...>
 
-            # Find residue index at which the residue id[1] matches capping
-            # start index. Residue id often does not start from 1 and is never
-            # 0-based.
-            min_match_idx = [i for (i,el) in enumerate(cap_res) \
-                if el.id[1] == cr_r_ids[0]][0]
+        #     # Find residue index at which the residue id[1] matches capping
+        #     # start index. Residue id often does not start from 1 and is never
+        #     # 0-based.
+        #     min_match_idx = [i for (i,el) in enumerate(cap_res) \
+        #         if el.id[1] == cr_r_ids[0]][0]
 
-            # Find max match index, which is either the number of capping
-            # residues or the first index at which residue sequences diverge.
-            id_range = range(min_match_idx, cap_res_n)
-            for i in id_range:
-                prim_r = prim_res[i]
-                if prim_r.resname != cap_res[i].resname: 
-                        break
-                max_match_idx = i
-                prim_align_res.append(prim_r)
+        #     # Find max match index, which is either the number of capping
+        #     # residues or the first index at which residue sequences diverge.
+        #     id_range = range(min_match_idx, cap_res_n)
+        #     for i in id_range:
+        #         prim_r = prim_res[i]
+        #         if prim_r.resname != cap_res[i].resname: 
+        #                 break
+        #         max_match_idx = i
+        #         prim_align_res.append(prim_r)
 
-            real_cap_res = cap_res[:min_match_idx]
+        #     real_cap_res = cap_res[:min_match_idx]
 
-        elif term == 'c':
-            # <Rest of Primary...> <Match Start ... End> <Capping Residues>
-            max_match_idx = [i for (i,el) in enumerate(cap_res) \
-                if el.id[1] == cr_r_ids[3]][0]
+        # elif term == 'c':
+        #     # <Rest of Primary...> <Match Start ... End> <Capping Residues>
+        #     max_match_idx = [i for (i,el) in enumerate(cap_res) \
+        #         if el.id[1] == cr_r_ids[3]][0]
 
-            id_range = range(0, max_match_idx + 1)
-            for i in reversed(id_range):
-                prim_id = prim_res_n - 1 - (max_match_idx - i)
-                prim_r = prim_res[prim_id]
-                if prim_r.resname != cap_res[i].resname: 
-                        break
-                min_match_idx = i
-                prim_align_res.append(prim_r)
+        #     id_range = range(0, max_match_idx + 1)
+        #     for i in reversed(id_range):
+        #         prim_id = prim_res_n - 1 - (max_match_idx - i)
+        #         prim_r = prim_res[prim_id]
+        #         if prim_r.resname != cap_res[i].resname: 
+        #                 break
+        #         min_match_idx = i
+        #         prim_align_res.append(prim_r)
 
-            prim_align_res.reverse()
-            real_cap_res = cap_res[max_match_idx+1:]
+        #     prim_align_res.reverse()
+        #     real_cap_res = cap_res[max_match_idx+1:]
 
-        cap_align_res = cap_res[min_match_idx:max_match_idx+1]
-        align_len = (max_match_idx - min_match_idx) // 4
-        print('------DEBUG: {} term capping align len: {}'.format(term, align_len))
+        # cap_align_res = cap_res[min_match_idx:max_match_idx+1]
+        # align_len = (max_match_idx - min_match_idx) // 4
+        # print('------DEBUG: {} term capping align len: {}'.format(term, align_len))
 
-        prim_atoms = [r['CA'] for r in prim_align_res]
-        cap_atoms = [r['CA'] for r in cap_align_res]
+        # prim_atoms = [r['CA'] for r in prim_align_res]
+        # cap_atoms = [r['CA'] for r in cap_align_res]
         
-        self.si.set_atoms(prim_atoms, cap_atoms)
-        rot, tran = self.si.rotran
+        # self.si.set_atoms(prim_atoms, cap_atoms)
+        # rot, tran = self.si.rotran
 
         result = []
-        for r in real_cap_res:
-            rr = r.copy()
-            rr.transform(rot, tran)
-            result.append(rr)
+        # for r in real_cap_res:
+        #     rr = r.copy()
+        #     rr.transform(rot, tran)
+        #     result.append(rr)
         
         return result
 
