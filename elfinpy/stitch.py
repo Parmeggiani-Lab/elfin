@@ -133,13 +133,11 @@ def find_leaves(network, xdb):
                         res.append(TermIdentifier(ui_name, c, 'c'))
                     if chains[c]['c']:
                         res.append(TermIdentifier(ui_name, c, 'n'))
-            elif mod_type == 'single':
+            else:  # Guaranteed to be 'single' thanks to get_node()
                 if not nl:
                     res.append(TermIdentifier(ui_name, cl[0]['source_chain_id'], 'n'))
                 if not cl:
                     res.append(TermIdentifier(ui_name, nl[0]['source_chain_id'], 'c'))
-            else:
-                raise ValueError('Unknown module type: ' + mod_type)
             
         return res
     except KeyError as ke:
@@ -417,8 +415,18 @@ class Stitcher:
         disp_w = [i/disp_n for i in range(1, disp_n + 1)]
         
         if term == 'n':
-            # Drop double to B frame.
-            rot, tran = self.get_drop_tx(a_single_name, b_single_name)
+            if b_info.mod_type == 'hub':
+                # Lift double (in A frame) to hub arm frame with A at the
+                # arm's tip.
+                tx_id = self.xdb['modules']['singles'][a_single_name] \
+                    ['chains'][a_chain_id]['c'][b_info.mod_name][b_chain_id]
+                tx = self.xdb['n_to_c_tx'][tx_id]
+                rot = np.asarray(tx['rot'])
+                tran = np.asarray(tx['tran'])
+            else:  # Guaranteed to be 'single' thanks to get_node()
+                # Drop double to B frame.
+                rot, tran = self.get_drop_tx(a_single_name, b_single_name)
+            
             transform_residues(dbl_res, rot, tran)
             
             # Displace N term residues (first half of main_res) based on
