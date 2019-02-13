@@ -420,9 +420,11 @@ class Stitcher:
             # Inverse tx because dbgen.py computes the tx that takes the
             # single B module to part B inside double.
             rot = np.transpose(tx['rot'])
-            tran = -np.asarray(tx['tran'])
+            tran = rot.dot(-np.asarray(tx['tran']))
+
             for r in dbl_res:
-                r.transform(rot, tran)
+                for a in r:
+                    a.coord = rot.dot(a.coord) + tran
 
             # Displace N term residues (first half of main_res) based on
             # linear weights. In the double, start from B module.
@@ -433,7 +435,6 @@ class Stitcher:
             main_disp = main_res[:disp_n]
             dbl_part = dbl_res[a_single_len:a_single_len+disp_n]
             disp_w.reverse()  # Make it 1 -> 0
-
         elif term == 'c':            
             # Displace C term residues (second half of main_res) based on
             # linear weights. In the double, start from end of A module and go
