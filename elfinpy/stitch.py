@@ -355,6 +355,114 @@ class Stitcher:
         print('')
         self.model.add(atom_chain)
 
+    def cap_terminus(self, deposit_context, term):
+        check_term_type(term)
+
+        # Unpack context.
+        mod_info = deposit_context.mod_info
+        residues = deposit_context.mod_info.res
+        chain_id = deposit_context.term_iden.chain_id
+
+        if mod_info.mod_type == 'single':
+            if term == 'n':
+                print('TODO: Cap single term', term)
+
+                cap_name = mod_info.mod_name.split('_')[0]
+                cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_NI.pdb')
+                deposit_context.pref_res = self.get_capping(
+                    prim_res=residues, 
+                    cap_res=get_residues(cap_and_repeat), 
+                    cr_r_ids=self.capping_repeat_idx[cap_name], 
+                    term='n'
+                )
+            elif term == 'c':
+                print('TODO: Cap single term', term)
+                
+                cap_name = mod_info.mod_name.split('_')[-1]
+                cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_IC.pdb')
+                deposit_context.suff_res = self.get_capping(
+                    prim_res=residues, 
+                    cap_res=get_residues(cap_and_repeat), 
+                    cr_r_ids=self.capping_repeat_idx[cap_name], 
+                    term='c'
+                )
+        elif mod_info.mod_type == 'hub':
+            # If we were to cap hubs, we need to first check whether N
+            # term is an open terminus in this hub.
+            hub = self.xdb['modules']['hubs'][mod_info.mod_name]
+            chain = hub['chains'][chain_id]
+            if chain[term]:
+                print('TODO: Cap hub term', term)
+            else:
+                # No need to cap a hub component term that is a closed interface.
+                pass
+
+    def get_capping(self, prim_res, cap_res, cr_r_ids, term):
+        if self.disable_capping:
+            return []
+
+        check_term_type(term)
+
+        cap_res_n = len(cap_res)
+        prim_res_n = len(prim_res)
+        prim_align_res = []
+
+        # if term == 'n':
+        #     # <Capping Residues> <Match Start ... End> <Rest of Primary...>
+
+        #     # Find residue index at which the residue id[1] matches capping
+        #     # start index. Residue id often does not start from 1 and is never
+        #     # 0-based.
+        #     min_match_idx = [i for (i,el) in enumerate(cap_res) \
+        #         if el.id[1] == cr_r_ids[0]][0]
+
+        #     # Find max match index, which is either the number of capping
+        #     # residues or the first index at which residue sequences diverge.
+        #     id_range = range(min_match_idx, cap_res_n)
+        #     for i in id_range:
+        #         prim_r = prim_res[i]
+        #         if prim_r.resname != cap_res[i].resname: 
+        #                 break
+        #         max_match_idx = i
+        #         prim_align_res.append(prim_r)
+
+        #     real_cap_res = cap_res[:min_match_idx]
+
+        # elif term == 'c':
+        #     # <Rest of Primary...> <Match Start ... End> <Capping Residues>
+        #     max_match_idx = [i for (i,el) in enumerate(cap_res) \
+        #         if el.id[1] == cr_r_ids[3]][0]
+
+        #     id_range = range(0, max_match_idx + 1)
+        #     for i in reversed(id_range):
+        #         prim_id = prim_res_n - 1 - (max_match_idx - i)
+        #         prim_r = prim_res[prim_id]
+        #         if prim_r.resname != cap_res[i].resname: 
+        #                 break
+        #         min_match_idx = i
+        #         prim_align_res.append(prim_r)
+
+        #     prim_align_res.reverse()
+        #     real_cap_res = cap_res[max_match_idx+1:]
+
+        # cap_align_res = cap_res[min_match_idx:max_match_idx+1]
+        # align_len = (max_match_idx - min_match_idx) // 4
+        # print('------DEBUG: {} term capping align len: {}'.format(term, align_len))
+
+        # prim_atoms = [r['CA'] for r in prim_align_res]
+        # cap_atoms = [r['CA'] for r in cap_align_res]
+        
+        # self.si.set_atoms(prim_atoms, cap_atoms)
+        # rot, tran = self.si.rotran
+
+        result = []
+        # for r in real_cap_res:
+        #     rr = r.copy()
+        #     rr.transform(rot, tran)
+        #     result.append(rr)
+        
+        return result
+
     def displace_terminus(self, deposit_context, term):
         check_term_type(term)
 
@@ -474,19 +582,21 @@ class Stitcher:
             for ba in bad_atoms:
                 m.detach_child(ba.name)
 
-            # Transforming sidechains correctly is work for Rosetta.
-            sidechain_atoms = [a for a in m if a.name not in d]
-            for sa in sidechain_atoms:
-                m.detach_child(sa.name)
+            # sidechain_atoms = [a for a in m if a.name not in d]
+            # for sa in sidechain_atoms:
+            #     m.detach_child(sa.name)
 
             # Compute new position based on combination of two positions.
             compute_coord = lambda a, b : (1-w)*a.coord + w*b.coord
 
             for ma in m:
                 if m.resname == d.resname:
-                    assert ma.name in d
-                    da = d[ma.name]
-                    ma.coord = compute_coord(ma, da)
+                    if ma.name in d:
+                        da = d[ma.name]
+                        ma.coord = compute_coord(ma, da)
+                    else:  # side chain atom
+                        # Transforming sidechains correctly is work for Rosetta.
+                        ...
                 else:
                     # Only modify backbone atoms.
                     if ma.name in BACKBONE_NAMES:
@@ -520,114 +630,6 @@ class Stitcher:
 
         chain_id = list(chains.keys())[0]
         return chains[chain_id]['n_residues']
-
-    def cap_terminus(self, deposit_context, term):
-        check_term_type(term)
-
-        # Unpack context.
-        mod_info = deposit_context.mod_info
-        residues = deposit_context.mod_info.res
-        chain_id = deposit_context.term_iden.chain_id
-
-        if mod_info.mod_type == 'single':
-            if term == 'n':
-                print('TODO: Cap single term', term)
-
-                cap_name = mod_info.mod_name.split('_')[0]
-                cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_NI.pdb')
-                deposit_context.pref_res = self.get_capping(
-                    prim_res=residues, 
-                    cap_res=get_residues(cap_and_repeat), 
-                    cr_r_ids=self.capping_repeat_idx[cap_name], 
-                    term='n'
-                )
-            elif term == 'c':
-                print('TODO: Cap single term', term)
-                
-                cap_name = mod_info.mod_name.split('_')[-1]
-                cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_IC.pdb')
-                deposit_context.suff_res = self.get_capping(
-                    prim_res=residues, 
-                    cap_res=get_residues(cap_and_repeat), 
-                    cr_r_ids=self.capping_repeat_idx[cap_name], 
-                    term='c'
-                )
-        elif mod_info.mod_type == 'hub':
-            # If we were to cap hubs, we need to first check whether N
-            # term is an open terminus in this hub.
-            hub = self.xdb['modules']['hubs'][mod_info.mod_name]
-            chain = hub['chains'][chain_id]
-            if chain[term]:
-                print('TODO: Cap hub term', term)
-            else:
-                # No need to cap a hub component term that is a closed interface.
-                pass
-
-    def get_capping(self, prim_res, cap_res, cr_r_ids, term):
-        if self.disable_capping:
-            return []
-
-        check_term_type(term)
-
-        cap_res_n = len(cap_res)
-        prim_res_n = len(prim_res)
-        prim_align_res = []
-
-        # if term == 'n':
-        #     # <Capping Residues> <Match Start ... End> <Rest of Primary...>
-
-        #     # Find residue index at which the residue id[1] matches capping
-        #     # start index. Residue id often does not start from 1 and is never
-        #     # 0-based.
-        #     min_match_idx = [i for (i,el) in enumerate(cap_res) \
-        #         if el.id[1] == cr_r_ids[0]][0]
-
-        #     # Find max match index, which is either the number of capping
-        #     # residues or the first index at which residue sequences diverge.
-        #     id_range = range(min_match_idx, cap_res_n)
-        #     for i in id_range:
-        #         prim_r = prim_res[i]
-        #         if prim_r.resname != cap_res[i].resname: 
-        #                 break
-        #         max_match_idx = i
-        #         prim_align_res.append(prim_r)
-
-        #     real_cap_res = cap_res[:min_match_idx]
-
-        # elif term == 'c':
-        #     # <Rest of Primary...> <Match Start ... End> <Capping Residues>
-        #     max_match_idx = [i for (i,el) in enumerate(cap_res) \
-        #         if el.id[1] == cr_r_ids[3]][0]
-
-        #     id_range = range(0, max_match_idx + 1)
-        #     for i in reversed(id_range):
-        #         prim_id = prim_res_n - 1 - (max_match_idx - i)
-        #         prim_r = prim_res[prim_id]
-        #         if prim_r.resname != cap_res[i].resname: 
-        #                 break
-        #         min_match_idx = i
-        #         prim_align_res.append(prim_r)
-
-        #     prim_align_res.reverse()
-        #     real_cap_res = cap_res[max_match_idx+1:]
-
-        # cap_align_res = cap_res[min_match_idx:max_match_idx+1]
-        # align_len = (max_match_idx - min_match_idx) // 4
-        # print('------DEBUG: {} term capping align len: {}'.format(term, align_len))
-
-        # prim_atoms = [r['CA'] for r in prim_align_res]
-        # cap_atoms = [r['CA'] for r in cap_align_res]
-        
-        # self.si.set_atoms(prim_atoms, cap_atoms)
-        # rot, tran = self.si.rotran
-
-        result = []
-        # for r in real_cap_res:
-        #     rr = r.copy()
-        #     rr.transform(rot, tran)
-        #     result.append(rr)
-        
-        return result
 
     def get_mod_info(self, node, chain_id):
         mod_type = node['module_type']
