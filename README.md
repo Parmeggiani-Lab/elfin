@@ -1,9 +1,11 @@
 # elfin v2 [![Build Status](https://travis-ci.com/joy13975/elfin.svg?branch=master)](https://travis-ci.com/joy13975/elfin)
 
+[日本語のご案内はこちら](README_JP.md)
+
 Elfin is suite of tools that helps protein designers build structures by using repeat protein as building blocks. 
 
 Elfin is split into the following repositories:
- 1. [elfin-ui](https://github.com/joy13975/elfin-ui) - the front end.
+ 1. [elfin-ui](https://github.com/joy13975/elfin-ui) - the GUI.
  2. [elfin-library](https://github.com/joy13975/elfin-library) - the public data.
  3. [elfin-data](https://github.com/joy13975/elfin-data) - the private data.
  4. [elfin-solver](https://github.com/joy13975/elfin-solver) - the core.
