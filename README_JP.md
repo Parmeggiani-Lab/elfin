@@ -1,6 +1,7 @@
 # elfin v2 [![Build Status](https://travis-ci.com/joy13975/elfin.svg?branch=master)](https://travis-ci.com/joy13975/elfin)
 
-Elfinはリピートタンパク質の組み合わせにより、より大きいタンパク質をデザインすることに補助するツールセット。 
+Elfinはリピートタンパク質の組み合わせにより、より大きいタンパク質をデザインすることに補助するツールセット。 ElfinはOS、ベンダ、
+アーチ固有の仮定をしていませんが、Linux、MacOS、およびWSL上でのみテストされています。
 
 Elfinは４つのリポジトリに割れています：
  1. [elfin-ui](https://github.com/joy13975/elfin-ui) - GUI。
@@ -14,7 +15,7 @@ Elfinは４つのリポジトリに割れています：
 
 Elfinは私の卒業研究プロジェクトから生まれたタンパク質デザインツールセット。Elfinの中に使われている論理は[この学術論文](https://www.sciencedirect.com/science/article/pii/S1047847717301417)に記載しております。
 
-[スキップ: 始めましょう](#2-prerequisites)
+[スキップ: 始めましょう](#2-前提ソフトウェア)
 
 要に、リピートタンパク質は他のリピートタンパク質と接続して1つの大きいタンパク質になることができます。Elfinはこの理論を利用し、リピートの組み合わせによりできるだけ使用者がGUIで描いた形と近い形を作成します。
 
@@ -29,7 +30,7 @@ Elfin v2は概念証明型のv1([branch v1](https://github.com/joy13975/elfin/tr
 
 データベースにある新しいリピートタンパク質の学術論文は審査中のため、データの提供者の依頼でタンパク質のPDBファイルは[非公開のリポジトリ](https://github.com/joy13975/elfin-db)にアップロードしております。
 
-必要になれば、[Fabio Parmeggiani](https://github.com/parmef)さんにメールをお送りください。PDBファイルがなくてもElfinは動けるのです。但し、最後のステージにタンパク質のPDB或いはCIFファイルを輸出することはできません。
+必要になれば、[Fabio Parmeggiani](https://github.com/parmef)さんにメールをお送りください。PDBファイルがなくてもElfinは動けるのです。但し、最後のステージにタンパク質のPDB或いはCIFファイルを出力することはできません。
 
 ![alt tag](resources/diagrams/ProteinBristol.png)
 Figure 1: 手で書いた「Bristol」の形をインプットとして、Elfinが自動的にデザインしたタンパク質。 可視化は[PyMol](https://pymol.org)で実現しました.
@@ -37,54 +38,55 @@ Figure 1: 手で書いた「Bristol」の形をインプットとして、Elfin�
 ### 目次
 1. [プロジェクト現状](#1-プロジェクト現状)
 
-2. [Prerequisites](#2-prerequisites)
+2. [前提ソフトウェア](#2-前提ソフトウェア)
 
-3. [Setup](#3-setup)
+3. [インストール](#3-インストール)
 
-4. [Protein Design UI](#4-protein-design-ui)
+4. [タンパク質デザインGUI](#4-タンパク質デザインGUI)
 
-5. [Core Solver](#5-core-solver)
+5. [機械学習の自動的デザインアルゴリズム](#5-機械学習の自動的デザインアルゴリズム)
 
-6. [Synthesis PDB Resources](#6-synthesis-pdb-resources)
+6. [タンパク質の全処理](#6-タンパク質の全処理)
 
-7. [Stitching Example (v1)](#7-stitching-example-v1)
+7. [デザイン結果の出力](#7-デザイン結果の出力)
 
 ## 1. プロジェクト現状
 
 Elfinバージョン２の機能は本とんど完全ですが、いくつかのノンクリティカルTODOはそれぞれのリポジトリのIssuesに記録しております。
 
-## 2. Prerequisites
+## 2. 前提ソフトウェア
+#### 必須
 1. [Python 3+](https://www.python.org/downloads/)
 2. [Virtualenv](https://virtualenv.pypa.io/en/stable/)
 3. [Blender](https://www.blender.org/)
 4. [gcc-5+](https://gcc.gnu.org/)
 
-#### Optional Tools
-1. [PyMOL](https://www.pymol.org) for protein visualisation
-2. [Rosetta](https://www.rosettacommons.org/software/license-and-download) for protein relaxation.
+#### 任意
+1. [PyMOL](https://www.pymol.org) - タンパク質の可視化のため。
+2. [Rosetta](https://www.rosettacommons.org/software/license-and-download) - タンパク質のデータの最適化のため.
 
-## 3. Setup
+## 3. インストール
 
-Run the following:
+下記のコマンドを実行してください:
 ```Bash
 bash <(curl -s https://raw.githubusercontent.com/joy13975/elfin/master/setup_elfin)
 ```
 
-You will be prompted to enter your Github username and password so as to authenticate for permission to the [elfin-data](https://github.com/joy13975/elfin-data) repo.
+ご注意：このスクリプトは自動的に非公開の[elfin-data](https://github.com/joy13975/elfin-data)からデータをダウンロードするため、Githubのユーザー名とパスワードをご入力をいただきます。もしelfin-dataのアクセスの許可がなければ、スキップ（Enterを二回）してもかまわないです。
 
-## 4. Protein Design UI
+## 4. タンパク質デザインGUI
 
-See [elfin-ui](https://github.com/joy13975/elfin-ui)
+[elfin-ui](https://github.com/joy13975/elfin-ui)へお越しください。
 
-## 5. Core Solver
+## 5. 機械学習の自動的デザインアルゴリズム
 
-See [elfin-solver](https://github.com/joy13975/elfin-solver)
+[elfin-solver](https://github.com/joy13975/elfin-solver)へお越しください。
 
-## 6. Synthesis PDB Resources
+## 6. タンパク質の全処理
 
-See [elfin-data](https://github.com/joy13975/elfin-data).
+（非公開）[elfin-data](https://github.com/joy13975/elfin-data)へお越しください。
 
-## 7. Stitching Example (v1)
+## 7. デザイン結果の出力
 
 If you want to invoke `stitch.py` on a v1 elfin output json file, first convert it to a `stitch.py` readable format. Taking `resources/examples/horns_output.json` as an example. Run at elfin root:
 ```Bash
