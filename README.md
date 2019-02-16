@@ -2,7 +2,7 @@
 
 [日本語のご案内はこちら](README_JP.md)
 
-Elfin is suite of tools that helps protein designers build structures by using smaller proteins as building blocks. Elfin does not make any OS/vendor/arch specific assumptions but it is only tested on Linux, MacOS, and WSL.
+Elfin is suite of tools that helps protein designers build structures by using smaller proteins as building blocks. Elfin does not make any OS/vendor/arch specific assumptions but it has only been tested on Linux, MacOS, and WSL.
 
 Elfin is split into the following repositories:
  1. [elfin-ui](https://github.com/joy13975/elfin-ui) - the GUI.
