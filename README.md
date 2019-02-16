@@ -20,7 +20,7 @@ Implementation is based on the theories and assumptions stated [here](theories_a
 
 Elfin is a computational protein design tool suite based on [repeat protein assembly](https://www.sciencedirect.com/science/article/pii/S1047847717301417). 
 
-[Skip To: Get Started](#2-prerequisites).
+[Skip To: Usage](#usage).
 
 Repeat protein assembly uses repeat proteins as basic building blocks to construct larger proteins that form a 3D structure as close to the user's input description as possible. Credits to Fabio Parmeggiani (UoB), TJ Brunette (UoW), David Baker (UoW), and Simon McIntosh-Smith (UoB).
 
@@ -34,113 +34,107 @@ The PDB files of the building blocks are hosted in a [private repository](https:
 ![alt tag](resources/diagrams/ProteinBristol.png)
 Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin. Visualisation created using [PyMol](https://pymol.org).
 
+## Project Status
+
+Functionality is mostly complete for v2, except for some minor leftover TODOs noted as issues in respective repositories.
+
+## Usage
 ### Content
-1. [Project Status](#1-project-status)
+   1. [Prerequisites](#1-prerequisites)
+   2. [Setup](#2-setup)
+   3. [Workflow](#3-design-workflow)
+   4. [Creating Output for v1](#4-creating-output-for-v1)
+   5. [Scripting](#5-scripting)
 
-2. [Prerequisites](#2-prerequisites)
-
-3. [Setup](#3-setup)
-
-4. [Protein Design UI](#4-protein-design-ui)
-
-5. [Autodesign via Machine Learning](#5-autodesign-via-machine-learning)
-
-6. [Protein Data Preprocessing](#6-protein-data-preprocessing)
-
-7. [Creating Output](#7-creating-output)
-
-## 1. Project Status
-
-Functionality is mostly complete for v2, except for some minor left over TODOs noted in issues in respective repositories.
-
-## 2. Prerequisites
+### 1. Prerequisites
+Firstly install the following software:
 #### Required
-1. [Python 3+](https://www.python.org/downloads/)
-2. [Virtualenv](https://virtualenv.pypa.io/en/stable/)
-3. [Blender](https://www.blender.org/)
-4. [gcc-5+](https://gcc.gnu.org/)
+1. [Python 3+](https://www.python.org/downloads/) for data processing scripts
+2. [Virtualenv](https://virtualenv.pypa.io/en/stable/) ^
 
 #### Optional Tools
 1. [PyMOL](https://www.pymol.org) for protein visualisation
-2. [Rosetta](https://www.rosettacommons.org/software/license-and-download) for protein relaxation.
+2. [Rosetta](https://www.rosettacommons.org/software/license-and-download) for protein optimization
 
-## 3. Setup
+### 2. Setup
 
-Run the following:
+Run the following command which calls the auto setup script:
 ```Bash
 bash <(curl -s https://raw.githubusercontent.com/joy13975/elfin/master/setup_elfin)
 ```
 
-Note: In order to authenticate for permission to the [elfin-data](https://github.com/joy13975/elfin-data) repo, you will be prompted to enter your Github username and password. If you have not been granted permission, you can just skip this step by hitting enter twice.
+Note: In order to authenticate for permission to the [elfin-data](https://github.com/joy13975/elfin-data) repo, the script will ask you to enter Github username and password. If you have not been granted permission, you can skip this step by hitting enter twice.
 
-## 4. Protein Design UI
+### 3. Design Workflow
 
-See [elfin-ui](https://github.com/joy13975/elfin-ui)
+#### Create Geometry
+The workflow begins with drawing out the shape you would like to build using proteins. This is done via [elfin-ui](https://github.com/joy13975/elfin-ui), where corresponding documentation is  available. 
 
-## 5. Autodesign via Machine Learning
+After drawing the specification in Blender using elfin's plugin, export it (elfin-ui command: #exp) to a JSON file.
 
-See [elfin-solver](https://github.com/joy13975/elfin-solver)
+#### Autodesign
+Next, use [elfin-solver](https://github.com/joy13975/elfin-solver) to auto-design the target geometry. The solver outputs another JSON file with design solutions.
 
-## 6. Protein Data Preprocessing
+#### Fixup
+In Blender, open a blank file and import (elfin-ui command: #imp) the solver's output.
 
-See [elfin-data](https://github.com/joy13975/elfin-data).
+Fix up the solution if needed be (perhaps by closing any gaps or joining separated networks).
 
-## 7. Creating Output
+Export (#exp) the solution again but this time, ensure no path guide objects are present because the next stage will not accept a JSON with path guide objects.
 
-If you want to invoke `stitch.py` on a v1 elfin output json file, first convert it to a `stitch.py` readable format. Taking `resources/examples/horns_output.json` as an example. Run at elfin root:
-```Bash
-. ./activate
-./elfinpy/v1_design_convert.py resources/examples/horns_output.json
+#### Export as PDB/CIF
+Lastly, run the following command:
+
+```
+. ./activate  # Activates venv
+stitch.py <PATH_TO_YOUR_EXPORTED_SOLUTION_JSON>
 ```
 
-And then you will be able to stitch the v2 output:
-```Bash
-./elfinpy/stitch.py resources/examples/horns_output.v2.json
-```
+Note that ```. ./activate``` only needs to be run when `venv` is not active.
 
-If you want to process solver output entirely in code, below is an example:
+#### For those who wish to do/redo data preprocessing:
 
+Protein data has already been preprocessed and hosted in elfin-data, so for most people this step is not needed. If new data has been added to the module database or the preprocessing method has changed, then you may wish the redo the data preprocessing. 
 
-```Bash
-. ./activate # make sure you're in elfin root and in virtual env
-```
+See [elfin-data](https://github.com/joy13975/elfin-data)(private).
 
-Then either in a script or an interactive shell:
+### 4. Creating Output for v1
+
+This is no longer supported due to a breaking change in the `stitch.py`. There should be no need to do this anymore since elfin-solver v2 supports the same functionality for v1.
+
+### 5. Scripting
+
+You can use elfin's data processing classes in your own script or interactive shell. Below is an example:
 
 ```Python
-import elfinpy.v1_design_convert as converter
 import elfinpy.utilities as utils
 import elfinpy.pdb_utilities as pdb_utils
 import elfinpy.stitch as stitch
 
-# Normally, you'd need to read a JSON file for the output data from solver.
-# Alternatively, create the solver output in Python.
-
-input_json = utils.read_json('resources/examples/horns_output.json')
-graphs = converter.v1_to_v2(input_json, 'resources/xdb.json')
-
-# Convert List[graph] to dictionary
-graphs_dict = utils.to_dict(graphs)
-
-# Run stitch synth
-syn = stitch.Synthesiser(graphs_dict, 
+struct = stitch.Stitcher(
+    spec=utils.read_json('resources/examples/half_snake_2x1h_deposit_test.json'),
+    xdb=utils.read_json('resources/xdb.json'),
     pdb_dir='./resources/pdb_aligned/',
     cappings_dir='./resources/pdb_relaxed/cappings',
     metadata_dir='./resources/metadata/',
     show_fusion=False,
-    disable_capping=False)
-struct = syn.run()
+    disable_capping=False,
+    skip_unused=False).run()
 
 as_cif = True
 
 if as_cif:
     pdb_utils.save_cif(struct=struct, path='test.cif')
 else:
-    # To save as PDB, the chain ID needs to be changed to
-    # one that PDB format accepts i.e. a single character.
-    # The following line assumes there's only 1 chain. By
-    # right in a v1 format there should only be 1 chain 
-    # anyway.
-    [c for c in struct[0].get_chains()][0].id = 'a'
+    cid = 'A'
+    for c in struct[0].get_chains():
+        if cid > 'Z':
+            raise ValueError('Too many chains for PDB format')
+            # You might want to extend number of chains by using lowercase
+            # alphabets.
+
+        c.id = cid
+        cid = chr(ord(cid) + 1)
+
     pdb_utils.save_pdb(struct=struct, path='test.pdb')
 ```
