@@ -286,12 +286,15 @@ def blend_residues(moving_res, fixed_res, weights):
         for ma in m:
             if m.resname == f.resname:
                 if not ma.name in f:
-                    pause_code()
+                    # pause_code()
+                    continue
+
                 assert ma.name in f  # Identical residues should have the same atoms
                 ma.coord = compute_coord(ma, f[ma.name])
             else:
                 # Only modify backbone atoms.
-                if ma.name in BACKBONE_NAMES:
+                if ma.name in BACKBONE_NAMES and \
+                    ma.name in f:
                     ma.coord = compute_coord(ma, f[ma.name])
 
 class Stitcher:
