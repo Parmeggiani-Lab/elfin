@@ -27,11 +27,3 @@ cd elfin
 virtualenv -p python3 .venv
 . ./activate
 pip install -r requirements.txt
-
-# Solver (v1)
-git clone --single-branch --depth 1 git@github.com:joy13975/elfin-solver.git
-cd elfin-solver
-./update
-make -j4
-cd ..
-
