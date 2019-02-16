@@ -29,13 +29,13 @@ Elfin v2は概念証明型のv1([branch v1](https://github.com/joy13975/elfin/tr
 
 データベースにある新しいリピートタンパク質の学術論文は審査中のため、データの提供者の依頼でタンパク質のPDBファイルは[非公開のリポジトリ](https://github.com/joy13975/elfin-db)にアップロードしております。
 
-必要になれば、[Fabio Parmeggiani](https://github.com/parmef)にメールをお送りください。PDBファイルがなくてもElfinは動けるのですが、但し最後のステージにタンパク質のPDB或いはCIFファイルを輸出することはできません。
+必要になれば、[Fabio Parmeggiani](https://github.com/parmef)さんにメールをお送りください。PDBファイルがなくてもElfinは動けるのです。但し、最後のステージにタンパク質のPDB或いはCIFファイルを輸出することはできません。
 
 ![alt tag](resources/diagrams/ProteinBristol.png)
-Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin. Visualisation created using [PyMol](https://pymol.org).
+Figure 1: 手で書いた「Bristol」の形をインプットとして、Elfinが自動的にデザインしたタンパク質。 可視化は[PyMol](https://pymol.org)で実現しました.
 
-### Content
-1. [Project Status](#1-project-status-v2)
+### 目次
+1. [プロジェクト現状](#1-プロジェクト現状)
 
 2. [Prerequisites](#2-prerequisites)
 
@@ -49,42 +49,9 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 
 7. [Stitching Example (v1)](#7-stitching-example-v1)
 
-## 1. Project Status (v2)
- - [x] Integrate new hub data
-     - [x] Clean, align, extract transformations
- - [x] New Maths to more flexibly manipulate complex designs 
- - [ ] Reimplement the design synthesis stage
-     - [x] Redesign input data format
-     - [x] Handle capping
-     - [x] Handle multiple networks (1 network = 1 chain)
-     - [ ] Handle hub-induced multi-chain network (1 network = N chains)
- - [x] UI (Blender addon)
-     - [x] Process Pymol .obj files into a Blender library
-     - [x] Handle module placement & extrusion
-         - [x] Singles
-         - [x] Hubs
-     - [x] Feasibility validation
-         - [x] Collision detection
-             - [x] When placing and extruding modules
-             - [x After object transform
-         - [x] Symmetric hub arm symmetry enforcement
- - [x] Handle mixing of module objects with path guides and Key Points
- - [x] Handle leeway specification on networks and Key Points
- - [ ] Export to stitch.py-readable format
- - [x] Create a valid H-shaped design 
- - [ ] Elfin Core
- - [ ] Solve cyclic multi-chain design
- - [ ] Handover
-     - [ ] Code documentation
-     - [ ] README.md update
-         - [ ] Script and directory refactoring
-         - [ ] Rewrite installation and running instructions
-     - [ ] Simplify installation
-         - [ ] Automate python setup
-         - [x] Automate installation of Blender addon (install_belfin)
- - [ ] Extras
-     - [ ] Efficiency optimisation; GPU
-     - [ ] Call Elfin Core from Blender - live design?
+## 1. プロジェクト現状
+
+Elfinバージョン２の機能は本とんど完全ですが、いくつかのノンクリティカルTODOはそれぞれのリポジトリのIssuesに記録しております。
 
 ## 2. Prerequisites
 1. [Python 3+](https://www.python.org/downloads/)

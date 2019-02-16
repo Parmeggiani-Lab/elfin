@@ -35,7 +35,7 @@ The PDB files of the building blocks are hosted in a [private repository](https:
 Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin. Visualisation created using [PyMol](https://pymol.org).
 
 ### Content
-1. [Project Status](#1-project-status-v2)
+1. [Project Status](#1-project-status)
 
 2. [Prerequisites](#2-prerequisites)
 
@@ -49,42 +49,9 @@ Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled 
 
 7. [Stitching Example (v1)](#7-stitching-example-v1)
 
-## 1. Project Status (v2)
- - [x] Integrate new hub data
-     - [x] Clean, align, extract transformations
- - [x] New Maths to more flexibly manipulate complex designs 
- - [ ] Reimplement the design synthesis stage
-     - [x] Redesign input data format
-     - [x] Handle capping
-     - [x] Handle multiple networks (1 network = 1 chain)
-     - [ ] Handle hub-induced multi-chain network (1 network = N chains)
- - [x] UI (Blender addon)
-     - [x] Process Pymol .obj files into a Blender library
-     - [x] Handle module placement & extrusion
-         - [x] Singles
-         - [x] Hubs
-     - [x] Feasibility validation
-         - [x] Collision detection
-             - [x] When placing and extruding modules
-             - [x After object transform
-         - [x] Symmetric hub arm symmetry enforcement
- - [x] Handle mixing of module objects with path guides and Key Points
- - [x] Handle leeway specification on networks and Key Points
- - [ ] Export to stitch.py-readable format
- - [x] Create a valid H-shaped design 
- - [ ] Elfin Core
- - [ ] Solve cyclic multi-chain design
- - [ ] Handover
-     - [ ] Code documentation
-     - [ ] README.md update
-         - [ ] Script and directory refactoring
-         - [ ] Rewrite installation and running instructions
-     - [ ] Simplify installation
-         - [ ] Automate python setup
-         - [x] Automate installation of Blender addon (install_belfin)
- - [ ] Extras
-     - [ ] Efficiency optimisation; GPU
-     - [ ] Call Elfin Core from Blender - live design?
+## 1. Project Status
+
+Functionality is mostly complete for v2, except for some minor left over TODOs noted in issues in respective repositories.
 
 ## 2. Prerequisites
 1. [Python 3+](https://www.python.org/downloads/)
