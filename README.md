@@ -1,6 +1,6 @@
 # elfin v2 [![Build Status](https://travis-ci.com/joy13975/elfin.svg?branch=master)](https://travis-ci.com/joy13975/elfin)
 
-[日本語のご案内はこちら](README_JP.md)
+## [日本語のご案内はこちら](README_JP.md)
 
 Elfin is suite of tools that helps protein designers build structures by using smaller proteins as building blocks. Elfin does not make any OS/vendor/arch specific assumptions but it has only been tested on Linux, MacOS, and WSL.
 
@@ -10,15 +10,11 @@ Elfin is split into the following repositories:
  3. [elfin-data](https://github.com/joy13975/elfin-data) - the private data.
  4. [elfin-solver](https://github.com/joy13975/elfin-solver) - the core.
 
-This main repository hosts data processing scripts for v2. 
-
-There is a v1 branch, which hosts the v1 version of elfin, updated only to be compatible with *some* new scripts. The code there is no longer supported.
-
-Implementation is based on the theories and assumptions stated [here](theories_and_assumptions.md).
+This main repository hosts data processing scripts for v2.
 
 # What is elfin?
 
-Elfin is a computational protein design tool suite based on [repeat protein assembly](https://www.sciencedirect.com/science/article/pii/S1047847717301417). 
+Elfin is a computational protein design tool suite based on [repeat protein assembly](https://www.sciencedirect.com/science/article/pii/S1047847717301417). In particular, elfin leverages a GA machine learning algorithm to auto-design and find the best module combination for the user.
 
 [Skip To: Usage](#usage).
 
@@ -32,7 +28,7 @@ Elfin v2 is an overhaul to add complex design capabilities to the original proof
 The PDB files of the building blocks are hosted in a [private repository](https://github.com/joy13975/elfin-db). It was requested that these data be kept private before publishing (designed by F. Parmeggiani and Baker lab of the University of Washington). If you need access to these data, please contact [Fabio Parmeggiani](https://github.com/parmef) at fabio.parmeggiani@bristol.ac.uk. You can still run Elfin and design proteins without PDB data, but you will not be able to create the full atom model for your design at the final stage.
 
 ![alt tag](resources/diagrams/ProteinBristol.png)
-Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by Elfin. Visualisation created using [PyMol](https://pymol.org).
+Figure 1: the handwritten word "Bristol" drawn using protein modules, assembled by elfin (v1). Visualisation created using [PyMol](https://pymol.org).
 
 ## Project Status
 
@@ -92,7 +88,7 @@ stitch.py <PATH_TO_YOUR_EXPORTED_SOLUTION_JSON>
 
 Note that ```. ./activate``` only needs to be run when `venv` is not active.
 
-#### For those who wish to do/redo data preprocessing:
+#### Data preprocessing:
 
 Protein data has already been preprocessed and hosted in elfin-data, so for most people this step is not needed. If new data has been added to the module database or the preprocessing method has changed, then you may wish the redo the data preprocessing. 
 
@@ -104,7 +100,14 @@ This is no longer supported due to a breaking change in the `stitch.py`. There s
 
 ### 5. Scripting
 
-You can use elfin's data processing classes in your own script or interactive shell. Below is an example:
+You can use elfin's data processing classes in your own script or interactive shell. 
+
+Make sure virtualenv is active:
+```
+. ./activate
+```
+
+Below is an example that calls the stitcher:
 
 ```Python
 import elfinpy.utilities as utils
