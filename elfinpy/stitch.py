@@ -272,8 +272,11 @@ def blend_residues(moving_res, fixed_res, weights):
     for m, f, w in zip(moving_res, fixed_res, weights):
         # Remove dirty atoms. They seem crop up in the process of
         # optimizing PDBs even if preprocess.py already removed them once.
-        dirty_atoms = [a for a in m if a.name in DIRTY_ATOMS]
-        for da in dirty_atoms:
+        #
+        # Also remove atoms not in fixed residue - this is only known to
+        # happen to CYS (HG) and HIS (HE1/HE2).
+        to_remove = [a for a in m if a.name in DIRTY_ATOMS or a.name not in f]
+        for da in to_remove:
             m.detach_child(da.name)
 
         # sidechain_atoms = [a for a in m if a.name not in f]
@@ -285,10 +288,6 @@ def blend_residues(moving_res, fixed_res, weights):
 
         for ma in m:
             if m.resname == f.resname:
-                if not ma.name in f:
-                    # pause_code()
-                    continue
-
                 assert ma.name in f  # Identical residues should have the same atoms
                 ma.coord = compute_coord(ma, f[ma.name])
             else:
@@ -402,24 +401,16 @@ class Stitcher:
         chain_id = deposit_context.term_iden.chain_id
 
         if mod_info.mod_type == 'single':
-            if term == 'n':
-                cap_name = mod_info.mod_name.split('_')[0]
-                cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_NI.pdb')
-                deposit_context.pref_res = self.get_capping(
-                    prime_res=residues, 
-                    cap_res=get_residues(cap_and_repeat), 
-                    cr_r_ids=self.capping_repeat_idx[cap_name], 
-                    term='n'
-                )
-            elif term == 'c':
-                cap_name = mod_info.mod_name.split('_')[-1]
-                cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_IC.pdb')
-                deposit_context.suff_res = self.get_capping(
-                    prime_res=residues, 
-                    cap_res=get_residues(cap_and_repeat), 
-                    cr_r_ids=self.capping_repeat_idx[cap_name], 
-                    term='c'
-                )
+            cap_name = mod_info.mod_name.split('_')[-1]
+            print('Cap({}): {}', term, cap_name)
+            cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_NI.pdb')
+
+            deposit_context.suff_res = self.get_capping(
+                prime_res=residues, 
+                cap_res=get_residues(cap_and_repeat), 
+                cr_r_ids=self.capping_repeat_idx[cap_name], 
+                term='c'
+            )
         elif mod_info.mod_type == 'hub':
             # If we were to cap hubs, we need to first check whether N
             # term is an open terminus in this hub.
@@ -474,6 +465,10 @@ class Stitcher:
             rr = r.copy()
             rr.transform(rot, tran)
             result.append(rr)
+
+        # Also transform cap align res to the right frame.
+        for r in cap_align_res:
+            r.transform(rot, tran)
 
         # Displace prime_res using linear weights, the same method as
         # displace_termins().
