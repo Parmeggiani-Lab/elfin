@@ -402,15 +402,22 @@ class Stitcher:
 
         if mod_info.mod_type == 'single':
             cap_name = mod_info.mod_name.split('_')[-1]
-            print('Cap({}): {}', term, cap_name)
-            cap_and_repeat = read_pdb(self.cr_dir + '/' + cap_name + '_NI.pdb')
+            print('Cap({}): {}'.format(term, cap_name))
+            pdb_path = '{}/{}_{}.pdb'.format(self.cr_dir, cap_name,
+            'NI' if term == 'n' else 'IC')
+            cap_and_repeat = read_pdb(pdb_path)
 
-            deposit_context.suff_res = self.get_capping(
+            cap_res = self.get_capping(
                 prime_res=residues, 
                 cap_res=get_residues(cap_and_repeat), 
                 cr_r_ids=self.capping_repeat_idx[cap_name], 
-                term='c'
+                term=term
             )
+
+            if term == 'n':
+                deposit_context.pref_res = cap_res
+            else:
+                deposit_context.suff_res
         elif mod_info.mod_type == 'hub':
             # If we were to cap hubs, we need to first check whether N
             # term is an open terminus in this hub.
