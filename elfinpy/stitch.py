@@ -543,7 +543,7 @@ class Stitcher:
         dbl_res = get_residues(dbl_pdb)
 
         main_res = deposit_context.main_res
-        disp_n = len(main_res) // 2
+        disp_n = len(dbl_res) // 2
 
         # Linear weights (0, 1].
         disp_w = [i/disp_n for i in range(1, disp_n + 1)]
