@@ -275,6 +275,13 @@ def blend_residues(moving_res, fixed_res, weights):
         #
         # Also remove atoms not in fixed residue - this is only known to
         # happen to CYS (HG) and HIS (HE1/HE2).
+        
+        if m.resname == f.resname:
+            # Complain about absent atoms
+            for a in m:
+                if a.name not in DIRTY_ATOMS and a.name not in f:
+                    print(a.name, 'not in', f.resname)
+
         to_remove = [a for a in m if a.name in DIRTY_ATOMS or a.name not in f]
         for da in to_remove:
             m.detach_child(da.name)
@@ -395,6 +402,10 @@ class Stitcher:
     def cap_terminus(self, deposit_context, term):
         check_term_type(term)
 
+        if self.disable_capping:
+            print('Capping disabled')
+            return
+
         # Unpack context.
         mod_info = deposit_context.mod_info
         residues = deposit_context.main_res
@@ -411,12 +422,14 @@ class Stitcher:
             cap_name = chain['single_name']
 
             if chain[term]:
+                # Continue to capping as usual.
                 pass
             else:
                 # No need to cap a hub component term that is a closed interface.
                 return
 
-        print('Cap({}): {}'.format(term, cap_name))
+        print('Capping {}({})'.format(term, cap_name))
+
         pdb_path = '{}/{}_{}.pdb'.format(self.cr_dir, cap_name,
         'NI' if term == 'n' else 'IC')
         cap_and_repeat = read_pdb(pdb_path)
@@ -436,9 +449,6 @@ class Stitcher:
     # Computes the capping residues. Displaces primary residues (thus modifies
     # the prime_res parameter).
     def get_capping(self, prime_res, cap_res, cr_r_ids, term):
-        if self.disable_capping:
-            return []
-
         check_term_type(term)
 
         cap_res_n = len(cap_res)
@@ -457,7 +467,7 @@ class Stitcher:
             raise ValueError('Could not find residue index {}'.format(
                 rid_range[0]))
 
-        match_len = rid_range[1] - rid_range[0]
+        match_len = rid_range[1] - rid_range[0] + 1  # Inclusive
         match_end = match_start + match_len
 
         # N: match left, C: match right
@@ -471,7 +481,7 @@ class Stitcher:
         rot, tran = self.si.rotran
 
         result = []
-        cap_protrude_res = cap_res[:match_start] + cap_res[match_end+1:]
+        cap_protrude_res = cap_res[:match_start] + cap_res[match_end:]
         for r in cap_protrude_res:
             rr = r.copy()
             rr.transform(rot, tran)
@@ -482,9 +492,9 @@ class Stitcher:
             r.transform(rot, tran)
 
         # Displace prime_res using linear weights, the same method as
-        # displace_termins().
+        # displace_terminus().
 
-        # Linear weights (0, 1].
+        # Linear weights (0, 1] - default for 'c'.
         disp_w = [i/match_len for i in range(1, match_len + 1)]
         if term == 'n':
             disp_w.reverse()  # Want [1, 0) for N term.
