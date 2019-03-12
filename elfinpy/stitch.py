@@ -407,6 +407,7 @@ class Stitcher:
             'NI' if term == 'n' else 'IC')
             cap_and_repeat = read_pdb(pdb_path)
 
+            # pause_code()
             cap_res = self.get_capping(
                 prime_res=residues, 
                 cap_res=get_residues(cap_and_repeat), 
@@ -423,8 +424,11 @@ class Stitcher:
             # term is an open terminus in this hub.
             hub = self.xdb['modules']['hubs'][mod_info.mod_name]
             chain = hub['chains'][chain_id]
+            cap_name = chain['single_name']
+
             if chain[term]:
                 print('TODO: Cap hub term', term)
+                # pause_code()
             else:
                 # No need to cap a hub component term that is a closed interface.
                 pass
@@ -537,18 +541,21 @@ class Stitcher:
             raise ValueError('Unknown type tuple:', types)
 
         a_single_len = self.get_single_len(a_single_name)
+        b_single_len = self.get_single_len(b_single_name)
 
         dbl_name = a_single_name + '-' + b_single_name
         dbl_pdb = read_pdb(self.pdb_dir + '/doubles/' + dbl_name + '.pdb')
         dbl_res = get_residues(dbl_pdb)
 
         main_res = deposit_context.main_res
-        disp_n = len(dbl_res) // 2
-
-        # Linear weights (0, 1].
-        disp_w = [i/disp_n for i in range(1, disp_n + 1)]
         
         if term == 'n':
+            # Displace N term residues (first half of main_res) based on
+            # linear weights. In the double, start from B module.
+            #
+            # main_res:                  [n ... | ... c]
+            # disp_w:                    [1....0]
+            # dbl:      [n ... | ... c]  [n ... | ... c]
             if b_info.mod_type == 'hub':
                 # Lift double (in A frame) to hub arm frame with A at the
                 # arm's tip.
@@ -562,15 +569,12 @@ class Stitcher:
                 rot, tran = self.get_drop_tx(a_single_name, b_single_name)
             
             transform_residues(dbl_res, rot, tran)
-            
-            # Displace N term residues (first half of main_res) based on
-            # linear weights. In the double, start from B module.
-            #
-            # main_res:                  [n ... | ... c]
-            # disp_w:                    [1....0]
-            # dbl:      [n ... | ... c]  [n ... | ... c]
+
+            disp_n = b_single_len // 2
+            disp_w = [i/disp_n for i in range(1, disp_n + 1)]
+
             main_disp = main_res[:disp_n]
-            dbl_part = dbl_res[a_single_len:a_single_len+disp_n]
+            dbl_part = dbl_res[-b_single_len:-b_single_len+disp_n]
             disp_w.reverse()  # Make it 1 -> 0
         elif term == 'c':            
             # Displace C term residues (second half of main_res) based on
@@ -595,9 +599,14 @@ class Stitcher:
                 rot = hub_rot.dot(rot)
                 transform_residues(dbl_res, rot, tran)
 
-            main_disp = main_res[-disp_n:]
-            dbl_part = dbl_res[a_single_len-disp_n:a_single_len]
+            disp_n = a_single_len // 2
+            disp_w = [i/disp_n for i in range(1, disp_n + 1)]
 
+            main_disp = main_res[-disp_n:]
+            dbl_part = dbl_res[disp_n:disp_n+disp_n]
+
+        if len(main_disp) != len(dbl_part):
+            pause_code()
         blend_residues(main_disp, dbl_part, disp_w)
 
     def get_drop_tx(self, a_single_name, b_single_name):
