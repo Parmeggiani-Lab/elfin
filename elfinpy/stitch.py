@@ -403,23 +403,6 @@ class Stitcher:
         if mod_info.mod_type == 'single':
             cap_name = mod_info.mod_name.split('_')\
                 [0 if term == 'n' else -1]
-            print('Cap({}): {}'.format(term, cap_name))
-            pdb_path = '{}/{}_{}.pdb'.format(self.cr_dir, cap_name,
-            'NI' if term == 'n' else 'IC')
-            cap_and_repeat = read_pdb(pdb_path)
-
-            pause_code()
-            cap_res = self.get_capping(
-                prime_res=residues, 
-                cap_res=get_residues(cap_and_repeat), 
-                cr_r_ids=self.capping_repeat_idx[cap_name], 
-                term=term
-            )
-
-            if term == 'n':
-                deposit_context.pref_res = cap_res
-            else:
-                deposit_context.suff_res
         elif mod_info.mod_type == 'hub':
             # If we were to cap hubs, we need to first check whether N
             # term is an open terminus in this hub.
@@ -428,11 +411,27 @@ class Stitcher:
             cap_name = chain['single_name']
 
             if chain[term]:
-                print('TODO: Cap hub term', term)
-                pause_code()
+                pass
             else:
                 # No need to cap a hub component term that is a closed interface.
-                pass
+                return
+
+        print('Cap({}): {}'.format(term, cap_name))
+        pdb_path = '{}/{}_{}.pdb'.format(self.cr_dir, cap_name,
+        'NI' if term == 'n' else 'IC')
+        cap_and_repeat = read_pdb(pdb_path)
+
+        cap_res = self.get_capping(
+            prime_res=residues, 
+            cap_res=get_residues(cap_and_repeat), 
+            cr_r_ids=self.capping_repeat_idx[cap_name], 
+            term=term
+        )
+
+        if term == 'n':
+            deposit_context.pref_res = cap_res
+        else:
+            deposit_context.suff_res = cap_res
 
     # Computes the capping residues. Displaces primary residues (thus modifies
     # the prime_res parameter).
