@@ -401,13 +401,14 @@ class Stitcher:
         chain_id = deposit_context.term_iden.chain_id
 
         if mod_info.mod_type == 'single':
-            cap_name = mod_info.mod_name.split('_')[-1]
+            cap_name = mod_info.mod_name.split('_')\
+                [0 if term == 'n' else -1]
             print('Cap({}): {}'.format(term, cap_name))
             pdb_path = '{}/{}_{}.pdb'.format(self.cr_dir, cap_name,
             'NI' if term == 'n' else 'IC')
             cap_and_repeat = read_pdb(pdb_path)
 
-            # pause_code()
+            pause_code()
             cap_res = self.get_capping(
                 prime_res=residues, 
                 cap_res=get_residues(cap_and_repeat), 
@@ -428,7 +429,7 @@ class Stitcher:
 
             if chain[term]:
                 print('TODO: Cap hub term', term)
-                # pause_code()
+                pause_code()
             else:
                 # No need to cap a hub component term that is a closed interface.
                 pass
@@ -605,8 +606,6 @@ class Stitcher:
             main_disp = main_res[-disp_n:]
             dbl_part = dbl_res[disp_n:disp_n+disp_n]
 
-        if len(main_disp) != len(dbl_part):
-            pause_code()
         blend_residues(main_disp, dbl_part, disp_w)
 
     def get_drop_tx(self, a_single_name, b_single_name):
