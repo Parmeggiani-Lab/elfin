@@ -122,11 +122,9 @@ For troubleshooting on MacOS, please refer to [this](https://stackoverflow.com/q
 
 If your compiler complains about ```omp_get_initial_device``` not declared, that's because your OpenMP version is too old. Check with ``` echo |cpp -fopenmp -dM |grep -i open```; only versions above 201511 seem to define this function. This is not vital to the application so if you really do not want to install a newer compiler then you may comment out that erring line.
 
-Then install the jutil submodule and get ready to compile.
+Then get ready to compile.
 
 ```
-git submodule init
-git submodule update --init --force --remote			#this should install jutil
 cd GA                                                   #you should now be at ./GA/
 make
 ```
@@ -300,3 +298,4 @@ avg: 1.37087369713 min 0.979476939189 max 1.65581158797
 ```
 
 Which is consistent with the result in my thesis (for benchmark ```./bm/l10/1696.json```).
+
