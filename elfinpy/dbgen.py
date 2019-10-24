@@ -4,6 +4,7 @@ import numpy as np
 import codecs
 import json
 import argparse
+import shutil
 from collections import defaultdict
 from collections import OrderedDict
 
@@ -18,7 +19,7 @@ def parse_args(args):
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description='Generates the xdb database from preprocessed single and double modules.')
-    parser.add_argument('--relaxed_pdbs_dir', default='./resources/pdb_relaxed/')
+    parser.add_argument('--relaxed_pdbs_dir', default='./resources/pdb_prepped/')
     parser.add_argument('--metadata_dir', default='./resources/metadata/')
     parser.add_argument('--output', default='./resources/xdb.json')
     parser.add_argument('--aligned_pdb_dir', default='./resources/pdb_aligned/')
@@ -29,9 +30,9 @@ def main(test_args=None):
     args = parse_args(sys.argv[1:] if test_args is None else test_args)
 
     XDBGenerator(
-        args.relaxed_pdbs_dir, 
+        args.relaxed_pdbs_dir,
         args.metadata_dir,
-        args.aligned_pdb_dir, 
+        args.aligned_pdb_dir,
         args.output
     ).run()
 
@@ -45,6 +46,7 @@ class XDBGenerator:
     ):
         self.relaxed_pdbs_dir = relaxed_pdbs_dir
         module_types = ['doubles', 'singles', 'hubs']
+        shutil.move('metadata','ressources/metadata' )
         make_dir(aligned_pdb_dir)
         for mt in module_types:
             make_dir(aligned_pdb_dir + '/{}/'.format(mt))
@@ -119,10 +121,10 @@ class XDBGenerator:
         comp_data = hub_meta['component_data']
         del hub_meta['component_data']
         hub_meta['chains'] = {
-                c.id: { 
+                c.id: {
                         'single_name': comp_data[c.id]['single_name'],
-                        'n': nested_dict(), 
-                        'n_tip': nested_dict(), 
+                        'n': nested_dict(),
+                        'n_tip': nested_dict(),
                         'c': nested_dict(),
                         'c_tip': nested_dict(),
                         'n_residues': len(c.child_list)
@@ -154,7 +156,7 @@ class XDBGenerator:
 
 
                     # Compute transformation matrix.
-                    
+
                     # Find transform between component single and single b.
                     hub_single_chain_id = \
                         list(self.single_pdbs[comp_name].get_chains())[0].id
@@ -177,7 +179,7 @@ class XDBGenerator:
                     rot, tran = self.get_rot_trans(
                         fixed=hub,
                         fixed_chain_id=hub_chain_id,
-                        moving=double, 
+                        moving=double,
                         fixed_resi_offset=rc_hub_a - fusion_count,
                         moving_resi_offset=rc_dbl_a - fusion_count,
                         match_count=fusion_count
@@ -238,7 +240,7 @@ class XDBGenerator:
                     rot, tran = self.get_rot_trans(
                         fixed=hub,
                         fixed_chain_id=hub_chain_id,
-                        moving=double, 
+                        moving=double,
                         fixed_resi_offset=0,      # start matching from the n-term of hub component, which is index 0
                         moving_resi_offset=rc_a,  # start matching at the beginning of single b in the double
                         match_count=fusion_count
@@ -285,7 +287,7 @@ class XDBGenerator:
                     self.hub_tx.append(tx)
 
         save_pdb(
-            struct=hub, 
+            struct=hub,
             path=self.aligned_pdb_dir + '/hubs/' + hub_name + '.pdb'
         )
 
@@ -319,8 +321,8 @@ class XDBGenerator:
 
         # Step 2: Move double to align with the first single.
         self.align(
-            moving=double, 
-            fixed=single_a, 
+            moving=double,
+            fixed=single_a,
             moving_resi_offset=rc_a_half - fusion_count_a,
             fixed_resi_offset=rc_a_half - fusion_count_a,
             match_count=fusion_count_a
@@ -328,8 +330,8 @@ class XDBGenerator:
 
         # Step 3: Get COM of the single_b as seen in the double.
         com_b = self.get_centre_of_mass(
-            single_b, 
-            mother=double, 
+            single_b,
+            mother=double,
             child_resi_offset=rc_b_half - fusion_count_b,
             mother_resi_offset=rc_a + rc_b_half - fusion_count_b,
             match_count=fusion_count_b
@@ -343,8 +345,8 @@ class XDBGenerator:
         #   Only align residues starting from the middle of single B because
         #   the middle suffers the least from interfacing displacements.
         rot, tran = self.get_rot_trans(
-            moving=double, 
-            fixed=single_b, 
+            moving=double,
+            fixed=single_b,
             moving_resi_offset=rc_a + rc_b_half - fusion_count_b,
             fixed_resi_offset=rc_b_half - fusion_count_b,
             match_count=fusion_count_b
@@ -372,7 +374,7 @@ class XDBGenerator:
         # already phased out so and we should really consider using mmCIF for
         # all modules.
         save_pdb(
-            struct=double, 
+            struct=double,
             path=self.aligned_pdb_dir + '/doubles/' + double_name + '.pdb'
         )
 
@@ -411,7 +413,7 @@ class XDBGenerator:
 
         self.move_to_origin(single)
         save_pdb(
-            struct=single, 
+            struct=single,
             path=self.aligned_pdb_dir + '/singles/' + single_name + '.pdb'
         )
 
@@ -444,10 +446,10 @@ class XDBGenerator:
             indent=4)
 
     def get_centre_of_mass(
-        self, 
-        child,  
-        mother=None, 
-        child_resi_offset=0, 
+        self,
+        child,
+        mother=None,
+        child_resi_offset=0,
         mother_resi_offset=0,
         match_count=-1
     ):
@@ -474,9 +476,9 @@ class XDBGenerator:
         if mother is not None:
             # This is for finding COM of a single inside a double
             _, tran = self.get_rot_trans(
-                moving=child, 
-                fixed=mother, 
-                moving_resi_offset=child_resi_offset, 
+                moving=child,
+                fixed=mother,
+                moving_resi_offset=child_resi_offset,
                 fixed_resi_offset=mother_resi_offset,
                 match_count=match_count
             )
@@ -488,7 +490,7 @@ class XDBGenerator:
         """Computes three different measures of the radius.
 
         Args:
-        - pose - Bio.PDB.Structure.Structure 
+        - pose - Bio.PDB.Structure.Structure
 
         Returns:
         - _ - an dict containing: average of all atoms distances, max
@@ -537,7 +539,7 @@ class XDBGenerator:
         pdb.at_origin = True
 
     def align(
-        self, 
+        self,
         **kwargs
     ):
         """Moves the moving Bio.PDB.Structure.Structure to the fixed
@@ -550,7 +552,7 @@ class XDBGenerator:
         match_count = kwargs.pop('match_count', -1)
 
         rot, tran = self.get_rot_trans(
-            moving=moving, 
+            moving=moving,
             fixed=fixed,
             moving_resi_offset=moving_resi_offset,
             fixed_resi_offset=fixed_resi_offset,
@@ -562,7 +564,7 @@ class XDBGenerator:
         moving.transform(rot, tran)
 
     def get_rot_trans(
-        self, 
+        self,
         **kwargs
     ):
         """Computes the rotation and transformation matrices using BioPython's
@@ -583,7 +585,7 @@ class XDBGenerator:
         ----IMPORT NOTE----
         The rotation from BioPython is the second dot operand instead of the
         conventional first dot operand.
-        
+
         This means instead of the standard R*v + T, the actual transform is done
         with v'*R + T.
 
@@ -596,11 +598,11 @@ class XDBGenerator:
             matrices.
         """
 
-        moving = kwargs.pop('moving') 
+        moving = kwargs.pop('moving')
         moving_chain_id = kwargs.pop('moving_chain_id', 'A')
         fixed = kwargs.pop('fixed')
         fixed_chain_id = kwargs.pop('fixed_chain_id', 'A')
-        moving_resi_offset = kwargs.pop('moving_resi_offset', 0) 
+        moving_resi_offset = kwargs.pop('moving_resi_offset', 0)
         fixed_resi_offset = kwargs.pop('fixed_resi_offset', 0)
         match_count = kwargs.pop('match_count', -1)
 
@@ -653,5 +655,5 @@ class XDBGenerator:
 
         self.dump_xdb()
 
-if __name__ =='__main__': 
+if __name__ =='__main__':
     safe_exec(main)
