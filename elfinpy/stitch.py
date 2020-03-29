@@ -28,7 +28,7 @@ def parse_args(args):
     parser.add_argument('--out_file', default='')
     parser.add_argument('--xdb', default='./resources/xdb.json')
     parser.add_argument('--pdb_dir', default='./resources/pdb_aligned/')
-    parser.add_argument('--cappings_dir', default='./resources/pdb_relaxed/cappings')
+    parser.add_argument('--cappings_dir', default='./resources/pdb_raw/cappings')
     parser.add_argument('--metadata_dir', default='./resources/metadata/')
     parser.add_argument('--show_fusion', action='store_true')
     parser.add_argument('--disable_capping', action='store_true')
@@ -45,7 +45,7 @@ def main(test_args=None):
         xdb = read_json(args.xdb)
 
         struct = Stitcher(
-            spec, 
+            spec,
             xdb,
             args.pdb_dir,
             args.cappings_dir,
@@ -91,7 +91,7 @@ class TermIdentifier(TermIdentifierBase):
         self = super().__new__(cls, *args, **kwargs)
         check_term_type(self.term)
         return self
-    
+
     def __repr__(self):
         return ':'.join((str(getattr(self, f)) for f in self._fields))
 
@@ -107,7 +107,7 @@ class ChainIdentifier(ChainIdentifierBase):
         assert self.src.term == 'n'
         assert self.dst.term == 'c'
         return self
-    
+
     def __repr__(self):
         return '{}->{}'.format(self.src, self.dst)
 
@@ -138,7 +138,7 @@ def find_leaves(network, xdb):
                     res.append(TermIdentifier(ui_name, cl[0]['source_chain_id'], 'n'))
                 if not cl:
                     res.append(TermIdentifier(ui_name, nl[0]['source_chain_id'], 'c'))
-            
+
         return res
     except KeyError as ke:
         print('KeyError:', ke)
@@ -175,7 +175,7 @@ def walk_chain(network, src):
             next_linkage['target_chain_id']
 
 # Walks the network and returns a generator of ChainIdentifiers.
-# 
+#
 # This method guarantees that src->dst is in the direction of N->C.
 def decompose_network(network, xdb, skip_unused=False):
     src_q = deque()
@@ -213,7 +213,7 @@ def decompose_network(network, xdb, skip_unused=False):
 
                     yield chain_iden
 
-                    if mod_type == 'hub':            
+                    if mod_type == 'hub':
                         # Add unvisited components as new chain sources.
                         hub = xdb['modules']['hubs'][node['module_name']]
                         for hub_chain_id in hub['chains']:
@@ -275,7 +275,7 @@ def blend_residues(moving_res, fixed_res, weights):
         #
         # Also remove atoms not in fixed residue - this is only known to
         # happen to CYS (HG) and HIS (HE1/HE2).
-        
+
         if m.resname == f.resname:
             # Complain about absent atoms
             for a in m:
@@ -305,12 +305,12 @@ def blend_residues(moving_res, fixed_res, weights):
 
 class Stitcher:
     def __init__(
-        self, 
+        self,
         spec,
         xdb,
-        pdb_dir, 
+        pdb_dir,
         cappings_dir,
-        metadata_dir, 
+        metadata_dir,
         show_fusion=False,
         disable_capping=False,
         skip_unused=False,
@@ -371,7 +371,7 @@ class Stitcher:
                 # Midway through the chain - always displace N term.
                 self.displace_terminus(context, 'n')
             else:
-                # Start of chain on the N side - cap N term. 
+                # Start of chain on the N side - cap N term.
                 self.cap_terminus(context, 'n')
 
             if next_linkage:
@@ -435,9 +435,9 @@ class Stitcher:
         cap_and_repeat = read_pdb(pdb_path)
 
         cap_res = self.get_capping(
-            prime_res=residues, 
-            cap_res=get_residues(cap_and_repeat), 
-            cr_r_ids=self.capping_repeat_idx[cap_name], 
+            prime_res=residues,
+            cap_res=get_residues(cap_and_repeat),
+            cr_r_ids=self.capping_repeat_idx[cap_name],
             term=term
         )
 
@@ -476,7 +476,7 @@ class Stitcher:
 
         prim_atoms = [r['CA'] for r in prime_align_res]
         cap_atoms = [r['CA'] for r in cap_align_res]
-        
+
         self.si.set_atoms(prim_atoms, cap_atoms)
         rot, tran = self.si.rotran
 
@@ -558,7 +558,7 @@ class Stitcher:
         dbl_res = get_residues(dbl_pdb)
 
         main_res = deposit_context.main_res
-        
+
         if term == 'n':
             # Displace N term residues (first half of main_res) based on
             # linear weights. In the double, start from B module.
@@ -577,7 +577,7 @@ class Stitcher:
             else:  # Guaranteed to be 'single' thanks to get_node()
                 # Drop double to B frame.
                 rot, tran = self.get_drop_tx(a_single_name, b_single_name)
-            
+
             transform_residues(dbl_res, rot, tran)
 
             disp_n = b_single_len // 2
@@ -586,7 +586,7 @@ class Stitcher:
             main_disp = main_res[:disp_n]
             dbl_part = dbl_res[-b_single_len:-b_single_len+disp_n]
             disp_w.reverse()  # Make it 1 -> 0
-        elif term == 'c':            
+        elif term == 'c':
             # Displace C term residues (second half of main_res) based on
             # linear weights. In the double, start from end of A module and go
             # backwards.
@@ -627,7 +627,7 @@ class Stitcher:
         assert len(a_b_chains) == 1
         b_chain_id = list(a_b_chains.keys())[0]
         tx_id = a_b_chains[b_chain_id]
-       
+
         tx = self.xdb['n_to_c_tx'][tx_id]
 
         # Inverse tx because dbgen.py computes the tx that takes the
