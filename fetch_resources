@@ -9,7 +9,7 @@ svn export https://github.com/joy13975/elfin-library/trunk/metadata
 
 # Get xdb
 bz2_file="xdb.json.tar.bz2"
-curl 'https://raw.githubusercontent.com/joy13975/elfin-library/master/'$bz2_file > "$bz2_file"
+curl 'https://raw.githubusercontent.com/Parmeggiani-Lab/elfin-library-darpin/master/'$bz2_file > "$bz2_file"
 tar xjf "$bz2_file"
 rm -f "$bz2_file"
 
