@@ -5,7 +5,7 @@ cd resources
 # Get metadata
 rm -rf metadata
 echo "Downloading metadata using svn..."
-svn export https://github.com/joy13975/elfin-library/trunk/metadata
+svn export https://github.com/Parmeggiani-Lab/elfin-library-darpin/trunk/metadata
 
 # Get xdb
 bz2_file="xdb.json.tar.bz2"
