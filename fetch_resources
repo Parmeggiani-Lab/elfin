@@ -31,7 +31,7 @@ curl -u $github_user:$github_pwd 'https://raw.githubusercontent.com/Parmeggiani-
 tar xjf "$bz2_file"; ((ret = ret || $?))
 rm -f "$bz2_file"; ((ret = ret || $?))
 
-bz2_file="pdb_relaxed.tar.bz2"
+bz2_file="pdb_raw.tar.bz2"
 curl -u $github_user:$github_pwd 'https://raw.githubusercontent.com/Parmeggiani-Lab/elfin-data/master/'$bz2_file -o $bz2_file; ((ret = ret || $?))
 tar xjf "$bz2_file"; ((ret = ret || $?))
 rm -f "$bz2_file"; ((ret = ret || $?))
