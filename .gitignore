@@ -13,6 +13,7 @@ resources/**/*.blend*
 **/.pytest_cache
 
 resources/pdb_*
+resources/._*
 
 celfin/output
 celfin/bin

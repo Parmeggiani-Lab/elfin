@@ -1,39 +1,68 @@
 #!/bin/bash
 
+# Enable caching so the user doesn't have to enter user/passwd twice
+ORIGINAL_CRED_HELPER=$(git config --local credential.helper)
+git config --local credential.helper "cache --timeout=300"
+
 cd resources
 
-# Get metadata
-rm -rf metadata
-echo "Downloading metadata using svn..."
-svn export https://github.com/Parmeggiani-Lab/elfin-library-darpin/trunk/metadata
+# Part 1: Get metadata and xdb.json
+# Repository that contains elfin-library (pre-processed protein module data)
+LIB_REPO='elfin-library-darpin'
 
-# Get xdb
-bz2_file="xdb.json.tar.bz2"
-curl 'https://raw.githubusercontent.com/Parmeggiani-Lab/elfin-library-darpin/master/'$bz2_file > "$bz2_file"
-tar xjf "$bz2_file"
-rm -f "$bz2_file"
+# Clone library repo
+# Authentication with API v3 is too much hassle, so let the git
+# command do the hard work.
+# Also, use HTTPS instead of SSH so user gets a user/paswd prompt.
+TMP_LIB_DIR="tmp_${LIB_REPO}"
+rm -rf ${TMP_LIB_DIR}
+git clone --depth 1 https://github.com/Parmeggiani-Lab/${LIB_REPO}.git ${TMP_LIB_DIR}
 
+# Exit if clone failed
+if [[ "$?" != 0 ]]; then
+	exit 1
+fi
 
-# Get aligned and relaxed pdbs
-echo
-echo
-echo '------------------------------------------------------------'
-echo 'Attempting acccess to private repo.'
-echo "Enter your Github username:"
-read github_user
-echo "Enter your Github password:"
-read -s github_pwd
+# Extract metadata
+METADATA=metadata
+rm -rf ${METADATA}
+mv ${TMP_LIB_DIR}/${METADATA} ${METADATA}
 
+# Extract xdb.json
+XDB="xdb.json"
+XDB_TARBALL="${XDB}.tar.bz2"
+rm -rf ${XDB}
+tar xjf ${TMP_LIB_DIR}/${XDB_TARBALL}
 
+rm -rf ${TMP_LIB_DIR}
 
-bz2_file="pdb_aligned.tar.bz2"
-curl -u $github_user:$github_pwd 'https://raw.githubusercontent.com/Parmeggiani-Lab/elfin-data/master/'$bz2_file -o $bz2_file; ((ret = ret || $?))
-tar xjf "$bz2_file"; ((ret = ret || $?))
-rm -f "$bz2_file"; ((ret = ret || $?))
+# Parst 2: Get raw and aligned pdbs
+DATA_REPO='elfin-data'
 
-bz2_file="pdb_raw.tar.bz2"
-curl -u $github_user:$github_pwd 'https://raw.githubusercontent.com/Parmeggiani-Lab/elfin-data/master/'$bz2_file -o $bz2_file; ((ret = ret || $?))
-tar xjf "$bz2_file"; ((ret = ret || $?))
-rm -f "$bz2_file"; ((ret = ret || $?))
+# Clone data repo
+TMP_DATA_DIR="tmp_${DATA_REPO}"
+rm -rf ${TMP_DATA_DIR}
+git clone --depth 1 https://github.com/Parmeggiani-Lab/${DATA_REPO}.git ${TMP_DATA_DIR}
 
-echo "Done."
+# Extract raw PDBs
+RAW="pdb_raw"
+RAW_TARBALL="${RAW}.tar.bz2"
+rm -rf ${RAW}
+tar xjf ${TMP_DATA_DIR}/${RAW_TARBALL}
+
+# Extract aligned PDBs
+ALIGNED="pdb_aligned"
+ALIGNED_TARBALL="${ALIGNED}.tar.bz2"
+rm -rf ${ALIGNED}
+tar xjf ${TMP_DATA_DIR}/${ALIGNED_TARBALL}
+
+rm -rf ${TMP_DATA_DIR}
+
+if [[ "${ORIGINAL_CRED_HELPER}" == "" ]]; then
+    # Clear credential.helper
+    git config --local --unset credential.helper
+else
+    # Restore whatever the original value for credential.helper was
+    git config --local credential.helper "${ORIGINAL_CRED_HELPER}"
+fi
+echo "Done fetching resources."
