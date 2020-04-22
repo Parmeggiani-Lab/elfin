@@ -18,7 +18,7 @@ require_cmd pip
 require_cmd make
 
 # Main 
-git clone --depth 1 git@github.com:joy13975/elfin.git
+git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin.git
 
 cd elfin
 ./fetch_resources
