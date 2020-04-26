@@ -32,7 +32,7 @@ def parse_args(args):
     parser.add_argument('-x', '--xdb', default='./resources/xdb.json')
     parser.add_argument('-p', '--pdb_dir', default='./resources/pdb_aligned/')
     parser.add_argument('-c', '--cappings_dir',
-                        default='./resources/pdb_relaxed/cappings')
+                        default='./resources/pdb_raw/cappings')
     parser.add_argument('-m', '--metadata_dir',
                         default='./resources/metadata/')
     parser.add_argument('-s', '--show_fusion', action='store_true')
@@ -302,6 +302,9 @@ def transform_residues(res, rot, tran):
 
 
 def blend_residues(moving_res, fixed_res, weights):
+    # temporarily disable blending because it's causing horrible
+    # residue distortions
+    return
     assert len(moving_res) == len(fixed_res)
     assert len(moving_res) == len(weights)
 
@@ -325,7 +328,6 @@ def blend_residues(moving_res, fixed_res, weights):
 
         # Compute new position based on combination of two positions.
         def compute_coord(a, b): return (1-w)*a.coord + w*b.coord
-        continue
         for ma in m:
             if m.resname == f.resname:
                 # Identical residues should have the same atom positions
@@ -470,7 +472,7 @@ class Stitcher:
         pdb_path = '{}/{}_{}.pdb'.format(self.cr_dir, cap_name,
                                          'NI' if term == 'n' else 'IC')
         cap_and_repeat = pdb_utils.read_pdb(pdb_path)
-
+    
         cap_res = self.get_capping(
             prime_res=residues,
             cap_res=pdb_utils.get_residues(cap_and_repeat),
