@@ -28,14 +28,15 @@ def parse_args(args):
             'by elfin-ui.')
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('input_file')
-    parser.add_argument('--out_file', default='')
-    parser.add_argument('--xdb', default='./resources/xdb.json')
-    parser.add_argument('--pdb_dir', default='./resources/pdb_aligned/')
-    parser.add_argument(
-        '--cappings_dir', default='./resources/pdb_relaxed/cappings')
-    parser.add_argument('--metadata_dir', default='./resources/metadata/')
-    parser.add_argument('--show_fusion', action='store_true')
-    parser.add_argument('--disable_capping', action='store_true')
+    parser.add_argument('-o', '--out_file', default='')
+    parser.add_argument('-x', '--xdb', default='./resources/xdb.json')
+    parser.add_argument('-p', '--pdb_dir', default='./resources/pdb_aligned/')
+    parser.add_argument('-c', '--cappings_dir',
+                        default='./resources/pdb_relaxed/cappings')
+    parser.add_argument('-m', '--metadata_dir',
+                        default='./resources/metadata/')
+    parser.add_argument('-s', '--show_fusion', action='store_true')
+    parser.add_argument('-d', '--disable_capping', action='store_true')
     parser.add_argument('--skip_unused', action='store_true')
     return parser.parse_args(args)
 
@@ -305,7 +306,7 @@ def blend_residues(moving_res, fixed_res, weights):
     assert len(moving_res) == len(weights)
 
     for m, f, w in zip(moving_res, fixed_res, weights):
-        # Remove dirty atoms. They seem crop up in the process of
+        # Remove dirty atoms. They seem to crop up in the process of
         # optimizing PDBs even if preprocess.py already removed them once.
         #
         # Also remove atoms not in fixed residue - this is only known to
@@ -322,16 +323,12 @@ def blend_residues(moving_res, fixed_res, weights):
         for da in to_remove:
             m.detach_child(da.name)
 
-        # sidechain_atoms = [a for a in m if a.name not in f]
-        # for sa in sidechain_atoms:
-        #     m.detach_child(sa.name)
-
         # Compute new position based on combination of two positions.
         def compute_coord(a, b): return (1-w)*a.coord + w*b.coord
-
+        continue
         for ma in m:
             if m.resname == f.resname:
-                # Identical residues should have the same atoms
+                # Identical residues should have the same atom positions
                 assert ma.name in f
                 ma.coord = compute_coord(ma, f[ma.name])
             else:
