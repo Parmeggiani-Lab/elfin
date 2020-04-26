@@ -98,7 +98,7 @@ TermIdentifierBase = namedtuple(
 class TermIdentifier(TermIdentifierBase):
     """Small class to hold terminus identifier data"""
     def __new__(cls, *args, **kwargs):
-        self = super().__new__(cls, *args, **kwargs)
+        self = super(TermIdentifier, cls).__new__(cls, *args, **kwargs)
         utils.check_term_type(self.term)
         return self
 
@@ -119,7 +119,7 @@ class ChainIdentifier(ChainIdentifierBase):
     for a chain
     """
     def __new__(cls, *args, **kwargs):
-        self = super().__new__(cls, *args, **kwargs)
+        self = super(ChainIdentifier, cls).__new__(cls, *args, **kwargs)
         assert self.src.term == 'n'
         assert self.dst.term == 'c'
         return self
