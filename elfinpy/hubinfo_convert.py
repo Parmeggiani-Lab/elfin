@@ -28,7 +28,6 @@ def main(test_args=None):
                 'c_free': chains[int(4*i+3)] =='C_free',
                 'n_free': chains[int(4*i+2)] =='N_free' }
         new_data[row[0].replace('.pdb', '')] = \
-            OrderedDict({ 'oligomer_type': row[1], 
             OrderedDict({ 'oligomer_type': row[1],
                 'symmetric': row[2] == 'symmetric',
                 'component_data': component_data})
