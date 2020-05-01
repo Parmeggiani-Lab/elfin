@@ -46,7 +46,7 @@ class XDBGenerator:
     ):
         self.relaxed_pdbs_dir = relaxed_pdbs_dir
         module_types = ['doubles', 'singles', 'hubs']
-        shutil.move('metadata','ressources/metadata' )
+        shutil.move('metadata','resources/metadata' )
         make_dir(aligned_pdb_dir)
         for mt in module_types:
             make_dir(aligned_pdb_dir + '/{}/'.format(mt))
