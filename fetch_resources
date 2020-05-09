@@ -8,7 +8,7 @@ cd resources
 
 # Part 1: Get metadata and xdb.json
 # Repository that contains elfin-library (pre-processed protein module data)
-LIB_REPO='elfin-library-darpin'
+LIB_REPO='Library_01'
 
 # Clone library repo
 # Authentication with API v3 is too much hassle, so let the git
