@@ -6,6 +6,8 @@ function require_cmd {
 	echo "$1 is installed."
 }
 
+LIB_REPO='Library_01'
+
 # Check all required commands
 require_cmd git
 
@@ -17,8 +19,12 @@ require_cmd python3
 require_cmd pip
 require_cmd make
 
-# Main 
+# Main
 git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin.git
+git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin-ui.git
+git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin-data.git
+git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin-solver.git
+git clone --depth 1 https://github.com/Parmeggiani-Lab/${LIB_REPO}.git
 
 cd elfin
 ./fetch_resources
