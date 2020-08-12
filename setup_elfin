@@ -33,3 +33,9 @@ cd elfin
 virtualenv -p python3 .venv
 . ./activate
 pip install -r requirements.txt
+
+cd ../elfin-ui
+./install
+cd ../elfin-solver
+./update
+make -j4
