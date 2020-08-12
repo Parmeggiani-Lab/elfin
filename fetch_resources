@@ -8,7 +8,9 @@ cd resources
 
 # Part 1: Get metadata and xdb.json
 # Repository that contains elfin-library (pre-processed protein module data)
+
 LIB_REPO='Library_01'
+#LIB_REPO='elfin-library'
 
 # Clone library repo
 # Authentication with API v3 is too much hassle, so let the git
@@ -38,6 +40,7 @@ rm -rf ${TMP_LIB_DIR}
 
 # Parst 2: Get raw and aligned pdbs
 DATA_REPO='elfin-data'
+#DATA_REPO='elfin-data-old'
 
 # Clone data repo
 TMP_DATA_DIR="tmp_${DATA_REPO}"

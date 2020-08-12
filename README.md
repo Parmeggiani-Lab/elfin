@@ -5,10 +5,10 @@
 Elfin is suite of tools that helps protein designers build structures by using smaller proteins as building blocks. Elfin does not make any OS/vendor/arch specific assumptions but it has only been tested on Linux, MacOS, and WSL.
 
 Elfin is split into the following repositories:
- 1. [elfin-ui](https://github.com/joy13975/elfin-ui) - the GUI.
- 2. [elfin-library](https://github.com/joy13975/elfin-library) - the public data.
- 3. [elfin-data](https://github.com/joy13975/elfin-data) - the private data.
- 4. [elfin-solver](https://github.com/joy13975/elfin-solver) - the core.
+ 1. [elfin-ui](https://github.com/Parmeggiani-Lab/elfin-ui) - the GUI.
+ 2. [elfin-library](https://github.com/Parmeggiani-Lab/Library_01) - the public data.
+ 3. [elfin-data](https://github.com/Parmeggiani-Lab/elfin-data) - the private data.
+ 4. [elfin-solver](https://github.com/Parmeggiani-Lab/elfin-solver) - the core.
 
 This main repository hosts data processing scripts for v2.
 
@@ -56,20 +56,20 @@ Firstly install the following software:
 
 Run the following command which calls the auto setup script:
 ```Bash
-bash <(curl -s https://raw.githubusercontent.com/joy13975/elfin/master/setup_elfin)
+bash <(curl -s https://raw.githubusercontent.com/Parmeggiani-Lab/elfin/master/setup_elfin)
 ```
 
-Note: In order to authenticate for permission to the [elfin-data](https://github.com/joy13975/elfin-data) repo, the script will ask you to enter Github username and password. If you have not been granted permission, you can skip this step by hitting enter twice.
+Note: In order to authenticate for permission to the [elfin-data](https://github.com/Parmeggiani-Lab/elfin-data) repo, the script will ask you to enter Github username and password. If you have not been granted permission, you can skip this step by hitting enter twice.
 
 ### 3. Design Workflow
 
 #### Create Geometry
-The workflow begins with drawing out the shape you would like to build using proteins. This is done via [elfin-ui](https://github.com/joy13975/elfin-ui), where corresponding documentation is  available. 
+The workflow begins with drawing out the shape you would like to build using proteins. This is done via [elfin-ui](https://github.com/Parmeggiani-Lab/elfin-ui), where corresponding documentation is  available.
 
 After drawing the specification in Blender using elfin's plugin, export it (elfin-ui command: #exp) to a JSON file.
 
 #### Autodesign
-Next, use [elfin-solver](https://github.com/joy13975/elfin-solver) to auto-design the target geometry. The solver outputs another JSON file with design solutions.
+Next, use [elfin-solver](https://github.com/Parmeggiani-Lab/elfin-solver) to auto-design the target geometry. The solver outputs another JSON file with design solutions.
 
 #### Fixup
 In Blender, open a blank file and import (elfin-ui command: #imp) the solver's output.
@@ -90,9 +90,9 @@ Note that ```. ./activate``` only needs to be run when `venv` is not active.
 
 #### Data preprocessing:
 
-Protein data has already been preprocessed and hosted in elfin-data, so for most people this step is not needed. If new data has been added to the module database or the preprocessing method has changed, then you may wish the redo the data preprocessing. 
+Protein data has already been preprocessed and hosted in elfin-data, so for most people this step is not needed. If new data has been added to the module database or the preprocessing method has changed, then you may wish the redo the data preprocessing.
 
-See [elfin-data](https://github.com/joy13975/elfin-data)(private).
+See [elfin-data](https://github.com/Parmeggiani-Lab/elfin-data)(private).
 
 ### 4. Creating Output for v1
 
@@ -100,7 +100,7 @@ This is no longer supported due to a breaking change in the `stitch.py`. There s
 
 ### 5. Scripting
 
-You can use elfin's data processing classes in your own script or interactive shell. 
+You can use elfin's data processing classes in your own script or interactive shell.
 
 Make sure virtualenv is active:
 ```
