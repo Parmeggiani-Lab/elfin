@@ -54,7 +54,7 @@ Firstly install the following software:
 
 ### 2. Setup
 
-Run the following command which calls the auto setup script:
+Run the following command which calls the auto setup script, downloading and installing elfin, elfin-solver, elfin-ui, elfin-data and the current elfin-library:
 ```Bash
 bash <(curl -s https://raw.githubusercontent.com/Parmeggiani-Lab/elfin/master/setup_elfin)
 ```
@@ -64,9 +64,11 @@ Note: In order to authenticate for permission to the [elfin-data](https://github
 ### 3. Design Workflow
 
 #### Create Geometry
-The workflow begins with drawing out the shape you would like to build using proteins. This is done via [elfin-ui](https://github.com/Parmeggiani-Lab/elfin-ui), where corresponding documentation is  available.
+The workflow begins with drawing out the shape you would like to build using proteins. This is done via [elfin-ui](https://github.com/Parmeggiani-Lab/elfin-ui), where corresponding documentation is available.
 
-After drawing the specification in Blender using elfin's plugin, export it (elfin-ui command: #exp) to a JSON file.
+After drawing the specification in Blender using elfin's plugin, export it (elfin-ui command: #exp) to a JSON file. This JSON file is used as an Input for the Elfin-solver.
+
+Alternatively design can be completely done by placing modules in blender (elfin-ui), thus the solver (autodesign) is not needed, and exportet JSON files can directly converted to PDB/CIF using the stitch.py call. 
 
 #### Autodesign
 Next, use [elfin-solver](https://github.com/Parmeggiani-Lab/elfin-solver) to auto-design the target geometry. The solver outputs another JSON file with design solutions.
@@ -79,7 +81,7 @@ Fix up the solution if needed be (perhaps by closing any gaps or joining separat
 Export (#exp) the solution again but this time, ensure no path guide objects are present because the next stage will not accept a JSON with path guide objects.
 
 #### Export as PDB/CIF
-Lastly, run the following command:
+Lastly, run the following command while being in the elfin folder:
 
 ```
 . ./activate  # Activates venv
