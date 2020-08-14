@@ -47,8 +47,8 @@ TMP_DATA_DIR="tmp_${DATA_REPO}"
 rm -rf ${TMP_DATA_DIR}
 git clone --depth 1 https://github.com/Parmeggiani-Lab/${DATA_REPO}.git ${TMP_DATA_DIR}
 
-# Extract raw PDBs
-RAW="pdb_raw"
+# Extract capping PDBs
+RAW="pdb_cappings"
 RAW_TARBALL="${RAW}.tar.bz2"
 rm -rf ${RAW}
 tar xjf ${TMP_DATA_DIR}/${RAW_TARBALL}

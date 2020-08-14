@@ -22,7 +22,6 @@ require_cmd make
 # Main
 git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin.git
 git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin-ui.git
-git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin-data.git
 git clone --depth 1 https://github.com/Parmeggiani-Lab/elfin-solver.git
 git clone --depth 1 https://github.com/Parmeggiani-Lab/${LIB_REPO}.git
 
@@ -33,6 +32,7 @@ cd elfin
 virtualenv -p python3 .venv
 . ./activate
 pip install -r requirements.txt
+
 
 cd ../elfin-ui
 ./install

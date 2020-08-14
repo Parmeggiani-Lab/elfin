@@ -144,6 +144,7 @@ def parse_args(args):
     parser = argparse.ArgumentParser(description='Preprocess all raw single and double PDBs');
     parser.add_argument('--input_dir', default='./pdb_raw/')
     parser.add_argument('--output_dir', default='./resources/pdb_prepped/')
+    parser.add_argument('--output_dir_cap', default='./resources/pdb_cappings/')
     parser.add_argument('--dry_run', action='store_true')
     return parser.parse_args(args)
 
@@ -151,7 +152,7 @@ def main(test_args=None):
     """main"""
     args = parse_args(sys.argv[1:] if test_args is None else test_args)
 
-    if args.input_dir is None or args.output_dir is None:
+    if args.input_dir is None or args.output_dir is None or args.output_dir_cap is None:
         ap.print_help()
         sys.exit(1)
 
@@ -163,6 +164,8 @@ def main(test_args=None):
         make_dir(single_output_dir)
         hub_output_dir = args.output_dir + '/hubs/'
         make_dir(hub_output_dir)
+        cap_output_dir = args.output_dir_cap
+        make_dir(cap_output_dir)
 
     # Doubles
     doubleFiles = glob.glob(args.input_dir + '/doubles/*.pdb')
@@ -194,6 +197,14 @@ def main(test_args=None):
         hub = cleanse_atoms(read_pdb(hub_file))
         if not args.dry_run:
             save_pdb(struct=hub, path=hub_output_dir + '/' + os.path.basename(hub_file))
+    # Caps
+    capFiles = glob.glob(args.input_dir + '/cappings/*.pdb')
+    N = len(capFiles)
+    for i in range(N):
+        cap_file = capFiles[i]
+        if not args.dry_run:
+            save_pdb(struct=single, path=cap_output_dir + '/' + os.path.basename(cap_file))
+
 
 if __name__ == '__main__':
     main()
