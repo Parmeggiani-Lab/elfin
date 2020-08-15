@@ -32,7 +32,7 @@ def parse_args(args):
     parser.add_argument('-x', '--xdb', default='./resources/xdb.json')
     parser.add_argument('-p', '--pdb_dir', default='./resources/pdb_aligned/')
     parser.add_argument('-c', '--cappings_dir',
-                        default='./resources/pdb_cappings/')
+                        default='./resources/pdb_cappings')
     parser.add_argument('-m', '--metadata_dir',
                         default='./resources/metadata/')
     parser.add_argument('-s', '--show_fusion', action='store_true')
