@@ -202,8 +202,10 @@ def main(test_args=None):
     N = len(capFiles)
     for i in range(N):
         cap_file = capFiles[i]
+        print('Prepping cap [{}/{}] {}'.format(i+1, N, cap_file))
+        cap = cleanse_atoms(read_pdb(cap_file))
         if not args.dry_run:
-            save_pdb(struct=single, path=cap_output_dir + '/' + os.path.basename(cap_file))
+            save_pdb(struct=cap, path=cap_output_dir + os.path.basename(cap_file))
 
 
 if __name__ == '__main__':
