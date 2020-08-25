@@ -54,7 +54,9 @@ Firstly install the following software:
 
 ### 2. Setup
 
-Run the following command which calls the auto setup script, downloading and installing elfin, elfin-solver, elfin-ui, elfin-data and the current elfin-library:
+For the use of elfin-ui, make sure you have installed Blender (best: version 2.79), and saved the user preferences once, to create a folder in Library/Application Support, which is neccessary for elfin-ui installation.
+
+Run the following command which calls the auto setup script, downloading and installing elfin, elfin-solver, elfin-ui:
 ```Bash
 bash <(curl -s https://raw.githubusercontent.com/Parmeggiani-Lab/elfin/master/setup_elfin)
 ```
