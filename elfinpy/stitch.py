@@ -229,6 +229,7 @@ def decompose_network(network, xdb, skip_unused=False):
         for term_iden, next_linkage in chain_walker:
             ui_name, chain_id, term = term_iden
             node = get_node(network, ui_name)
+            mod_type = node['module_type']
 
             if not next_linkage:
                 dst = TermIdentifier(
@@ -253,7 +254,6 @@ def decompose_network(network, xdb, skip_unused=False):
                                         src_q.append(iden)
                 break
 
-            mod_type = node['module_type']
             if mod_type == 'hub':
                 # This is a "bypass" hub, i.e. the current hub component has
                 # interfaceable N and C terms, and the current chain goes
